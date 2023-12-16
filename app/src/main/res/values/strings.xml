@@ -1,3 +1,17 @@
 <resources>
-    <string name="app_name">AndroidChatApp</string>
+    <string name="app_name">Chat With Me</string>
+    <string name="login">Login</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="sign_up"><u>Sign up</u></string>
+    <string name="sign_in"><u>Sign in</u></string>
+    <string name="sign_up_button">Sign up</string>
+    <string name="image_desc">An image</string>
+    <string name="forgot_password"><u>I forgot my password!</u></string>
+    <string name="sign_in_with_others">Or sign in with</string>
+    <string name="sign_up_with_others">Or sign up with</string>
+    <string name="facebook">Facebook</string>
+    <string name="google">Google</string>
+    <string name="email">E-mail</string>
+    <string name="password">Password</string>
+    <string name="welcome">You\'re welcome, let\'s go!</string>
 </resources>

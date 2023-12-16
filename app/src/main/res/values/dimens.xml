@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="login_btn_text_size">18sp</dimen>
+    <dimen name="login_btn_min_height">54dp</dimen>
+    <dimen name="btn_rounded">32dp</dimen>
+</resources>
