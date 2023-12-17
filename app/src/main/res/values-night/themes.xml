@@ -3,5 +3,6 @@
     <style name="Base.Theme.AndroidChatApp" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
          <item name="colorPrimaryDark">@color/blue</item>
+        <item name="colorPrimary">@color/blue</item>
     </style>
 </resources>

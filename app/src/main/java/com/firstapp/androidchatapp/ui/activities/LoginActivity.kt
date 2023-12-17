@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.ImageAdapter
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -25,6 +26,7 @@ class LoginActivity : AppCompatActivity() {
         R.drawable.login_screen_thumbnail_4
     )
     private val SLIDE_ITEM_SIZE = images.size
+    private val firebaseAuth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,11 +44,26 @@ class LoginActivity : AppCompatActivity() {
                 changeActiveIndicator(position)
             }
         })
+        // auto forward slide items
         autoForwardSlideItem()
 
         // create indicators
         for (i in 0 until SLIDE_ITEM_SIZE) {
             LayoutInflater.from(this).inflate(R.layout.view_indicator, indicatorContainer, true)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+//        tryAutoLogin()
+    }
+
+    private fun tryAutoLogin() {
+        if (firebaseAuth.currentUser != null) {
+            println(firebaseAuth.currentUser?.displayName)
+            // user signed in
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
     }
 
