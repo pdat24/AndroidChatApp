@@ -10,34 +10,55 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.firstapp.androidchatapp.R
-import com.firstapp.androidchatapp.adapters.ImageAdapter
+import com.firstapp.androidchatapp.adapters.SlideItemAdapter
+import com.firstapp.androidchatapp.models.SlideItem
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class LoginActivity : AppCompatActivity() {
+class IntroduceActivity : AppCompatActivity() {
 
     private lateinit var slide: ViewPager2
     private lateinit var indicatorContainer: LinearLayout
-    private val images = listOf(
-        R.drawable.login_screen_thumbnail,
-        R.drawable.login_screen_thumbnail_2,
-        R.drawable.login_screen_thumbnail_3,
-        R.drawable.login_screen_thumbnail_4
-    )
-    private val SLIDE_ITEM_SIZE = images.size
+    private lateinit var slideItems: List<SlideItem>
+    private var slideItemSize: Int = 0
     private val firebaseAuth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        setContentView(R.layout.activity_introduce)
 
         // get views
         slide = findViewById(R.id.vp2Slide)
         indicatorContainer = findViewById(R.id.indicatorContainer)
 
+        // create slide items
+        slideItems = listOf(
+            SlideItem(
+                R.drawable.login_screen_thumbnail,
+                getString(R.string.introduce_title_1),
+                getString(R.string.introduce_desc)
+            ),
+            SlideItem(
+                R.drawable.login_screen_thumbnail_2,
+                getString(R.string.introduce_title_2),
+                getString(R.string.introduce_desc)
+            ),
+            SlideItem(
+                R.drawable.login_screen_thumbnail_3,
+                getString(R.string.introduce_title_3),
+                getString(R.string.introduce_desc)
+            ),
+            SlideItem(
+                R.drawable.login_screen_thumbnail_4,
+                getString(R.string.introduce_title_4),
+                getString(R.string.introduce_desc)
+            )
+        )
+        slideItemSize = slideItems.size
+
         // create slide
-        slide.adapter = ImageAdapter(images)
+        slide.adapter = SlideItemAdapter(slideItems)
         slide.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
@@ -48,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
         autoForwardSlideItem()
 
         // create indicators
-        for (i in 0 until SLIDE_ITEM_SIZE) {
+        for (i in 0 until slideItemSize) {
             LayoutInflater.from(this).inflate(R.layout.view_indicator, indicatorContainer, true)
         }
     }
@@ -76,13 +97,13 @@ class LoginActivity : AppCompatActivity() {
     private fun changeActiveIndicator(position: Int) {
         indicatorContainer.getChildAt(position)
             .findViewById<FrameLayout>(R.id.innerView)
-            .setBackgroundColor(getColor(R.color.indicator))
+            .background = null
         // unset background for others
-        for (i in 0 until SLIDE_ITEM_SIZE) {
+        for (i in 0 until slideItemSize) {
             if (i != position) {
                 indicatorContainer.getChildAt(i)
                     .findViewById<FrameLayout>(R.id.innerView)
-                    .background = null
+                    .setBackgroundColor(getColor(R.color.indicator))
             }
         }
     }
@@ -90,7 +111,7 @@ class LoginActivity : AppCompatActivity() {
     private fun autoForwardSlideItem() {
         lifecycleScope.launch {
             delay(5000)
-            if (slide.currentItem == SLIDE_ITEM_SIZE - 1) {
+            if (slide.currentItem == slideItemSize - 1) {
                 slide.currentItem = 0
             } else slide.currentItem++
             autoForwardSlideItem()

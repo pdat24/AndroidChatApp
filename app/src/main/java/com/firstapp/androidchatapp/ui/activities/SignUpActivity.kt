@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.firstapp.androidchatapp.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.textfield.TextInputEditText
@@ -26,7 +27,6 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var emailWarning: TextView
     private lateinit var passwordWarning: TextView
     private val GOOGLE_SIGN_IN_RC = 0
-    private val FACEBOOK_SIGN_IN_RC = 1
     private val firebaseAuth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,6 +142,7 @@ class SignUpActivity : AppCompatActivity() {
             .requestEmail()
             .build()
         val client = GoogleSignIn.getClient(this, googleOptions)
+        client.revokeAccess()
         startActivityIfNeeded(client.signInIntent, GOOGLE_SIGN_IN_RC)
     }
 

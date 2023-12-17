@@ -1,8 +1,7 @@
 <resources>
     <string name="app_name">Chat With Me</string>
-    <string name="login">Login</string>
+    <string name="get_started">Get started</string>
     <string name="no_account">Don\'t have an account?</string>
-    <string name="sign_up"><u>Sign up</u></string>
     <string name="sign_in">Sign in</string>
     <string name="image_desc">An image</string>
     <string name="forgot_password"><u>I forgot my password!</u></string>
@@ -16,4 +15,10 @@
     <string name="email_warning">Email address is invalid or doesn\'t exists.</string>
     <string name="password_warning">Password must be at least 6 characters that only contain letters or numbers.</string>
     <string name="wrong_password_warning">Incorrect password!</string>
+
+    <string name="introduce_title_1">Contact via Message</string>
+    <string name="introduce_title_2">Opportunities near you</string>
+    <string name="introduce_title_3">Chat with your friends</string>
+    <string name="introduce_title_4">John Groups</string>
+    <string name="introduce_desc">Step by step instructions to create a job search website on your own in</string>
 </resources>

@@ -24,7 +24,7 @@ class SplashActivity : AppCompatActivity() {
             delay(2000)
             withContext(Dispatchers.Main) {
                 startActivity(
-                    Intent(this@SplashActivity, LoginActivity::class.java)
+                    Intent(this@SplashActivity, IntroduceActivity::class.java)
                 )
                 finish()
             }
