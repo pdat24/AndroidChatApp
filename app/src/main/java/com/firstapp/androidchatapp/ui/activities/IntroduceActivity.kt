@@ -76,7 +76,7 @@ class IntroduceActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-//        tryAutoLogin()
+        tryAutoLogin()
     }
 
     private fun tryAutoLogin() {

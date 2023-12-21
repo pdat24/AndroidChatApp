@@ -7,4 +7,8 @@
     <color name="transparent_blue">#802196F3</color>
     <color name="light_grey">#928E98</color>
     <color name="warning_color">#FFFFC107</color>
+    <color name="divider_color">#33B1AEAE</color>
+    <color name="green">#23DC57</color>
+    <color name="light_black">#282A36</color>
+    <color name="light_pink_grey">#44475a</color>
 </resources>

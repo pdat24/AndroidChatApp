@@ -9,16 +9,24 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.firstapp.androidchatapp.R
+import com.firstapp.androidchatapp.models.MessageBoxesList
+import com.firstapp.androidchatapp.models.User
+import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_AVATAR_URIS
+import com.firstapp.androidchatapp.utils.Constants.Companion.GOOGLE_SIGN_IN_RC
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -26,12 +34,13 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var passwordInput: TextInputEditText
     private lateinit var emailWarning: TextView
     private lateinit var passwordWarning: TextView
-    private val GOOGLE_SIGN_IN_RC = 0
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private lateinit var mainViewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         // get views
         emailInput = findViewById(R.id.emailInput)
@@ -69,7 +78,54 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     /**
-     * Create new user if email isn't already in use or
+     * Return random avatar uri from DEFAULT_AVATAR_URIS in class Constants
+     * @return avatar uri
+     * */
+    private fun getRandomAvatarURI(): String {
+        return DEFAULT_AVATAR_URIS[(0..9).random()]
+    }
+
+    /**
+     * Return user name after signed in or return Exception if not already
+     *
+     * Note: user name can be displayName or the left side of sign '@' in email address
+     *
+     * Return displayName if user sign in with google account
+     * @throws FirebaseAuthException
+     */
+    private fun getUserName(): String {
+        val currentUser = firebaseAuth.currentUser ?: throw FirebaseAuthException(
+            "ERROR_NOT_LOGIN",
+            "User not logged in"
+        )
+        return if (currentUser.displayName != null)
+            currentUser.displayName!!
+        else {
+            "Anonymous"
+        }
+    }
+
+    /**
+     * Create new conversation, message box for new user and
+     * save user on firebase firestore after sign in
+     *
+     * Note: This method must be called after user is created and signed in
+     * */
+    private fun saveUserOnDatabase() {
+        lifecycleScope.launch {
+            val msgBoxesListID = mainViewModel.createMsgBoxesList(MessageBoxesList())
+            mainViewModel.createUser(
+                User(
+                    name = getUserName(),
+                    avatarURI = getRandomAvatarURI(),
+                    messageBoxListId = msgBoxesListID
+                )
+            )
+        }
+    }
+
+    /**
+     * Create new user and sign in if email isn't already in use or
      * show an error message if already
      * @param email
      * @param password
@@ -78,7 +134,11 @@ class SignUpActivity : AppCompatActivity() {
         firebaseAuth
             .createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
-                signedInOK()
+                // sign in after create user
+                firebaseAuth.signInWithEmailAndPassword(email, password).addOnSuccessListener {
+                    signedInOK()
+                    saveUserOnDatabase()
+                }
             }
             .addOnFailureListener { e ->
                 if (e is FirebaseAuthUserCollisionException)
@@ -160,6 +220,8 @@ class SignUpActivity : AppCompatActivity() {
                     GoogleAuthProvider.getCredential(account.idToken, null)
                 ).addOnSuccessListener {
                     signedInOK()
+//                    saveUserOnDatabase()
+                    // TODO: save user after created using google
                 }
             } catch (e: Exception) {
                 Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
