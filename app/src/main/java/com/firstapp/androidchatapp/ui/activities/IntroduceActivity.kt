@@ -90,7 +90,7 @@ class IntroduceActivity : AppCompatActivity() {
 
     fun navigateToSignInScreen(view: View) {
         startActivity(
-            Intent(this, SignUpActivity::class.java)
+            Intent(this, SignInActivity::class.java)
         )
     }
 

@@ -10,13 +10,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.models.User
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.ui.viewmodels.MainViewModelFactory
 import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_AVATAR_URIS
 import com.firstapp.androidchatapp.utils.Constants.Companion.GOOGLE_SIGN_IN_RC
+import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -26,9 +27,11 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class SignUpActivity : AppCompatActivity() {
+class SignInActivity : AppCompatActivity() {
 
     private lateinit var emailInput: TextInputEditText
     private lateinit var passwordInput: TextInputEditText
@@ -39,8 +42,11 @@ class SignUpActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sign_up)
-        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        setContentView(R.layout.activity_sign_in)
+        mainViewModel = ViewModelProvider(
+            this,
+            MainViewModelFactory(this)
+        )[MainViewModel::class.java]
 
         // get views
         emailInput = findViewById(R.id.emailInput)
@@ -94,11 +100,10 @@ class SignUpActivity : AppCompatActivity() {
      * @throws FirebaseAuthException
      */
     private fun getUserName(): String {
-        val currentUser = firebaseAuth.currentUser ?: throw FirebaseAuthException(
-            "ERROR_NOT_LOGIN",
-            "User not logged in"
-        )
-        return if (currentUser.displayName != null)
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser == null)
+            throwUserNotLoginError()
+        return if (currentUser!!.displayName != null)
             currentUser.displayName!!
         else {
             "Anonymous"
@@ -112,14 +117,17 @@ class SignUpActivity : AppCompatActivity() {
      * Note: This method must be called after user is created and signed in
      * */
     private fun saveUserOnDatabase() {
-        lifecycleScope.launch {
-            val msgBoxesListID = mainViewModel.createMsgBoxesList(MessageBoxesList())
+        CoroutineScope(Dispatchers.IO).launch {
+            val currentUser = firebaseAuth.currentUser
+            if (currentUser == null)
+                throwUserNotLoginError()
             mainViewModel.createUser(
                 User(
                     name = getUserName(),
                     avatarURI = getRandomAvatarURI(),
-                    messageBoxListId = msgBoxesListID
-                )
+                    messageBoxListId = mainViewModel.createMsgBoxesList(MessageBoxesList())
+                ),
+                id = currentUser!!.uid
             )
         }
     }
@@ -234,7 +242,7 @@ class SignUpActivity : AppCompatActivity() {
      */
     private fun signedInOK() {
         startActivity(
-            Intent(this, MainActivity::class.java)
+            Intent(this@SignInActivity, MainActivity::class.java)
         )
         finish()
     }

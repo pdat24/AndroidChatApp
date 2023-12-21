@@ -21,9 +21,11 @@ class Constants {
         const val DEFAULT_PREVIEW_MESSAGE = "You have become friends!"
         const val CONVERSATION_ID = "conversationID"
         const val AVATAR_URI = "avatarURI"
-        const val USERNAME = "name"
+        const val NAME = "name"
         const val MESSAGES = "messages"
         const val MESSAGE_BOXES = "messageBoxes"
+        const val NOT_LOGIN_ERROR_CODE = "ERROR_NOT_LOGIN"
         const val MESSAGE_BOX_LIST_ID = "messageBoxListId"
+
     }
 }

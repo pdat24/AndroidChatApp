@@ -3,19 +3,32 @@ package com.firstapp.androidchatapp.ui.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
+import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.ui.viewmodels.MainViewModelFactory
+import com.firstapp.androidchatapp.utils.Constants
+import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
+import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
+    private val firebaseAuth = FirebaseAuth.getInstance()
     private lateinit var rcvMessageBoxes: RecyclerView
     private lateinit var mainViewModel: MainViewModel
+    private lateinit var avatarView: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +36,12 @@ class MainActivity : AppCompatActivity() {
         window.statusBarColor = getColor(R.color.black)
         // get views
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
-        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        avatarView = findViewById(R.id.ivUserAvatar)
+
+        mainViewModel = ViewModelProvider(
+            this,
+            MainViewModelFactory(this)
+        )[MainViewModel::class.java]
 
         val messageBoxes = listOf(
             MessageBox(
@@ -47,6 +65,28 @@ class MainActivity : AppCompatActivity() {
         )
         rcvMessageBoxes.adapter = MessageBoxAdapter(messageBoxes)
         rcvMessageBoxes.layoutManager = LinearLayoutManager(this)
+        mainViewModel.getLocalUserInfo().observe(this) {
+            if (it?.name == null)
+                cacheUserOnLocalDB()
+            else {
+                Glide.with(this).load(it.avatarURI).into(avatarView)
+            }
+        }
+    }
+
+    private fun cacheUserOnLocalDB() {
+        lifecycleScope.launch {
+            val signedInUser = firebaseAuth.currentUser
+            if (signedInUser == null)
+                throwUserNotLoginError()
+            val user = mainViewModel.getUser(userID = signedInUser!!.uid)
+            mainViewModel.cacheUser(
+                UserInfo(
+                    name = user.getString(NAME)!!,
+                    avatarURI = user.getString(AVATAR_URI)!!
+                )
+            )
+        }
     }
 
     fun toSettingActivity(view: View) {

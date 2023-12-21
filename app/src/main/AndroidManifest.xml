@@ -22,7 +22,7 @@
             android:name=".ui.activities.IntroduceActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.activities.SignUpActivity"
+            android:name=".ui.activities.SignInActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activities.MainActivity"
