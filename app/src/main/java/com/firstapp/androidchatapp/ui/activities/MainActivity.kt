@@ -14,9 +14,9 @@ import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.MessageBox
+import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
-import com.firstapp.androidchatapp.ui.viewmodels.MainViewModelFactory
-import com.firstapp.androidchatapp.utils.Constants
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
     private lateinit var rcvMessageBoxes: RecyclerView
+    private lateinit var dbViewModel: DatabaseViewModel
     private lateinit var mainViewModel: MainViewModel
     private lateinit var avatarView: ImageView
 
@@ -38,10 +39,12 @@ class MainActivity : AppCompatActivity() {
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
         avatarView = findViewById(R.id.ivUserAvatar)
 
-        mainViewModel = ViewModelProvider(
+        // view models
+        dbViewModel = ViewModelProvider(
             this,
-            MainViewModelFactory(this)
-        )[MainViewModel::class.java]
+            DatabaseViewModelFactory(this)
+        )[DatabaseViewModel::class.java]
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         val messageBoxes = listOf(
             MessageBox(
@@ -65,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         )
         rcvMessageBoxes.adapter = MessageBoxAdapter(messageBoxes)
         rcvMessageBoxes.layoutManager = LinearLayoutManager(this)
-        mainViewModel.getLocalUserInfo().observe(this) {
+        dbViewModel.getCachedUserInfo().observe(this) {
             if (it?.name == null)
                 cacheUserOnLocalDB()
             else {
@@ -79,8 +82,8 @@ class MainActivity : AppCompatActivity() {
             val signedInUser = firebaseAuth.currentUser
             if (signedInUser == null)
                 throwUserNotLoginError()
-            val user = mainViewModel.getUser(userID = signedInUser!!.uid)
-            mainViewModel.cacheUser(
+            val user = dbViewModel.getUser(userID = signedInUser!!.uid)
+            dbViewModel.cacheUser(
                 UserInfo(
                     name = user.getString(NAME)!!,
                     avatarURI = user.getString(AVATAR_URI)!!

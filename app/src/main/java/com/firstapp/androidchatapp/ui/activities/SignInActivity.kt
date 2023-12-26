@@ -8,15 +8,17 @@ import android.os.Vibrator
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.models.User
-import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
-import com.firstapp.androidchatapp.ui.viewmodels.MainViewModelFactory
+import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_AVATAR_URIS
-import com.firstapp.androidchatapp.utils.Constants.Companion.GOOGLE_SIGN_IN_RC
+import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -27,9 +29,11 @@ import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class SignInActivity : AppCompatActivity() {
 
@@ -37,22 +41,31 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var passwordInput: TextInputEditText
     private lateinit var emailWarning: TextView
     private lateinit var passwordWarning: TextView
+    private lateinit var googleSignInResult: ActivityResultLauncher<Intent>
     private val firebaseAuth = FirebaseAuth.getInstance()
-    private lateinit var mainViewModel: MainViewModel
+    private val userDB = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_PATH)
+    private lateinit var dbViewModel: DatabaseViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_in)
-        mainViewModel = ViewModelProvider(
+        dbViewModel = ViewModelProvider(
             this,
-            MainViewModelFactory(this)
-        )[MainViewModel::class.java]
+            DatabaseViewModelFactory(this)
+        )[DatabaseViewModel::class.java]
 
         // get views
         emailInput = findViewById(R.id.emailInput)
         passwordInput = findViewById(R.id.passwordInput)
         emailWarning = findViewById(R.id.tvEmailWarning)
         passwordWarning = findViewById(R.id.tvPasswordWarning)
+
+        // register activity result
+        googleSignInResult = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            handleGoogleIntentData(result.data)
+        }
     }
 
     private fun warningIncorrectPassword() {
@@ -114,21 +127,26 @@ class SignInActivity : AppCompatActivity() {
      * Create new conversation, message box for new user and
      * save user on firebase firestore after sign in
      *
-     * Note: This method must be called after user is created and signed in
+     * Note:
+     * - This method must be called after user is created and signed in
+     * - User is only saved if id is not existing to avoid user data is overwritten
      * */
-    private fun saveUserOnDatabase() {
+    private fun trySaveUserOnDatabase() {
         CoroutineScope(Dispatchers.IO).launch {
             val currentUser = firebaseAuth.currentUser
             if (currentUser == null)
                 throwUserNotLoginError()
-            mainViewModel.createUser(
-                User(
-                    name = getUserName(),
-                    avatarURI = getRandomAvatarURI(),
-                    messageBoxListId = mainViewModel.createMsgBoxesList(MessageBoxesList())
-                ),
-                id = currentUser!!.uid
-            )
+            // check id is existing or not
+            if (!userDB.document(currentUser!!.uid).get().await().exists()) {
+                dbViewModel.createUser(
+                    User(
+                        name = getUserName(),
+                        avatarURI = getRandomAvatarURI(),
+                        messageBoxListId = dbViewModel.createMsgBoxesList(MessageBoxesList())
+                    ),
+                    id = currentUser.uid
+                )
+            }
         }
     }
 
@@ -145,7 +163,7 @@ class SignInActivity : AppCompatActivity() {
                 // sign in after create user
                 firebaseAuth.signInWithEmailAndPassword(email, password).addOnSuccessListener {
                     signedInOK()
-                    saveUserOnDatabase()
+                    trySaveUserOnDatabase()
                 }
             }
             .addOnFailureListener { e ->
@@ -211,29 +229,28 @@ class SignInActivity : AppCompatActivity() {
             .build()
         val client = GoogleSignIn.getClient(this, googleOptions)
         client.revokeAccess()
-        startActivityIfNeeded(client.signInIntent, GOOGLE_SIGN_IN_RC)
+        googleSignInResult.launch(client.signInIntent)
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // sign in with google
-        if (requestCode == GOOGLE_SIGN_IN_RC) {
-            try {
-                val account =
-                    GoogleSignIn.getSignedInAccountFromIntent(data)
-                        .getResult(ApiException::class.java)
-                // sign in
-                firebaseAuth.signInWithCredential(
-                    GoogleAuthProvider.getCredential(account.idToken, null)
-                ).addOnSuccessListener {
-                    signedInOK()
-//                    saveUserOnDatabase()
-                    // TODO: save user after created using google
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
+    /**
+     * Sign in with Google using intent data
+     * @param intentData  result of google client sign in intent
+     * @see signInWithGoogle
+     */
+    private fun handleGoogleIntentData(intentData: Intent?) {
+        try {
+            val account =
+                GoogleSignIn.getSignedInAccountFromIntent(intentData)
+                    .getResult(ApiException::class.java)
+            // sign in
+            firebaseAuth.signInWithCredential(
+                GoogleAuthProvider.getCredential(account.idToken, null)
+            ).addOnSuccessListener {
+                signedInOK()
+                trySaveUserOnDatabase()
             }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
         }
     }
 

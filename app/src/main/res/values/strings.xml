@@ -18,6 +18,8 @@
     <string name="wrong_password_warning">Incorrect password!</string>
     <string name="back_btn">back button</string>
     <string name="settings">Settings</string>
+    <string name="cancel">Cancel</string>
+    <string name="choose_from_library">Choose from library</string>
 
     <!--    Introduce activity values-->
     <string name="introduce_title_1">Contact via Message</string>
@@ -31,10 +33,12 @@
     <string name="messages">Messages</string>
     <string name="online">Online</string>
 
-<!--    settings-->
+    <!--    settings-->
     <string name="font_size">Font Size</string>
     <string name="delay_sending">Delay Sending</string>
     <string name="night_mode">Night Mode</string>
     <string name="notification">Notification</string>
     <string name="sign_out">Sign out</string>
+    <string name="check_icon">Check icon</string>
+    <string name="take_photo">Take photo</string>
 </resources>

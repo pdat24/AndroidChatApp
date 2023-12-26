@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.firstapp.androidchatapp.R
@@ -27,6 +28,7 @@ class IntroduceActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_introduce)
+        installSplashScreen()
 
         // get views
         slide = findViewById(R.id.vp2Slide)
@@ -81,7 +83,6 @@ class IntroduceActivity : AppCompatActivity() {
 
     private fun tryAutoLogin() {
         if (firebaseAuth.currentUser != null) {
-            println(firebaseAuth.currentUser?.displayName)
             // user signed in
             startActivity(Intent(this, MainActivity::class.java))
             finish()

@@ -11,13 +11,12 @@ class Constants {
             "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_5.jpg?alt=media&token=831e0bd5-14de-4533-9daf-d908e571e7db",
             "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
             "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_3.jpg?alt=media&token=4982fb7a-cad2-4733-bb58-d7b53a653263",
-            "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_2.jpg?alt=media&token=bc0acaa2-4a4b-4fa0-8f3b-68d4c63061ee",
+            "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_5.jpg?alt=media&token=bc0acaa2-4a4b-4fa0-8f3b-68d4c63061ee",
             "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_1.jpg?alt=media&token=f7eec50b-a91c-4e76-a799-1880d8faba74",
         )
         const val USERS_COLLECTION_PATH = "users"
         const val CONVERSATIONS_COLLECTION_PATH = "conversations"
         const val MESSAGE_BOXES_COLLECTION_PATH = "messageBoxList"
-        const val GOOGLE_SIGN_IN_RC = 0
         const val DEFAULT_PREVIEW_MESSAGE = "You have become friends!"
         const val CONVERSATION_ID = "conversationID"
         const val AVATAR_URI = "avatarURI"
@@ -26,6 +25,6 @@ class Constants {
         const val MESSAGE_BOXES = "messageBoxes"
         const val NOT_LOGIN_ERROR_CODE = "ERROR_NOT_LOGIN"
         const val MESSAGE_BOX_LIST_ID = "messageBoxListId"
-
+        const val SETTING_SHARED_PREFERENCE = "SETTING_SHARED_PREFERENCE"
     }
 }

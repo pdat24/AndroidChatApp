@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.motion.widget.MotionLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layoutDescription="@xml/fragment_image_picker_scene"
+    tools:context=".ui.fragments.ImagePickerFragment">
+
+    <RelativeLayout
+        android:alpha="0"
+        android:id="@+id/coverLayer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000" />
+
+    <FrameLayout
+        android:id="@+id/optionsDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_sign_out_dialog"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnChoosePhoto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:paddingVertical="16dp"
+                android:text="@string/choose_from_library"
+                android:textColor="@color/blue"
+                android:textSize="16sp"
+                app:cornerRadius="0dp" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                app:dividerColor="#3A3939" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTakePhoto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:paddingVertical="16dp"
+                android:text="@string/take_photo"
+                android:textColor="@color/blue"
+                android:textSize="16sp"
+                app:cornerRadius="0dp" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                app:dividerColor="#3A3939" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:paddingVertical="16dp"
+                android:text="@string/cancel"
+                android:textColor="@color/blue"
+                android:textSize="16sp"
+                app:cornerRadius="0dp" />
+        </LinearLayout>
+    </FrameLayout>
+</androidx.constraintlayout.motion.widget.MotionLayout>

@@ -4,15 +4,13 @@ import com.firstapp.androidchatapp.models.User
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PATH
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class UserManager {
 
-    private val userDB: CollectionReference =
-        FirebaseFirestore.getInstance().collection(USERS_COLLECTION_PATH)
+    private val userDB = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_PATH)
 
     /**
      * Get user on firestore

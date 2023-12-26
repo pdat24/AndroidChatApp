@@ -40,6 +40,7 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -49,7 +50,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:orientation="vertical">
 
             <LinearLayout
@@ -72,31 +73,61 @@
                         android:id="@+id/ivAvatar"
                         android:layout_width="100dp"
                         android:layout_height="100dp"
-                        android:contentDescription="@string/avatar"/>
+                        android:contentDescription="@string/avatar" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <RelativeLayout
+                    android:id="@+id/changeAvatarBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="-30dp"
                     android:background="@drawable/bg_edit_avatar_icon"
-                    android:onClick="changeAvatar"
                     android:padding="8dp">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:contentDescription="@string/image_desc"
-                        android:src="@drawable/baseline_edit_24" />
+                        android:src="@drawable/baseline_camera_alt_24" />
                 </RelativeLayout>
             </LinearLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:paddingHorizontal="@dimen/settings_padding_x">
+                android:layout_marginHorizontal="50dp"
+                android:layout_marginBottom="12dp"
+                android:clipChildren="false">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/editNameLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="invisible">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editNameInput"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:padding="8dp"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <ImageView
+                    android:id="@+id/ivConfirmChangeName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@id/editNameLayout"
+                    android:background="@drawable/bg_back_button"
+                    android:contentDescription="@string/check_icon"
+                    android:padding="2dp"
+                    android:src="@drawable/baseline_check_24"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/tvName"
@@ -105,18 +136,24 @@
                     android:layout_centerInParent="true"
                     android:layout_gravity="center"
                     android:drawablePadding="16dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Hello World!"
+                    android:textAlignment="center"
                     android:textColor="@color/white"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <ImageView
+                    android:id="@+id/ivEditName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginStart="14dp"
+                    android:layout_marginStart="8dp"
                     android:layout_toEndOf="@id/tvName"
-                    android:contentDescription="@string/image_desc"
-                    android:onClick="editName"
+                    android:background="@drawable/bg_back_button"
+                    android:contentDescription="@string/check_icon"
+                    android:padding="2dp"
                     android:src="@drawable/baseline_edit_note" />
             </RelativeLayout>
 
@@ -269,4 +306,18 @@
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/frmImagePicker"
+        android:name="com.firstapp.androidchatapp.ui.fragments.ImagePickerFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:id="@+id/viewLoading"
+        layout="@layout/view_loading"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

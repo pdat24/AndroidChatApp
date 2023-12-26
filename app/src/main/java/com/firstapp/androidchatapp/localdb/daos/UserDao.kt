@@ -12,6 +12,12 @@ interface UserDao {
     @Upsert
     suspend fun upsertInfo(user: UserInfo)
 
+    @Query("UPDATE UserInfo SET name = :name")
+    suspend fun updateName(name: String)
+
+    @Query("UPDATE UserInfo SET avatarURI = :avatarURI")
+    suspend fun updateAvatar(avatarURI: String)
+
     @Query("DELETE FROM UserInfo")
     suspend fun clear()
 

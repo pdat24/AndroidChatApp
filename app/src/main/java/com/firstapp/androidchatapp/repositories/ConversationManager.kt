@@ -5,7 +5,6 @@ import com.firstapp.androidchatapp.models.Conversation
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGES
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -13,7 +12,7 @@ import kotlinx.coroutines.tasks.await
 class ConversationManager {
 
     private val LOG_TAG = ConversationManager::class.simpleName
-    private val conversationDB: CollectionReference =
+    private val conversationDB =
         FirebaseFirestore.getInstance().collection(CONVERSATIONS_COLLECTION_PATH)
 
     /**

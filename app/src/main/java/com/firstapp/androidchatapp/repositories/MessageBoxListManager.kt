@@ -5,14 +5,13 @@ import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class MessageBoxListManager {
 
     private val LOG_TAG = MessageBoxListManager::class.simpleName
-    private val msgBoxListDB: CollectionReference =
+    private val msgBoxListDB =
         FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH)
 
     /**

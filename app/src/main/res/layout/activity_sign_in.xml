@@ -179,11 +179,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:drawableStart="@drawable/facebook"
                         android:drawablePadding="12dp"
                         android:text="@string/facebook"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        app:drawableStartCompat="@drawable/facebook" />
                 </FrameLayout>
 
                 <Space
@@ -204,11 +204,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:drawableStart="@drawable/google"
                         android:drawablePadding="12dp"
                         android:text="@string/google"
                         android:textColor="@color/white"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        app:drawableStartCompat="@drawable/google" />
                 </FrameLayout>
             </LinearLayout>
         </LinearLayout>
