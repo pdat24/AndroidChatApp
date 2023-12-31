@@ -12,4 +12,6 @@
     <color name="light_black">#282A36</color>
     <color name="light_pink_grey">#44475a</color>
     <color name="dialog_bg">#1C1C1C</color>
+    <color name="online_indicator">#47BF69</color>
+    <color name="chat_input_bg">#803E3B3B</color>
 </resources>

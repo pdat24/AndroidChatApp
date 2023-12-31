@@ -14,9 +14,9 @@
         android:paddingVertical="12dp">
 
         <LinearLayout
-            android:onClick="toSettingActivity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="toSettingActivity"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -31,7 +31,7 @@
                     android:id="@+id/ivUserAvatar"
                     android:layout_width="@dimen/avatar_size"
                     android:layout_height="@dimen/avatar_size"
-                    android:contentDescription="@string/avatar"/>
+                    android:contentDescription="@string/avatar" />
             </com.google.android.material.card.MaterialCardView>
 
             <RelativeLayout
@@ -79,54 +79,75 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <RelativeLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:background="@drawable/bg_search_input"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.textfield.TextInputEditText
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@null"
-            android:drawableStart="@drawable/baseline_search_24"
-            android:drawablePadding="8dp"
-            android:hint="@string/search_hint"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-    </RelativeLayout>
+            android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="16dp">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_search_input"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp">
 
-        <TextView
-            android:id="@+id/tvOnlineNumber"
-            android:layout_width="@dimen/avatar_size"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_oline_number"
-            android:paddingVertical="2dp"
-            android:text="12"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:drawableStart="@drawable/baseline_search_24"
+                    android:drawablePadding="8dp"
+                    android:hint="@string/search_hint"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="@string/online"
-            android:textStyle="bold" />
-    </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcvOnlineFriendList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="12dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rcvMsgBoxList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp">
+
+                <TextView
+                    android:id="@+id/tvOnlineNumber"
+                    android:layout_width="@dimen/avatar_size"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_oline_number"
+                    android:paddingVertical="2dp"
+                    android:text="12"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/online"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcvMsgBoxList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="20dp" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

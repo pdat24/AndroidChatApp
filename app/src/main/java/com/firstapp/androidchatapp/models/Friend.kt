@@ -1,4 +1,7 @@
 package com.firstapp.androidchatapp.models
 
-class Friend {
-}
+data class Friend(
+    val name: String,
+    val avatarURI: String,
+    val conversationID: String
+)

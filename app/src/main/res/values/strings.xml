@@ -41,4 +41,6 @@
     <string name="sign_out">Sign out</string>
     <string name="check_icon">Check icon</string>
     <string name="take_photo">Take photo</string>
+
+    <string name="chat_input_hint">Aa</string>
 </resources>

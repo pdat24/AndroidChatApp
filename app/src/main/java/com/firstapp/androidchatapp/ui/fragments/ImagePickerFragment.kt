@@ -20,6 +20,8 @@ import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants
+import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_STORAGE_PATH
+import com.firstapp.androidchatapp.utils.Functions
 import com.google.android.gms.tasks.Task
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.storage.FirebaseStorage
@@ -30,8 +32,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
 
@@ -47,7 +47,7 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
     private lateinit var loadingView: View
     private var allowDeleteAvatar = false
     private val storage = FirebaseStorage.getInstance()
-    private val avatarsRef = storage.getReference("avatars")
+    private val avatarsRef = storage.getReference(AVATAR_STORAGE_PATH)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -102,11 +102,9 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
         lifecycleScope.launch {
             closeFragment()
             showLoading()
-            try {
-                changeAvatar(tryUploadAvatar(createAvatarName(), result.data?.data))
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            changeAvatar(
+                tryUploadAvatar(Functions.createUniqueString(), result.data?.data)
+            )
             hideLoading()
         }
     }
@@ -118,7 +116,9 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
             closeFragment()
             showLoading()
-            changeAvatar(tryUploadAvatar(createAvatarName(), stream.toByteArray()))
+            changeAvatar(
+                tryUploadAvatar(Functions.createUniqueString(), stream.toByteArray())
+            )
             hideLoading()
         }
     }
@@ -198,12 +198,6 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
                 }
             }
         }
-
-    private fun createAvatarName(): String {
-        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..10).map { allowedChars.random() }.joinToString("") +
-                "${LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)}"
-    }
 
     /**
      * Upload avatar to storage

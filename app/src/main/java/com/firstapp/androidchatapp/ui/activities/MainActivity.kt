@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
+import com.firstapp.androidchatapp.adapters.FriendAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
+import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
     private lateinit var rcvMessageBoxes: RecyclerView
+    private lateinit var rcvOnlineFriends: RecyclerView
     private lateinit var dbViewModel: DatabaseViewModel
     private lateinit var mainViewModel: MainViewModel
     private lateinit var avatarView: ImageView
@@ -37,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         window.statusBarColor = getColor(R.color.black)
         // get views
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
+        rcvOnlineFriends = findViewById(R.id.rcvOnlineFriendList)
         avatarView = findViewById(R.id.ivUserAvatar)
 
         // view models
@@ -64,10 +68,75 @@ class MainActivity : AppCompatActivity() {
                 "Bui Anh Duong",
                 14,
                 "Welcome to Chat with me",
+            ),
+            MessageBox(
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                "Bui Anh Duong",
+                14,
+                "Welcome to Chat with me",
+            ),
+            MessageBox(
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                "Bui Anh Duong",
+                14,
+                "Welcome to Chat with me",
+            ),
+            MessageBox(
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                "Bui Anh Duong",
+                14,
+                "Welcome to Chat with me",
+            ),
+            MessageBox(
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                "Bui Anh Duong",
+                14,
+                "Welcome to Chat with me",
             )
         )
         rcvMessageBoxes.adapter = MessageBoxAdapter(messageBoxes)
         rcvMessageBoxes.layoutManager = LinearLayoutManager(this)
+
+        val friends = listOf(
+            Friend(
+                "Pham Quoc Dat",
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                ""
+            ),
+            Friend(
+                "Pham Quoc Dat",
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                ""
+            ),
+            Friend(
+                "Pham Quoc Dat",
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                ""
+            ),
+            Friend(
+                "Pham Quoc Dat",
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                ""
+            ),
+            Friend(
+                "Pham Quoc Dat",
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                ""
+            ),
+            Friend(
+                "Pham Quoc Dat",
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                ""
+            ),
+            Friend(
+                "Pham Quoc Dat",
+                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                ""
+            ),
+        )
+        rcvOnlineFriends.adapter = FriendAdapter(friends)
+        rcvOnlineFriends.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+
         dbViewModel.getCachedUserInfo().observe(this) {
             if (it?.name == null)
                 cacheUserOnLocalDB()

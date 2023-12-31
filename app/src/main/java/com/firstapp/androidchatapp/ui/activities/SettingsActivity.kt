@@ -187,7 +187,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun cancelChangeName() {
         inputManager.hideSoftInputFromWindow(
             nameInput.windowToken,
-            InputMethodManager.RESULT_HIDDEN
+            InputMethodManager.RESULT_UNCHANGED_HIDDEN
         )
         closeEditNameInput()
         Toast.makeText(this, "The change isn't applied", Toast.LENGTH_SHORT).show()
@@ -242,7 +242,9 @@ class SettingsActivity : AppCompatActivity() {
                 if (
                     !nameInputRect.contains(ev.rawX.toInt(), ev.rawY.toInt()) &&
                     !okChangeBtnRect.contains(ev.rawX.toInt(), ev.rawY.toInt())
-                ) cancelChangeName()
+                ) {
+                    cancelChangeName()
+                }
             }
         }
         return super.dispatchTouchEvent(ev)

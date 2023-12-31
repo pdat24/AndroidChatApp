@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@drawable/bg_middle_left_message"
+    android:layout_marginBottom="@dimen/message_bottom_space"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:paddingHorizontal="@dimen/message_padding_x"
+        android:paddingVertical="@dimen/message_padding_y"
+        android:textColor="@color/white"
+        android:text="Hello World!"
+        android:textSize="@dimen/message_text_size"
+        android:id="@+id/tvContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>

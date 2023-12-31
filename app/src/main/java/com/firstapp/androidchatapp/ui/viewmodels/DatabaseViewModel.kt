@@ -1,10 +1,12 @@
 package com.firstapp.androidchatapp.ui.viewmodels
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.Conversation
+import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.models.User
 import com.firstapp.androidchatapp.repositories.ConversationManager
@@ -32,6 +34,19 @@ class DatabaseViewModel(
      */
     suspend fun createConversation(conversation: Conversation): String {
         return conversationManager.create(conversation)
+    }
+
+    suspend fun getConversation(id: String): DocumentSnapshot {
+        return conversationManager.getConversation(id)
+    }
+
+
+    /**
+     * add new message to conversation
+     * @param id the id of conversation
+     */
+    suspend fun addMessage(id: String, message: Message) {
+        conversationManager.addMessage(id, message)
     }
 
     /**
@@ -69,7 +84,6 @@ class DatabaseViewModel(
     }
 
 
-
     // apis to interact with local database
     suspend fun cacheUser(user: UserInfo) {
         localRepository.upsertInfo(user)
@@ -87,4 +101,27 @@ class DatabaseViewModel(
 
     fun getCachedUserInfo(): LiveData<UserInfo> =
         localRepository.getUserInfo()
+
+    // firebase storage
+
+    /**
+     * Upload avatar to storage
+     * @param name image name on storage
+     * @param uri image uri
+     * @return the downloadURI of avatar on storage. Example: http(s)://.., etc
+     */
+    suspend fun uploadImageMessage(name: String, uri: Uri): String {
+        return localRepository.uploadImageMessage(name, uri)
+    }
+
+
+    /**
+     * Upload avatar to storage
+     * @param name file name on storag
+     * @param uri file uri
+     * @return the downloadURI of avatar on storage. Example: http(s)://.., etc
+     */
+    suspend fun uploadFileMessage(name: String, uri: Uri): String {
+        return localRepository.uploadFileMessage(name, uri)
+    }
 }
