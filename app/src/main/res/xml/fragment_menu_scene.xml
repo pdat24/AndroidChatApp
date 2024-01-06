@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        motion:constraintSetEnd="@+id/end"
+        motion:constraintSetStart="@id/start"
+        motion:duration="@integer/open_menu_duration">
+        <KeyFrameSet>
+
+            <KeyAttribute
+                android:alpha="1"
+                motion:framePosition="100"
+                motion:motionTarget="@+id/coverLayer" />
+        </KeyFrameSet>
+    </Transition>
+
+    <ConstraintSet android:id="@+id/start">
+
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/end">
+        <Constraint android:id="@+id/floatBlock">
+            <Layout
+                android:layout_width="@dimen/menu_drawer_width"
+                android:layout_height="match_parent"
+                motion:layout_constraintStart_toStartOf="parent" />
+        </Constraint>
+    </ConstraintSet>
+</MotionScene>

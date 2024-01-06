@@ -9,4 +9,6 @@
     <dimen name="message_padding_x">18dp</dimen>
     <dimen name="message_padding_y">8dp</dimen>
     <dimen name="message_text_size">15sp</dimen>
+    <dimen name="icon_message_size">32dp</dimen>
+    <dimen name="menu_drawer_width">290dp</dimen>
 </resources>

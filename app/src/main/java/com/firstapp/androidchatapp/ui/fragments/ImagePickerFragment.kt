@@ -2,7 +2,6 @@ package com.firstapp.androidchatapp.ui.fragments
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
@@ -47,7 +46,7 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
     private lateinit var loadingView: View
     private var allowDeleteAvatar = false
     private val storage = FirebaseStorage.getInstance()
-    private val avatarsRef = storage.getReference(AVATAR_STORAGE_PATH)
+    private val avatarStoragePath = AVATAR_STORAGE_PATH
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -102,9 +101,15 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
         lifecycleScope.launch {
             closeFragment()
             showLoading()
-            changeAvatar(
-                tryUploadAvatar(Functions.createUniqueString(), result.data?.data)
-            )
+            val uri = result.data?.data
+            if (uri != null) {
+                changeAvatar(
+                    dbViewModel.uploadFileByUri(
+                        "$avatarStoragePath/${Functions.createUniqueString()}",
+                        uri
+                    )
+                )
+            }
             hideLoading()
         }
     }
@@ -117,7 +122,10 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
             closeFragment()
             showLoading()
             changeAvatar(
-                tryUploadAvatar(Functions.createUniqueString(), stream.toByteArray())
+                dbViewModel.uploadImageByBytes(
+                    "$avatarStoragePath/${Functions.createUniqueString()}",
+                    stream.toByteArray()
+                )
             )
             hideLoading()
         }
@@ -198,34 +206,6 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
                 }
             }
         }
-
-    /**
-     * Upload avatar to storage
-     * @param name image name on storage
-     * @param fileUri image uri
-     * @return the downloadURI of avatar on storage. Example: http(s)://.., etc
-     */
-    private suspend fun tryUploadAvatar(name: String, fileUri: Uri?): String? {
-        return if (fileUri != null)
-            avatarsRef.child(name).putFile(fileUri).await()
-                .storage.downloadUrl.await()
-                .toString()
-        else null
-    }
-
-    /**
-     * Upload avatar to storage
-     * @param name image name on storage
-     * @param avatarByte avatar image after converted to bytearray
-     * @return the downloadURI of avatar on storage. Example: http(s)://.., etc
-     */
-    private suspend fun tryUploadAvatar(name: String, avatarByte: ByteArray?): String? {
-        return if (avatarByte != null)
-            avatarsRef.child("$name.jpg").putBytes(avatarByte).await()
-                .storage.downloadUrl.await()
-                .toString()
-        else null
-    }
 
     /**
      * delete image from storage if it's not in [Constants.DEFAULT_AVATAR_URIS]

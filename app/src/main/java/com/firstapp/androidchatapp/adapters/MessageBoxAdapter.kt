@@ -13,7 +13,9 @@ import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.activities.ChatActivity
+import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 
 class MessageBoxAdapter(
     private val messageBoxes: List<MessageBox>
@@ -46,18 +48,20 @@ class MessageBoxAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val messageBox = messageBoxes[position]
         holder.container.setOnClickListener {
-            toChatActivity(messageBox.conversationID)
+            toChatActivity(messageBox)
         }
-        Glide.with(context).load(messageBox.avatarUri).into(holder.avatarView)
+        Glide.with(context).load(messageBox.avatarURI).into(holder.avatarView)
         holder.nameView.text = messageBox.name
         holder.previewMsgView.text = messageBox.previewMessage
         holder.timView.text = parseSendingTime(messageBox.time)
         holder.msgNumberView.text = messageBox.unreadMessages.toString()
     }
 
-    private fun toChatActivity(conversationID: String) {
+    private fun toChatActivity(msgBox: MessageBox) {
         val intent = Intent(context, ChatActivity::class.java)
-        intent.putExtra(CONVERSATION_ID, conversationID)
+        intent.putExtra(CONVERSATION_ID, msgBox.conversationID)
+        intent.putExtra(AVATAR_URI, msgBox.avatarURI)
+        intent.putExtra(NAME, msgBox.name)
         context.startActivity(intent)
     }
 

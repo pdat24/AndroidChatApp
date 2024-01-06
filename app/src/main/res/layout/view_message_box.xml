@@ -18,8 +18,7 @@
             android:id="@+id/imvAvatar"
             android:layout_width="@dimen/avatar_size"
             android:layout_height="@dimen/avatar_size"
-            android:contentDescription="@string/avatar"
-            android:src="@drawable/avatar_5" />
+            android:contentDescription="@string/avatar" />
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout

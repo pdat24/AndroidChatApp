@@ -5,17 +5,14 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import com.firstapp.androidchatapp.localdb.SQLiteDB
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
-import com.firstapp.androidchatapp.utils.Constants.Companion.FILE_STORAGE_PATH
-import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE_STORAGE_PATH
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
 class LocalRepository(
     context: Context,
 ) {
-    private val imagesRef = FirebaseStorage.getInstance().getReference(IMAGE_STORAGE_PATH)
-    private val filesRef = FirebaseStorage.getInstance().getReference(FILE_STORAGE_PATH)
 
+    private val storageRef = FirebaseStorage.getInstance().reference
     private val userDao = SQLiteDB.getInstance(context).getUserDao()
 
     suspend fun upsertInfo(user: UserInfo) =
@@ -36,24 +33,29 @@ class LocalRepository(
 
     /**
      * Upload avatar to storage
-     * @param name image name on storage
-     * @param uri image uri
-     * @return the downloadURI of avatar on storage. Example: http(s)://.., etc
+     * @param name file name on storage
+     * @param uri file uri
+     * @return the downloadURI of file on storage. Example: http(s)://.., etc
      */
-    suspend fun uploadImageMessage(name: String, uri: Uri): String {
-        return imagesRef.child(name).putFile(uri).await()
+    suspend fun uploadFileByUri(name: String, uri: Uri): String {
+        return storageRef.child(name).putFile(uri).await()
             .storage.downloadUrl.await()
             .toString()
     }
 
     /**
-     * Upload avatar to storage
-     * @param name file name on storage
-     * @param uri file uri
-     * @return the downloadURI of avatar on storage. Example: http(s)://.., etc
+     * Upload image to storage by it's bytes
+     * @param name image name on storage
+     * @param bytes image after converted to bytearray
+     * @param ext image extension
+     * @return the downloadURI of image on storage. Example: http(s)://.., etc
      */
-    suspend fun uploadFileMessage(name: String, uri: Uri): String {
-        return filesRef.child(name).putFile(uri).await()
+    suspend fun uploadImageByBytes(
+        name: String,
+        bytes: ByteArray,
+        ext: String = "jpg"
+    ): String {
+        return storageRef.child("$$name.$ext").putBytes(bytes).await()
             .storage.downloadUrl.await()
             .toString()
     }

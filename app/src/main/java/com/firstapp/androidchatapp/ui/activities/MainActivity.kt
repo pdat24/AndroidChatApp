@@ -1,29 +1,34 @@
 package com.firstapp.androidchatapp.ui.activities
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
-import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.adapters.FriendAdapter
+import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.Friend
-import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Functions
 import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +37,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rcvOnlineFriends: RecyclerView
     private lateinit var dbViewModel: DatabaseViewModel
     private lateinit var mainViewModel: MainViewModel
-    private lateinit var avatarView: ImageView
+    private lateinit var fragMenu: FragmentContainerView
+    private lateinit var msgBoxLoading: CircularProgressIndicator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +47,8 @@ class MainActivity : AppCompatActivity() {
         // get views
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
         rcvOnlineFriends = findViewById(R.id.rcvOnlineFriendList)
-        avatarView = findViewById(R.id.ivUserAvatar)
+        fragMenu = findViewById(R.id.fragMenu)
+        msgBoxLoading = findViewById(R.id.msgBoxLoading)
 
         // view models
         dbViewModel = ViewModelProvider(
@@ -50,89 +57,47 @@ class MainActivity : AppCompatActivity() {
         )[DatabaseViewModel::class.java]
         mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
-        val messageBoxes = listOf(
-            MessageBox(
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_1.jpg?alt=media&token=f7eec50b-a91c-4e76-a799-1880d8faba74",
-                "Pham Quoc Dat",
-                4,
-                ""
-            ),
-            MessageBox(
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_10.jpg?alt=media&token=28899241-e0c9-4e7e-b344-afa9dd6e2548",
-                "Cao Thi Thuy",
-                1,
-                "Let's start the conversations, That's great how about you!",
-            ),
-            MessageBox(
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                "Bui Anh Duong",
-                14,
-                "Welcome to Chat with me",
-            ),
-            MessageBox(
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                "Bui Anh Duong",
-                14,
-                "Welcome to Chat with me",
-            ),
-            MessageBox(
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                "Bui Anh Duong",
-                14,
-                "Welcome to Chat with me",
-            ),
-            MessageBox(
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                "Bui Anh Duong",
-                14,
-                "Welcome to Chat with me",
-            ),
-            MessageBox(
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                "Bui Anh Duong",
-                14,
-                "Welcome to Chat with me",
-            )
-        )
-        rcvMessageBoxes.adapter = MessageBoxAdapter(messageBoxes)
-        rcvMessageBoxes.layoutManager = LinearLayoutManager(this)
+        lifecycleScope.launch {
+            withContext(Dispatchers.Main) {
+                msgBoxLoading.visibility = View.VISIBLE
+                val messageBoxes = dbViewModel.getMessageBoxes()
+                rcvMessageBoxes.adapter = MessageBoxAdapter(messageBoxes)
+                rcvMessageBoxes.layoutManager = LinearLayoutManager(this@MainActivity)
+                msgBoxLoading.visibility = View.GONE
+            }
+        }
 
         val friends = listOf(
             Friend(
-                "Pham Quoc Dat",
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                ""
+                uid = "",
+                name = "Pham Quoc Dat",
+                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                conversationID = ""
             ),
             Friend(
-                "Pham Quoc Dat",
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                ""
+                uid = "",
+                name = "Pham Quoc Dat",
+                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                conversationID = ""
             ),
             Friend(
-                "Pham Quoc Dat",
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                ""
+                uid = "",
+                name = "Pham Quoc Dat",
+                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                conversationID = ""
             ),
             Friend(
-                "Pham Quoc Dat",
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                ""
+                uid = "",
+                name = "Pham Quoc Dat",
+                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                conversationID = ""
             ),
             Friend(
-                "Pham Quoc Dat",
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                ""
-            ),
-            Friend(
-                "Pham Quoc Dat",
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                ""
-            ),
-            Friend(
-                "Pham Quoc Dat",
-                "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                ""
-            ),
+                uid = "",
+                name = "Pham Quoc Dat",
+                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
+                conversationID = ""
+            )
         )
         rcvOnlineFriends.adapter = FriendAdapter(friends)
         rcvOnlineFriends.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
@@ -141,7 +106,18 @@ class MainActivity : AppCompatActivity() {
             if (it?.name == null)
                 cacheUserOnLocalDB()
             else {
-                Glide.with(this).load(it.avatarURI).into(avatarView)
+                Glide.with(this).load(it.avatarURI)
+                    .into(fragMenu.findViewById<ImageView>(R.id.ivAvatar))
+                fragMenu.findViewById<TextView>(R.id.tvName).text = it.name
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        lifecycleScope.launch {
+            mainViewModel.openMenu.collectLatest { open ->
+                fragMenu.visibility = if (open) View.VISIBLE else View.GONE
             }
         }
     }
@@ -151,7 +127,7 @@ class MainActivity : AppCompatActivity() {
             val signedInUser = firebaseAuth.currentUser
             if (signedInUser == null)
                 throwUserNotLoginError()
-            val user = dbViewModel.getUser(userID = signedInUser!!.uid)
+            val user = dbViewModel.getUserById(userID = signedInUser!!.uid)
             dbViewModel.cacheUser(
                 UserInfo(
                     name = user.getString(NAME)!!,
@@ -161,9 +137,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun toSettingActivity(view: View) {
-        startActivity(
-            Intent(this, SettingsActivity::class.java)
-        )
+    fun openMenu(btn: View) {
+        Functions.scaleDownUpAnimation(btn)
+        fragMenu.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            mainViewModel.openMenu.emit(true)
+        }
     }
 }

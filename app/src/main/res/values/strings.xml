@@ -43,4 +43,23 @@
     <string name="take_photo">Take photo</string>
 
     <string name="chat_input_hint">Aa</string>
+    <string name="like_icon_link"><![CDATA[https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/icons%2Flike_icon.png?alt=media&token=5e48d581-06a3-465a-b95f-b4413515cc11]]></string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="friend_requests">Friend requests</string>
+    <string name="add_friend">Add friend</string>
+    <string name="search">Search...</string>
+    <string name="no_search_result">No result were found!</string>
+    <string name="send_request">Send request</string>
+    <string name="username">Username</string>
+    <string name="search_by">Search by:</string>
+    <string name="user_id">ID</string>
+    <string name="requests">Requests</string>
+    <string name="sent_requests">Sent requests</string>
+    <string name="received_requests">Received requests</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="sent">Sent</string>
+    <string name="recall">Recall</string>
+    <string name="empty_list">Empty list</string>
 </resources>

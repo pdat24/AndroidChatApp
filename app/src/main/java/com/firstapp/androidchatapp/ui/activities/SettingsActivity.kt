@@ -23,6 +23,7 @@ import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.utils.Functions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
@@ -164,11 +165,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun showNoInternetNotification() {
-        startActivityIfNeeded(
-            Intent.createChooser(
-                Intent(Intent.ACTION_PICK), ""
-            ), 0
-        )
+        Functions.showNoInternetNotification()
     }
 
     private suspend fun changeName(name: String) {

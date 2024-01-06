@@ -14,4 +14,6 @@
     <color name="dialog_bg">#1C1C1C</color>
     <color name="online_indicator">#47BF69</color>
     <color name="chat_input_bg">#803E3B3B</color>
+    <color name="bg_cover_layer">#99000000</color>
+    <color name="red">#FF5722</color>
 </resources>

@@ -16,7 +16,7 @@ import java.time.ZoneOffset
 
 class ConversationManager {
 
-    private val uid = FirebaseAuth.getInstance().currentUser!!.uid
+    private val firebaseAuth = FirebaseAuth.getInstance()
     private val conversationDB =
         FirebaseFirestore.getInstance().collection(CONVERSATIONS_COLLECTION_PATH)
 
@@ -44,6 +44,7 @@ class ConversationManager {
      * @param message new message
      */
     suspend fun addMessage(conversationID: String, message: Message) {
+        val uid = firebaseAuth.currentUser!!.uid
         val groups = Functions.getGroupMessagesInConversation(getConversation(conversationID))
         if (
             groups.isEmpty() ||
@@ -60,13 +61,14 @@ class ConversationManager {
             g1.sendTime,
             0,
             ZoneOffset.UTC
-        ).dayOfYear == LocalDate.now().dayOfYear
+        ).toLocalDate() == LocalDate.now()
     }
 
     /**
      * @param id the id of conversation
      */
     private suspend fun createGroupMsgAtEnd(id: String) {
+        val uid = firebaseAuth.currentUser!!.uid
         val con = conversationDB.document(id)
         val groups = Functions.getGroupMessagesInConversation(getConversation(id))
         con.update(

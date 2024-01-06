@@ -1,11 +1,17 @@
 package com.firstapp.androidchatapp.utils
 
+import android.view.View
 import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOT_LOGIN_ERROR_CODE
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.DocumentSnapshot
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -55,6 +61,21 @@ class Functions {
             val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
             return (1..10).map { allowedChars.random() }.joinToString("") +
                     "${LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)}"
+        }
+
+        fun scaleDownUpAnimation(view: View) {
+            val duration = 150L
+            view.animate().scaleX(0.7f).scaleY(0.7f).duration = duration
+            CoroutineScope(Dispatchers.Default).launch {
+                delay(duration)
+                withContext(Dispatchers.Main) {
+                    view.animate().scaleX(1f).scaleY(1f).duration = duration
+                }
+            }
+        }
+
+        fun showNoInternetNotification() {
+            // TODO: show no internet notification
         }
     }
 

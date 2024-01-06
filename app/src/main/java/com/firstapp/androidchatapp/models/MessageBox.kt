@@ -3,7 +3,7 @@ package com.firstapp.androidchatapp.models
 import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_PREVIEW_MESSAGE
 
 data class MessageBox(
-    val avatarUri: String,
+    val avatarURI: String,
     val name: String,
     val time: Long,
     val conversationID: String,

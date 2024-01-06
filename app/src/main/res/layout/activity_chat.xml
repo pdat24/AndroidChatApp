@@ -43,8 +43,7 @@
                     android:id="@+id/ivUserAvatar"
                     android:layout_width="@dimen/avatar_size"
                     android:layout_height="@dimen/avatar_size"
-                    android:contentDescription="@string/avatar"
-                    android:src="@drawable/avatar_5" />
+                    android:contentDescription="@string/avatar" />
             </com.google.android.material.card.MaterialCardView>
 
             <RelativeLayout
@@ -67,7 +66,8 @@
                 android:id="@+id/tvName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pham Quoc Dat"
+                android:ellipsize="end"
+                android:lines="1"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -92,7 +92,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingHorizontal="8dp"
-        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="@id/bottomDivider"
         app:layout_constraintTop_toBottomOf="@id/topDivider" />
 
@@ -170,9 +169,9 @@
                 android:background="@drawable/bg_chat_input"
                 android:hint="@string/chat_input_hint"
                 android:lines="1"
-                android:singleLine="true"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="10dp"
+                android:singleLine="true"
                 android:textColorHint="@color/light_grey"
                 android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="parent"
