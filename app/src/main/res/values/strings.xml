@@ -62,4 +62,9 @@
     <string name="sent">Sent</string>
     <string name="recall">Recall</string>
     <string name="empty_list">Empty list</string>
+    <string name="send_again">Send again</string>
+    <string name="sent_an_image">Sent an image</string>
+    <string name="sent_a_file">Sent a file</string>
+    <string name="confirm">Confirm</string>
+    <string name="change_name">Change name</string>
 </resources>

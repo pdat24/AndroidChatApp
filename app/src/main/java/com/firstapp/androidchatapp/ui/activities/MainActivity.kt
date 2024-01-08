@@ -6,6 +6,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentContainerView
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,30 +21,35 @@ import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
+import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Functions
 import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private val msgBoxesDB =
+        FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH)
     private lateinit var rcvMessageBoxes: RecyclerView
     private lateinit var rcvOnlineFriends: RecyclerView
-    private lateinit var dbViewModel: DatabaseViewModel
-    private lateinit var mainViewModel: MainViewModel
     private lateinit var fragMenu: FragmentContainerView
     private lateinit var msgBoxLoading: CircularProgressIndicator
+    lateinit var dbViewModel: DatabaseViewModel
+    lateinit var mainViewModel: MainViewModel
+    val username = MutableLiveData<String>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        window.statusBarColor = getColor(R.color.black)
+        window.statusBarColor = getColor(R.color.dialog_bg)
         // get views
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
         rcvOnlineFriends = findViewById(R.id.rcvOnlineFriendList)
@@ -60,32 +66,16 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             withContext(Dispatchers.Main) {
                 msgBoxLoading.visibility = View.VISIBLE
-                val messageBoxes = dbViewModel.getMessageBoxes()
-                rcvMessageBoxes.adapter = MessageBoxAdapter(messageBoxes)
+                val messageBoxes = dbViewModel.getMessageBoxes(
+                    dbViewModel.getMessageBoxList()
+                )
+                rcvMessageBoxes.adapter = MessageBoxAdapter(dbViewModel, messageBoxes)
                 rcvMessageBoxes.layoutManager = LinearLayoutManager(this@MainActivity)
                 msgBoxLoading.visibility = View.GONE
             }
         }
 
         val friends = listOf(
-            Friend(
-                uid = "",
-                name = "Pham Quoc Dat",
-                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                conversationID = ""
-            ),
-            Friend(
-                uid = "",
-                name = "Pham Quoc Dat",
-                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                conversationID = ""
-            ),
-            Friend(
-                uid = "",
-                name = "Pham Quoc Dat",
-                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                conversationID = ""
-            ),
             Friend(
                 uid = "",
                 name = "Pham Quoc Dat",
@@ -108,6 +98,7 @@ class MainActivity : AppCompatActivity() {
             else {
                 Glide.with(this).load(it.avatarURI)
                     .into(fragMenu.findViewById<ImageView>(R.id.ivAvatar))
+                username.postValue(it.name)
                 fragMenu.findViewById<TextView>(R.id.tvName).text = it.name
             }
         }
@@ -115,12 +106,30 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        lifecycleScope.launch {
-            mainViewModel.openMenu.collectLatest { open ->
-                fragMenu.visibility = if (open) View.VISIBLE else View.GONE
+        observeDrawerMenuState()
+        observeMessageBoxesChanges()
+    }
+
+    private fun observeMessageBoxesChanges() =
+        CoroutineScope(Dispatchers.Main).launch {
+            msgBoxesDB.document(
+                dbViewModel.getMessageBoxListId(firebaseAuth.currentUser!!.uid)
+            ).addSnapshotListener { value, error ->
+                lifecycleScope.launch {
+                    if (value != null) {
+                        val messageBoxes = dbViewModel.getMessageBoxes(value)
+                        withContext(Dispatchers.Main) {
+                            rcvMessageBoxes.adapter = MessageBoxAdapter(dbViewModel, messageBoxes)
+                        }
+                    }
+                }
             }
         }
-    }
+
+    private fun observeDrawerMenuState() =
+        mainViewModel.openMenu.observe(this) { isOpen ->
+            fragMenu.visibility = if (isOpen) View.VISIBLE else View.GONE
+        }
 
     private fun cacheUserOnLocalDB() {
         lifecycleScope.launch {
@@ -140,8 +149,6 @@ class MainActivity : AppCompatActivity() {
     fun openMenu(btn: View) {
         Functions.scaleDownUpAnimation(btn)
         fragMenu.visibility = View.VISIBLE
-        lifecycleScope.launch {
-            mainViewModel.openMenu.emit(true)
-        }
+        mainViewModel.openMenu.postValue(true)
     }
 }

@@ -5,7 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
@@ -14,8 +16,10 @@ import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.utils.Functions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -28,6 +32,7 @@ class ReceivedRequestAdapter(
     private lateinit var context: Context
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val container: LinearLayout = itemView.findViewById(R.id.container)
         val avatar: ImageView = itemView.findViewById(R.id.ivAvatar)
         val name: TextView = itemView.findViewById(R.id.tvName)
         val id: TextView = itemView.findViewById(R.id.tvID)
@@ -51,21 +56,42 @@ class ReceivedRequestAdapter(
         holder.name.text = req.name
         holder.id.text = req.uid
         holder.btnAccept.setOnClickListener {
-            acceptRequest(req)
+            if (isInternetConnected()) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    acceptRequest(req).join()
+                    holder.container.visibility = View.GONE
+                    Toast.makeText(context, "Accepted Request", Toast.LENGTH_SHORT).show()
+                }
+            } else
+                Functions.showNoInternetNotification()
         }
+
         holder.btnReject.setOnClickListener {
-            rejectRequest(req)
+            if (isInternetConnected()) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    rejectRequest(req).join()
+                    holder.container.visibility = View.GONE
+                    Toast.makeText(context, "Rejected Request", Toast.LENGTH_SHORT).show()
+                }
+            } else
+                Functions.showNoInternetNotification()
         }
     }
 
-    private fun rejectRequest(req: FriendRequest) {
+    private fun isInternetConnected(): Boolean =
+        Functions.isInternetConnected(context)
+
+    private fun rejectRequest(req: FriendRequest): Job =
         CoroutineScope(Dispatchers.IO).launch {
-            dbViewModel.removeSentRequest(req.uid)
-            dbViewModel.removeReceivedRequest(req.uid)
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.removeSentRequest(req.uid)
+            }
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.removeReceivedRequest(req.uid)
+            }
         }
-    }
 
-    private fun acceptRequest(req: FriendRequest) {
+    private fun acceptRequest(req: FriendRequest): Job =
         CoroutineScope(Dispatchers.IO).launch {
             // create new conversation
             val conID = dbViewModel.createEmptyConversation()
@@ -73,24 +99,25 @@ class ReceivedRequestAdapter(
             createMessageBoxes(req, conID)
             removeRequests(req)
         }
-    }
 
     /**
      * Create new message box for user and friend
      */
-    private suspend fun createMessageBoxes(req: FriendRequest, conID: String) {
-        // create message box for current user
-        dbViewModel.createMessageBox(
-            msgBoxListId = dbViewModel.getMessageBoxListId(
-                dbViewModel.firebaseAuth.currentUser!!.uid
-            ),
-            msgBox = MessageBox(
-                avatarURI = req.avatarURI,
-                name = req.name,
-                conversationID = conID,
-                time = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+    private fun createMessageBoxes(req: FriendRequest, conID: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            // create message box for current user
+            dbViewModel.createMessageBox(
+                msgBoxListId = dbViewModel.getMessageBoxListId(
+                    dbViewModel.firebaseAuth.currentUser!!.uid
+                ),
+                msgBox = MessageBox(
+                    avatarURI = req.avatarURI,
+                    name = req.name,
+                    conversationID = conID,
+                    time = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                )
             )
-        )
+        }
         val getUserInfo: (UserInfo) -> Unit = {
             // create message box for user is sent this request
             CoroutineScope(Dispatchers.IO).launch {
@@ -115,23 +142,29 @@ class ReceivedRequestAdapter(
      * Add friend for user and friend
      * @param conID the id of conversation
      */
-    private suspend fun addFriend(req: FriendRequest, conID: String) {
-        dbViewModel.addFriend(
-            Friend(
-                uid = req.uid,
-                name = req.name,
-                avatarURI = req.avatarURI,
-                conversationID = conID
+    private fun addFriend(req: FriendRequest, conID: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dbViewModel.addFriend(
+                Friend(
+                    uid = req.uid,
+                    name = req.name,
+                    avatarURI = req.avatarURI,
+                    conversationID = conID
+                )
             )
-        )
+        }
     }
 
     /**
      * Remove the sent request of new friend and the received request of current user
      */
-    private suspend fun removeRequests(req: FriendRequest) {
+    private fun removeRequests(req: FriendRequest) {
         //  remove sent and received request of correspond users
-        dbViewModel.removeSentRequest(req.uid)
-        dbViewModel.removeReceivedRequest(req.uid)
+        CoroutineScope(Dispatchers.IO).launch {
+            dbViewModel.removeSentRequest(req.uid)
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            dbViewModel.removeReceivedRequest(req.uid)
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.firstapp.androidchatapp.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,11 +14,22 @@ import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.activities.ChatActivity
+import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Functions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class MessageBoxAdapter(
+    private val dbViewModel: DatabaseViewModel,
     private val messageBoxes: List<MessageBox>
 ) : RecyclerView.Adapter<MessageBoxAdapter.ViewHolder>() {
 
@@ -48,24 +60,45 @@ class MessageBoxAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val messageBox = messageBoxes[position]
         holder.container.setOnClickListener {
-            toChatActivity(messageBox)
+            toChatActivity(position, messageBox)
+            changeStateToRead(position)
         }
         Glide.with(context).load(messageBox.avatarURI).into(holder.avatarView)
         holder.nameView.text = messageBox.name
         holder.previewMsgView.text = messageBox.previewMessage
         holder.timView.text = parseSendingTime(messageBox.time)
-        holder.msgNumberView.text = messageBox.unreadMessages.toString()
+        if (!messageBox.read) {
+            holder.msgNumberView.text = messageBox.unreadMessages.toString()
+            // set style for preview message when the user unread
+            holder.previewMsgView.setTextColor(context.getColor(R.color.indicator))
+            holder.previewMsgView.typeface = Typeface.DEFAULT_BOLD
+        } else
+            holder.msgNumberView.visibility = View.GONE
     }
 
-    private fun toChatActivity(msgBox: MessageBox) {
+    private fun changeStateToRead(index: Int) =
+        CoroutineScope(Dispatchers.Main).launch {
+            if (isInternetConnected())
+                dbViewModel.updateMsgBoxReadState(index, true)
+        }
+
+    private fun toChatActivity(index: Int, msgBox: MessageBox) {
         val intent = Intent(context, ChatActivity::class.java)
         intent.putExtra(CONVERSATION_ID, msgBox.conversationID)
         intent.putExtra(AVATAR_URI, msgBox.avatarURI)
         intent.putExtra(NAME, msgBox.name)
+        intent.putExtra(MESSAGE_BOX_INDEX, index)
         context.startActivity(intent)
     }
 
     private fun parseSendingTime(time: Long): String {
-        return "14 mins"
+        val tmp = LocalDateTime.ofEpochSecond(time, 0, ZoneOffset.UTC)
+        return if (tmp.toLocalDate() == LocalDate.now())
+            tmp.format(DateTimeFormatter.ofPattern("HH:mm"))
+        else
+            tmp.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
     }
+
+    private fun isInternetConnected(): Boolean =
+        Functions.isInternetConnected(context)
 }

@@ -6,5 +6,6 @@ data class User(
     val messageBoxListId: String,
     val friends: List<Friend> = listOf(),
     val sentRequests: List<FriendRequest> = listOf(),
-    val receivedRequests: List<FriendRequest> = listOf()
+    val receivedRequests: List<FriendRequest> = listOf(),
+    val onlineFriends: List<String> = listOf()
 )

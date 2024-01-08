@@ -46,5 +46,6 @@ class Constants {
         const val FRIENDS = "friends"
         const val SENT_REQUESTS = "sentRequests"
         const val RECEIVED_REQUESTS = "receivedRequests"
+        const val MESSAGE_BOX_INDEX = "messageBoxIndex"
     }
 }

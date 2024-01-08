@@ -54,4 +54,40 @@ class MessageBoxManager(
         list.add(msgBox)
         messageBoxDB.document(id).update(MESSAGE_BOXES, list).await()
     }
+
+    suspend fun updatePreviewMessage(id: String, msgBoxIndex: Int, content: String) {
+        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        msgBoxes.forEachIndexed { index, messageBox ->
+            if (msgBoxIndex == index)
+                messageBox.previewMessage = content
+        }
+        messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes).await()
+    }
+
+    suspend fun updateUnreadMsgNumber(id: String, msgBoxIndex: Int, number: Int) {
+        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        msgBoxes.forEachIndexed { index, messageBox ->
+            if (msgBoxIndex == index)
+                messageBox.unreadMessages = number
+        }
+        messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes).await()
+    }
+
+    suspend fun updateLastSendTime(id: String, msgBoxIndex: Int, time: Long) {
+        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        msgBoxes.forEachIndexed { index, messageBox ->
+            if (msgBoxIndex == index)
+                messageBox.time = time
+        }
+        messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes).await()
+    }
+
+    suspend fun updateReadState(id: String, msgBoxIndex: Int, state: Boolean) {
+        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        msgBoxes.forEachIndexed { index, messageBox ->
+            if (msgBoxIndex == index)
+                messageBox.read = state
+        }
+        messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes).await()
+    }
 }

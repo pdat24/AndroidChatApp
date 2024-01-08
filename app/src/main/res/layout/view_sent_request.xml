@@ -65,4 +65,16 @@
         android:text="@string/recall"
         android:textColor="@color/red"
         app:cornerRadius="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/blue"
+        android:text="@string/send_again"
+        android:textColor="@color/white"
+        android:visibility="gone"
+        app:cornerRadius="8dp" />
 </LinearLayout>

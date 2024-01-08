@@ -12,11 +12,10 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.firstapp.androidchatapp.R
+import com.firstapp.androidchatapp.ui.activities.MainActivity
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
-import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_STORAGE_PATH
@@ -57,10 +56,8 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
         takePhotoBtn = view.findViewById(R.id.btnTakePhoto)
         loadingView = requireActivity().findViewById(R.id.viewLoading)
 
-        mainViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        dbViewModel = ViewModelProvider(
-            requireActivity(), DatabaseViewModelFactory(requireContext())
-        )[DatabaseViewModel::class.java]
+        mainViewModel = (requireActivity() as MainActivity).mainViewModel
+        dbViewModel = (requireActivity() as MainActivity).dbViewModel
 
         coverLayer.setOnClickListener { closeFragment() }
         cancelBtn.setOnClickListener { closeFragment() }
@@ -116,18 +113,20 @@ class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
 
     private fun handleImgCapturingActivityResult(result: ActivityResult) {
         lifecycleScope.launch {
-            val bitmap = result.data?.extras?.get("data") as Bitmap
-            val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-            closeFragment()
-            showLoading()
-            changeAvatar(
-                dbViewModel.uploadImageByBytes(
-                    "$avatarStoragePath/${Functions.createUniqueString()}",
-                    stream.toByteArray()
+            val bitmap = result.data?.extras?.get("data") as? Bitmap
+            if (bitmap != null) {
+                val stream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+                closeFragment()
+                showLoading()
+                changeAvatar(
+                    dbViewModel.uploadImageByBytes(
+                        "$avatarStoragePath/${Functions.createUniqueString()}",
+                        stream.toByteArray()
+                    )
                 )
-            )
-            hideLoading()
+                hideLoading()
+            }
         }
     }
 

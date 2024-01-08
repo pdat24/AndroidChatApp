@@ -11,8 +11,11 @@ import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.utils.Functions
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class SentRequestAdapter(
@@ -26,7 +29,8 @@ class SentRequestAdapter(
         val avatar: ImageView = itemView.findViewById(R.id.ivAvatar)
         val name: TextView = itemView.findViewById(R.id.tvName)
         val id: TextView = itemView.findViewById(R.id.tvID)
-        val btnRecall: TextView = itemView.findViewById(R.id.btnRecall)
+        val btnRecall: MaterialButton = itemView.findViewById(R.id.btnRecall)
+        val btnSend: MaterialButton = itemView.findViewById(R.id.btnSend)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -44,14 +48,43 @@ class SentRequestAdapter(
         holder.name.text = req.name
         holder.id.text = req.uid
         holder.btnRecall.setOnClickListener {
-            recallRequest(req.uid)
+            if (Functions.isInternetConnected(context)) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    recallRequest(req.uid).join()
+                    holder.btnRecall.visibility = View.GONE
+                    // add send event
+                    holder.btnSend.setOnClickListener {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            sendFriendRequest(req).join()
+                            holder.btnSend.visibility = View.GONE
+                            holder.btnRecall.visibility = View.VISIBLE
+                        }
+
+                    }
+                    holder.btnSend.visibility = View.VISIBLE
+                }
+            } else
+                Functions.showNoInternetNotification()
         }
     }
 
-    private fun recallRequest(uid: String) {
+    private fun recallRequest(uid: String): Job =
         CoroutineScope(Dispatchers.IO).launch {
-            dbViewModel.removeSentRequest(uid)
-            dbViewModel.removeReceivedRequest(uid)
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.removeSentRequest(uid)
+            }
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.removeReceivedRequest(uid)
+            }
         }
-    }
+
+    private fun sendFriendRequest(req: FriendRequest): Job =
+        CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.addSentRequest(req)
+            }
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.addReceivedRequest(req.uid)
+            }
+        }
 }

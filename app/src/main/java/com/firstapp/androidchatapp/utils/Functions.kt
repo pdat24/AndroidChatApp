@@ -1,5 +1,7 @@
 package com.firstapp.androidchatapp.utils
 
+import android.content.Context
+import android.net.ConnectivityManager
 import android.view.View
 import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
@@ -76,6 +78,11 @@ class Functions {
 
         fun showNoInternetNotification() {
             // TODO: show no internet notification
+        }
+
+        fun isInternetConnected(context: Context): Boolean {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            return cm.activeNetworkInfo?.isConnected == true
         }
     }
 

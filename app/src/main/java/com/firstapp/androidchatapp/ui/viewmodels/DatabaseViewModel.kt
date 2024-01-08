@@ -106,12 +106,12 @@ class DatabaseViewModel(
         userManager.addSentRequest(firebaseAuth.currentUser!!.uid, req)
     }
 
-    suspend fun addReceivedRequest(id: String) {
-        userManager.addReceivedRequest(id)
+    suspend fun addReceivedRequest(senderId: String) {
+        userManager.addReceivedRequest(senderId)
     }
 
-    suspend fun removeSentRequest(receiverId: String) {
-        userManager.removeSentRequest(firebaseAuth.currentUser!!.uid, receiverId)
+    suspend fun removeSentRequest(senderId: String) {
+        userManager.removeSentRequest(senderId, firebaseAuth.currentUser!!.uid)
     }
 
     suspend fun removeReceivedRequest(senderId: String) {
@@ -145,12 +145,12 @@ class DatabaseViewModel(
         return msgBoxListManager.createMessageBoxList(msgBoxesList)
     }
 
-    private suspend fun getMessageBoxList(): DocumentSnapshot {
+    suspend fun getMessageBoxList(): DocumentSnapshot {
         return msgBoxListManager.getMessageBoxList(getMessageBoxListId(firebaseAuth.currentUser!!.uid))
     }
 
-    suspend fun getMessageBoxes(): List<MessageBox> {
-        val tmp = getMessageBoxList()[MESSAGE_BOXES] as List<*>
+    fun getMessageBoxes(msgBoxesDocument: DocumentSnapshot): List<MessageBox> {
+        val tmp = msgBoxesDocument[MESSAGE_BOXES] as List<*>
         val result = mutableListOf<MessageBox>()
         for (i in tmp) {
             val t = i as HashMap<*, *>
@@ -169,6 +169,7 @@ class DatabaseViewModel(
         return result
     }
 
+
     /**
      * Create new message box at end of message box list have id is [msgBoxListId]
      * @param msgBoxListId the id of message box list, the default value is of signed in user
@@ -179,6 +180,24 @@ class DatabaseViewModel(
 
     suspend fun getMessageBoxListId(userID: String): String {
         return getUserById(userID)[MESSAGE_BOX_LIST_ID] as String
+    }
+
+    suspend fun updatePreviewMessage(msgBoxIndex: Int, content: String) {
+        msgBoxListManager.updatePreviewMessage(
+            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, content
+        )
+    }
+
+    suspend fun updateLastSendTime(msgBoxIndex: Int, time: Long) {
+        msgBoxListManager.updateLastSendTime(
+            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, time
+        )
+    }
+
+    suspend fun updateMsgBoxReadState(msgBoxIndex: Int, state: Boolean) {
+        msgBoxListManager.updateReadState(
+            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, state
+        )
     }
 
     // apis to interact with local database

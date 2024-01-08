@@ -71,9 +71,9 @@ class FriendRequestsActivity : AppCompatActivity() {
                 receivedReqLoading.visibility = View.VISIBLE
                 val receivedRequests = dbViewModel.getUserRequests(UserManager.RequestType.RECEIVED)
                 if (receivedRequests.isEmpty())
-                    noReceivedReqView.visibility = View.GONE
-                else
                     noReceivedReqView.visibility = View.VISIBLE
+                else
+                    noReceivedReqView.visibility = View.GONE
                 rcvReceivedRequests.adapter = ReceivedRequestAdapter(dbViewModel, receivedRequests)
                 rcvReceivedRequests.layoutManager = LinearLayoutManager(this@FriendRequestsActivity)
                 receivedReqLoading.visibility = View.GONE

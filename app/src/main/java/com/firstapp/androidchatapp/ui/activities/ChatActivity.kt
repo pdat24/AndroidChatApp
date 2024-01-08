@@ -36,6 +36,7 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.FILE_STORAGE_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.ICON
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE_STORAGE_PATH
+import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
 import com.firstapp.androidchatapp.utils.Functions
@@ -47,6 +48,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class ChatActivity : AppCompatActivity() {
 
@@ -69,6 +72,7 @@ class ChatActivity : AppCompatActivity() {
     private var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
     private var friendAvatarURI: String? = null
+    private var msgBoxIndex: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +96,7 @@ class ChatActivity : AppCompatActivity() {
             .into(findViewById<ImageView>(R.id.ivUserAvatar))
         findViewById<TextView>(R.id.tvName).text = intentExtras.getString(NAME)
         friendAvatarURI = intentExtras.getString(AVATAR_URI)
+        msgBoxIndex = intentExtras.getInt(MESSAGE_BOX_INDEX)
 
         conversationID = intentExtras.getString(CONVERSATION_ID)
             ?: throw IllegalArgumentException("Conversation ID is null!")
@@ -279,6 +284,18 @@ class ChatActivity : AppCompatActivity() {
     private fun sendMessage(content: String, type: String) {
         CoroutineScope(Dispatchers.IO).launch {
             dbViewModel.addMessage(conversationID, Message(content, type))
+            var previewMsg = ""
+            when (type) {
+                TEXT -> previewMsg = content
+                IMAGE -> previewMsg = getString(R.string.sent_an_image)
+                FILE -> previewMsg = getString(R.string.sent_a_file)
+            }
+            dbViewModel.updatePreviewMessage(msgBoxIndex!!, previewMsg)
+            dbViewModel.updateLastSendTime(
+                msgBoxIndex!!, LocalDateTime.now().toEpochSecond(
+                    ZoneOffset.UTC
+                )
+            )
             // TODO: Cache message
         }
     }

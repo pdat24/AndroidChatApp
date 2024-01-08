@@ -108,22 +108,19 @@ class UserManager(
         userDB.document(userID).update(SENT_REQUESTS, requests).await()
     }
 
-    suspend fun addReceivedRequest(userID: String) {
+    suspend fun addReceivedRequest(senderId: String) {
         val currentUserID = firebaseAuth.currentUser!!.uid
         val user = dbViewModel.getUserById(currentUserID)
-        val requests = getUserRequests(userID, RequestType.RECEIVED).toMutableList()
+        val requests = getUserRequests(senderId, RequestType.RECEIVED).toMutableList()
         val req = FriendRequest(
             name = user[NAME] as String,
             uid = currentUserID,
             avatarURI = user[AVATAR_URI] as String
         )
         requests.add(req)
-        userDB.document(userID).update(RECEIVED_REQUESTS, requests).await()
+        userDB.document(senderId).update(RECEIVED_REQUESTS, requests).await()
     }
 
-    /**
-     * @param receiverId the id of user is sen
-     */
     suspend fun removeSentRequest(senderId: String, receiverId: String) {
         val requests = getUserRequests(senderId, RequestType.SENT) { id ->
             id != receiverId
@@ -140,7 +137,7 @@ class UserManager(
         val requests = getUserRequests(receiverId, RequestType.RECEIVED) { id ->
             id != senderId
         }
-        userDB.document(senderId).update(RECEIVED_REQUESTS, requests).await()
+        userDB.document(receiverId).update(RECEIVED_REQUESTS, requests).await()
     }
 
     /**

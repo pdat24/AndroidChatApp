@@ -112,13 +112,13 @@
                     android:paddingTop="20dp" />
 
                 <com.google.android.material.progressindicator.CircularProgressIndicator
-                    android:visibility="gone"
                     android:id="@+id/msgBoxLoading"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="20dp"
-                    android:indeterminate="true" />
+                    android:indeterminate="true"
+                    android:visibility="gone" />
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

@@ -12,15 +12,18 @@
         android:id="@+id/coverLayer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:alpha="0"
         android:background="@color/bg_cover_layer" />
 
     <LinearLayout
+        android:clickable="true"
         android:id="@+id/floatBlock"
         android:layout_width="@dimen/menu_drawer_width"
         android:layout_height="match_parent"
         android:background="@drawable/bg_drawer_menu"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        app:layout_constraintEnd_toStartOf="parent">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -114,6 +117,7 @@
                 android:textStyle="bold" />
 
             <ImageView
+                android:clickable="true"
                 android:id="@+id/ivEditName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
