@@ -81,6 +81,8 @@ class SettingsActivity : AppCompatActivity() {
         lifecycleScope.launch {
             // remove cached user on sqlite database
             dbViewModel.removeCachedUser()
+            dbViewModel.removeCachedMessageBoxes()
+            dbViewModel.cacheMessageBoxNumber(-1)
             // sign out
             withContext(Dispatchers.Main) {
                 firebaseAuth.signOut()

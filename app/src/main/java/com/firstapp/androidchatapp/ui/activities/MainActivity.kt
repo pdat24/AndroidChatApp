@@ -1,7 +1,10 @@
 package com.firstapp.androidchatapp.ui.activities
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -16,32 +19,45 @@ import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.FriendAdapter
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
-import com.firstapp.androidchatapp.models.Friend
+import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
-import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
+import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Constants.Companion.PERMISSION_REQUEST_CODE
+import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
+import com.firstapp.androidchatapp.utils.Constants.Companion.SENDER_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
+import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Functions
 import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.RemoteMessage
+import com.vmadalin.easypermissions.EasyPermissions
+import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
-    private val msgBoxesDB =
-        FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH)
+    private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
+    private val usersDB =
+        FirebaseFirestore.getInstance().collection(USERS_COLLECTION_PATH)
     private lateinit var rcvMessageBoxes: RecyclerView
     private lateinit var rcvOnlineFriends: RecyclerView
+    private lateinit var onlineNumberView: TextView
     private lateinit var fragMenu: FragmentContainerView
     private lateinit var msgBoxLoading: CircularProgressIndicator
+    private lateinit var onlineFriendsLoading: CircularProgressIndicator
+    private lateinit var addFriendBtn: FrameLayout
     lateinit var dbViewModel: DatabaseViewModel
     lateinit var mainViewModel: MainViewModel
     val username = MutableLiveData<String>(null)
@@ -50,12 +66,30 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         window.statusBarColor = getColor(R.color.dialog_bg)
+        requestNotificationPermission()
+
         // get views
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
         rcvOnlineFriends = findViewById(R.id.rcvOnlineFriendList)
         fragMenu = findViewById(R.id.fragMenu)
         msgBoxLoading = findViewById(R.id.msgBoxLoading)
+        onlineFriendsLoading = findViewById(R.id.onlineFriendsLoading)
+        onlineNumberView = findViewById(R.id.tvOnlineNumber)
+        addFriendBtn = findViewById(R.id.btnAddFriend)
 
+        rcvMessageBoxes.layoutManager = LinearLayoutManager(this)
+        addFriendBtn.setOnClickListener {
+            lifecycleScope.launch {
+                val token = FirebaseMessaging.getInstance().token.await()
+                FirebaseMessaging.getInstance().send(
+                    RemoteMessage.Builder(token)
+                        .setMessageId("tmp")
+                        .addData("title", "Test title")
+                        .addData("body", "Some content...")
+                        .build()
+                )
+            }
+        }
         // view models
         dbViewModel = ViewModelProvider(
             this,
@@ -65,32 +99,15 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             withContext(Dispatchers.Main) {
-                msgBoxLoading.visibility = View.VISIBLE
-                val messageBoxes = dbViewModel.getMessageBoxes(
-                    dbViewModel.getMessageBoxList()
-                )
-                rcvMessageBoxes.adapter = MessageBoxAdapter(dbViewModel, messageBoxes)
-                rcvMessageBoxes.layoutManager = LinearLayoutManager(this@MainActivity)
-                msgBoxLoading.visibility = View.GONE
+                onlineFriendsLoading.visibility = View.VISIBLE
+                val friends = dbViewModel.getOnlineFriends()
+                onlineNumberView.text = friends.size.toString()
+                rcvOnlineFriends.adapter = FriendAdapter(friends)
+                rcvOnlineFriends.layoutManager =
+                    LinearLayoutManager(this@MainActivity, RecyclerView.HORIZONTAL, false)
+                onlineFriendsLoading.visibility = View.GONE
             }
         }
-
-        val friends = listOf(
-            Friend(
-                uid = "",
-                name = "Pham Quoc Dat",
-                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                conversationID = ""
-            ),
-            Friend(
-                uid = "",
-                name = "Pham Quoc Dat",
-                avatarURI = "https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/avatars%2Favatar_4.jpg?alt=media&token=2f630629-be82-41c6-86e6-6df69d350ff5",
-                conversationID = ""
-            )
-        )
-        rcvOnlineFriends.adapter = FriendAdapter(friends)
-        rcvOnlineFriends.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
 
         dbViewModel.getCachedUserInfo().observe(this) {
             if (it?.name == null)
@@ -102,26 +119,73 @@ class MainActivity : AppCompatActivity() {
                 fragMenu.findViewById<TextView>(R.id.tvName).text = it.name
             }
         }
+        // update online status
+//        startService(Intent(this, OnlineService::class.java).apply {
+//            action = ACTION_ONLINE
+//        })
     }
 
     override fun onStart() {
         super.onStart()
         observeDrawerMenuState()
         observeMessageBoxesChanges()
+        observeOnlineFriends()
     }
 
-    private fun observeMessageBoxesChanges() =
-        CoroutineScope(Dispatchers.Main).launch {
-            msgBoxesDB.document(
-                dbViewModel.getMessageBoxListId(firebaseAuth.currentUser!!.uid)
-            ).addSnapshotListener { value, error ->
-                lifecycleScope.launch {
-                    if (value != null) {
-                        val messageBoxes = dbViewModel.getMessageBoxes(value)
-                        withContext(Dispatchers.Main) {
-                            rcvMessageBoxes.adapter = MessageBoxAdapter(dbViewModel, messageBoxes)
-                        }
+    override fun onResume() {
+        synchronizeCachedMessageBoxes()
+        super.onResume()
+    }
+
+    private fun synchronizeCachedMessageBoxes() = lifecycleScope.launch {
+        if (dbViewModel.getCachedMessageBoxNumber() < 1)
+            msgBoxLoading.visibility = View.VISIBLE
+        val messageBoxes = dbViewModel.getMessageBoxes(
+            dbViewModel.getMessageBoxList()
+        ).map {
+            val con = dbViewModel.getConversation(it.conversationID)
+            val friend = dbViewModel.getUserById(it.friendUID)
+
+            // set preview message
+            val tmp = (con[GROUP_MESSAGES] as List<*>).last() as HashMap<*, *>
+            var previewMsg = con[PREVIEW_MESSAGE] as String
+            if (tmp[SENDER_ID] == firebaseAuth.currentUser!!.uid)
+                previewMsg = "You: $previewMsg"
+
+            it.name = friend[NAME] as String
+            it.avatarURI = friend[AVATAR_URI] as String
+            it.previewMessage = previewMsg
+            it.time = con[TIME] as Long
+            it
+        }
+
+        // cache message boxes number
+        dbViewModel.updateMessageBoxList(MessageBoxesList(messageBoxes))
+        dbViewModel.cacheMessageBoxNumber(messageBoxes.size)
+        dbViewModel.cacheMessageBoxes(messageBoxes)
+        msgBoxLoading.visibility = View.GONE
+    }
+
+    private fun observeOnlineFriends() =
+        usersDB.document(currentUserUID).addSnapshotListener { value, error ->
+            lifecycleScope.launch {
+                if (value != null) {
+                    val onlineFriends = dbViewModel.getOnlineFriends(value)
+                    withContext(Dispatchers.Main) {
+                        rcvOnlineFriends.adapter = FriendAdapter(onlineFriends)
                     }
+                }
+            }
+        }
+
+    private fun observeMessageBoxesChanges() =
+        dbViewModel.getCachedMessageBoxes().observe(this@MainActivity) {
+            lifecycleScope.launch {
+                // update the number of cached message boxes
+                dbViewModel.cacheMessageBoxNumber(it.size)
+                withContext(Dispatchers.Main) {
+                    rcvMessageBoxes.adapter =
+                        MessageBoxAdapter(dbViewModel, it)
                 }
             }
         }
@@ -150,5 +214,38 @@ class MainActivity : AppCompatActivity() {
         Functions.scaleDownUpAnimation(btn)
         fragMenu.visibility = View.VISIBLE
         mainViewModel.openMenu.postValue(true)
+    }
+
+    private fun requestNotificationPermission() {
+        if (!EasyPermissions.hasPermissions(
+                applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                EasyPermissions.requestPermissions(
+                    this,
+                    "You'll not receive any notifications if deny this permission!",
+                    PERMISSION_REQUEST_CODE,
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            }
+        }
+    }
+
+    override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(
+                this,
+                listOf(Manifest.permission.POST_NOTIFICATIONS)
+            )
+        ) {
+            SettingsDialog.Builder(this).build().show()
+        } else {
+            requestNotificationPermission()
+        }
+    }
+
+    override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
+
     }
 }

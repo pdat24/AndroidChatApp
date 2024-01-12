@@ -55,11 +55,6 @@ class SearchResultAdapter(
         CoroutineScope(Dispatchers.IO).launch {
             dbViewModel.addSentRequest(request)
             dbViewModel.addReceivedRequest(request.uid)
-            sendNotification()
         }
-    }
-
-    private fun sendNotification() {
-        // TODO: Handle send notification
     }
 }

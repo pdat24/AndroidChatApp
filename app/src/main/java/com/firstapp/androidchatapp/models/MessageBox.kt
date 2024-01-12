@@ -1,13 +1,18 @@
 package com.firstapp.androidchatapp.models
 
-import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_PREVIEW_MESSAGE
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-data class MessageBox(
+@Entity(tableName = "MessageBoxes")
+class MessageBox(
+    var index: Int,
+    @PrimaryKey
+    var friendUID: String,
     var avatarURI: String,
     var name: String,
-    var time: Long,
     var conversationID: String,
     var read: Boolean = false,
-    var unreadMessages: Int = 1,
-    var previewMessage: String = DEFAULT_PREVIEW_MESSAGE
+    var previewMessage: String,
+    var time: Long,
+    var unreadMessages: Int = 1
 )

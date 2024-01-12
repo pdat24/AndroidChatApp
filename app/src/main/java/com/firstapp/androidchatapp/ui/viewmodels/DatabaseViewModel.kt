@@ -18,11 +18,16 @@ import com.firstapp.androidchatapp.repositories.MessageBoxManager
 import com.firstapp.androidchatapp.repositories.UserManager
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_PREVIEW_MESSAGE
+import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
+import com.firstapp.androidchatapp.utils.Constants.Companion.INDEX
+import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_LIST_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.READ
+import com.firstapp.androidchatapp.utils.Constants.Companion.SP_MESSAGE_BOX_NUMBER
 import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
 import com.firstapp.androidchatapp.utils.Constants.Companion.UNREAD_MESSAGES
 import com.firstapp.androidchatapp.utils.Functions
@@ -31,6 +36,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class DatabaseViewModel(
     context: Context
@@ -38,7 +45,9 @@ class DatabaseViewModel(
 
     private val localRepository = LocalRepository(context)
     private val conversationManager = ConversationManager()
-    private val userManager = UserManager(this)
+    private val userManager = UserManager()
+    private val sharedPreferences =
+        context.getSharedPreferences(MAIN_SHARED_PREFERENCE, Context.MODE_PRIVATE)
     private val msgBoxListManager = MessageBoxManager(this)
     val firebaseAuth = FirebaseAuth.getInstance()
 
@@ -48,13 +57,18 @@ class DatabaseViewModel(
      * @return the ID of conversation
      */
     suspend fun createEmptyConversation(): String {
-        return conversationManager.create(Conversation(emptyList()))
+        return conversationManager.create(
+            Conversation(
+                emptyList(),
+                DEFAULT_PREVIEW_MESSAGE,
+                LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+            )
+        )
     }
 
     suspend fun getConversation(id: String): DocumentSnapshot {
         return conversationManager.getConversation(id)
     }
-
 
     /**
      * add new message to conversation
@@ -63,6 +77,15 @@ class DatabaseViewModel(
     suspend fun addMessage(id: String, message: Message) {
         conversationManager.addMessage(id, message)
     }
+
+    suspend fun updatePreviewMessage(conversationID: String, content: String) {
+        conversationManager.updatePreviewMessage(conversationID, content)
+    }
+
+    suspend fun updateLastSendTime(conversationID: String, time: Long) {
+        conversationManager.updateLastSendTime(conversationID, time)
+    }
+
 
     /**
      * @param id user ID
@@ -102,6 +125,20 @@ class DatabaseViewModel(
         return userManager.getUserRequests(firebaseAuth.currentUser!!.uid, type, filter)
     }
 
+    suspend fun getOnlineFriends(): List<Friend> {
+        return userManager.getOnlineFriends(getUserById(firebaseAuth.currentUser!!.uid))
+    }
+
+    fun getOnlineFriends(user: DocumentSnapshot): List<Friend> =
+        userManager.getOnlineFriends(user)
+
+    suspend fun getFriends(): List<Friend> =
+        userManager.getFriends(firebaseAuth.currentUser!!.uid)
+
+    suspend fun updateOnlineState(state: Boolean) {
+        return userManager.updateOnlineState(firebaseAuth.currentUser!!.uid, state)
+    }
+
     suspend fun addSentRequest(req: FriendRequest) {
         userManager.addSentRequest(firebaseAuth.currentUser!!.uid, req)
     }
@@ -138,6 +175,7 @@ class DatabaseViewModel(
         }
     }
 
+
     /**
      * @return the ID of message boxes list
      */
@@ -145,30 +183,33 @@ class DatabaseViewModel(
         return msgBoxListManager.createMessageBoxList(msgBoxesList)
     }
 
-    suspend fun getMessageBoxList(): DocumentSnapshot {
-        return msgBoxListManager.getMessageBoxList(getMessageBoxListId(firebaseAuth.currentUser!!.uid))
+    suspend fun getMessageBoxList(userID: String? = null): DocumentSnapshot {
+        return msgBoxListManager.getMessageBoxList(
+            getMessageBoxListId(userID ?: firebaseAuth.currentUser!!.uid)
+        )
     }
 
     fun getMessageBoxes(msgBoxesDocument: DocumentSnapshot): List<MessageBox> {
-        val tmp = msgBoxesDocument[MESSAGE_BOXES] as List<*>
+        val msgBoxes = msgBoxesDocument[MESSAGE_BOXES] as List<*>
         val result = mutableListOf<MessageBox>()
-        for (i in tmp) {
-            val t = i as HashMap<*, *>
+        for (i in msgBoxes) {
+            val box = i as HashMap<*, *>
             result.add(
                 MessageBox(
-                    avatarURI = t[AVATAR_URI] as String,
-                    conversationID = t[CONVERSATION_ID] as String,
-                    name = t[NAME] as String,
-                    previewMessage = t[PREVIEW_MESSAGE] as String,
-                    read = t[READ] as Boolean,
-                    time = t[TIME] as Long,
-                    unreadMessages = (t[UNREAD_MESSAGES] as Long).toInt()
+                    index = (box[INDEX] as Long).toInt(),
+                    friendUID = box[FRIEND_UID] as String,
+                    avatarURI = box[AVATAR_URI] as String,
+                    conversationID = box[CONVERSATION_ID] as String,
+                    name = box[NAME] as String,
+                    read = box[READ] as Boolean,
+                    unreadMessages = (box[UNREAD_MESSAGES] as Long).toInt(),
+                    previewMessage = box[PREVIEW_MESSAGE] as String,
+                    time = box[TIME] as Long
                 )
             )
         }
         return result
     }
-
 
     /**
      * Create new message box at end of message box list have id is [msgBoxListId]
@@ -178,20 +219,15 @@ class DatabaseViewModel(
         msgBoxListManager.createMessageBox(msgBoxListId, msgBox)
     }
 
+    suspend fun updateMessageBoxList(msgBox: MessageBoxesList) {
+        msgBoxListManager.updateMessageBoxList(
+            getMessageBoxListId(firebaseAuth.currentUser!!.uid),
+            msgBox
+        )
+    }
+
     suspend fun getMessageBoxListId(userID: String): String {
         return getUserById(userID)[MESSAGE_BOX_LIST_ID] as String
-    }
-
-    suspend fun updatePreviewMessage(msgBoxIndex: Int, content: String) {
-        msgBoxListManager.updatePreviewMessage(
-            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, content
-        )
-    }
-
-    suspend fun updateLastSendTime(msgBoxIndex: Int, time: Long) {
-        msgBoxListManager.updateLastSendTime(
-            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, time
-        )
     }
 
     suspend fun updateMsgBoxReadState(msgBoxIndex: Int, state: Boolean) {
@@ -199,6 +235,13 @@ class DatabaseViewModel(
             getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, state
         )
     }
+
+    suspend fun updateUnreadMsgNumber(msgBoxIndex: Int, n: Int) {
+        msgBoxListManager.updateUnreadMsgNumber(
+            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, n
+        )
+    }
+
 
     // apis to interact with local database
     suspend fun cacheUser(user: UserInfo) {
@@ -215,8 +258,31 @@ class DatabaseViewModel(
         localRepository.removeCachedUser()
     }
 
+    suspend fun removeCachedMessageBoxes() {
+        localRepository.removeMessageBoxes()
+    }
+
+    fun cacheMessageBoxNumber(n: Int) =
+        sharedPreferences.edit().putInt(SP_MESSAGE_BOX_NUMBER, n).apply()
+
+    fun getCachedMessageBoxNumber(): Int =
+        sharedPreferences.getInt(SP_MESSAGE_BOX_NUMBER, -1)
+
     fun getCachedUserInfo(): LiveData<UserInfo> =
         localRepository.getUserInfo()
+
+    suspend fun cacheMessageBoxes(boxes: List<MessageBox>) {
+        for (box in boxes) {
+            localRepository.addMessageBox(box)
+        }
+    }
+
+    suspend fun cacheMessageBox(box: MessageBox) {
+        localRepository.addMessageBox(box)
+    }
+
+    fun getCachedMessageBoxes(): LiveData<List<MessageBox>> =
+        localRepository.getMessageBoxes()
 
     // firebase storage
     /**

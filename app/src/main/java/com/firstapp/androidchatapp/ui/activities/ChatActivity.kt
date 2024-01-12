@@ -33,9 +33,12 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLE
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE_STORAGE_PATH
+import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
 import com.firstapp.androidchatapp.utils.Constants.Companion.ICON
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE_STORAGE_PATH
+import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
+import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
@@ -72,6 +75,7 @@ class ChatActivity : AppCompatActivity() {
     private var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
     private var friendAvatarURI: String? = null
+    private var friendUID: String? = null
     private var msgBoxIndex: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,7 +101,7 @@ class ChatActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvName).text = intentExtras.getString(NAME)
         friendAvatarURI = intentExtras.getString(AVATAR_URI)
         msgBoxIndex = intentExtras.getInt(MESSAGE_BOX_INDEX)
-
+        friendUID = intentExtras.getString(FRIEND_UID)
         conversationID = intentExtras.getString(CONVERSATION_ID)
             ?: throw IllegalArgumentException("Conversation ID is null!")
 
@@ -253,6 +257,9 @@ class ChatActivity : AppCompatActivity() {
                                 Functions.getGroupMessagesInConversation(it)
                             )
                         }
+                        // Always update the state of message box is read when user in chat activity
+                        dbViewModel.updateMsgBoxReadState(msgBoxIndex!!, true)
+                        dbViewModel.updateUnreadMsgNumber(msgBoxIndex!!, 0)
                         // TODO: Cache messages
                     }
                 }
@@ -290,14 +297,28 @@ class ChatActivity : AppCompatActivity() {
                 IMAGE -> previewMsg = getString(R.string.sent_an_image)
                 FILE -> previewMsg = getString(R.string.sent_a_file)
             }
-            dbViewModel.updatePreviewMessage(msgBoxIndex!!, previewMsg)
+            dbViewModel.updatePreviewMessage(conversationID, previewMsg)
             dbViewModel.updateLastSendTime(
-                msgBoxIndex!!, LocalDateTime.now().toEpochSecond(
+                conversationID, LocalDateTime.now().toEpochSecond(
                     ZoneOffset.UTC
                 )
             )
-            // TODO: Cache message
+            unreadFriendMessageBox()
         }
+    }
+
+    private suspend fun unreadFriendMessageBox() {
+        val tmp = dbViewModel.getMessageBoxList(friendUID)
+        val msgBox = dbViewModel.getMessageBoxes(tmp).toMutableList()
+        msgBox.forEach {
+            if (it.conversationID == conversationID) {
+                it.read = false
+                it.unreadMessages++
+            }
+        }
+        FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH).document(
+            dbViewModel.getMessageBoxListId(friendUID!!)
+        ).update(MESSAGE_BOXES, msgBox)
     }
 
     private fun scaleMessageInput() {

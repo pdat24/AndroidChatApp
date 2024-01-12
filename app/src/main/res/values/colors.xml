@@ -16,4 +16,5 @@
     <color name="chat_input_bg">#803E3B3B</color>
     <color name="bg_cover_layer">#99000000</color>
     <color name="red">#FF5722</color>
+    <color name="bg_search_input">#338E9198</color>
 </resources>

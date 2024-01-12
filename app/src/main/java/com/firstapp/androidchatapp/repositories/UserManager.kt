@@ -3,11 +3,11 @@ package com.firstapp.androidchatapp.repositories
 import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.User
-import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIENDS
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Constants.Companion.ONLINE_FRIENDS
 import com.firstapp.androidchatapp.utils.Constants.Companion.RECEIVED_REQUESTS
 import com.firstapp.androidchatapp.utils.Constants.Companion.SENT_REQUESTS
 import com.firstapp.androidchatapp.utils.Constants.Companion.UID
@@ -17,9 +17,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class UserManager(
-    private val dbViewModel: DatabaseViewModel
-) {
+class UserManager {
 
     private val userDB = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_PATH)
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -40,6 +38,75 @@ class UserManager(
             user.id != uid && (
                     tmp.startsWith(name, true) || tmp.split(" ").contains(name)
                     )
+        }
+    }
+
+    fun getOnlineFriends(user: DocumentSnapshot): List<Friend> {
+        val result = mutableListOf<Friend>()
+        val friends = user[ONLINE_FRIENDS] as List<*>
+        for (i in friends) {
+            val friend = i as HashMap<*, *>
+            result.add(
+                Friend(
+                    uid = friend[UID] as String,
+                    name = friend[NAME] as String,
+                    avatarURI = friend[AVATAR_URI] as String,
+                    conversationID = friend[CONVERSATION_ID] as String
+                )
+            )
+        }
+        return result
+    }
+
+    suspend fun getFriends(userID: String): List<Friend> {
+        val result = mutableListOf<Friend>()
+        val friends = getUserById(userID)[FRIENDS] as List<*>
+        for (i in friends) {
+            val friend = i as HashMap<*, *>
+            result.add(
+                Friend(
+                    uid = friend[UID] as String,
+                    name = friend[NAME] as String,
+                    avatarURI = friend[AVATAR_URI] as String,
+                    conversationID = friend[CONVERSATION_ID] as String
+                )
+            )
+        }
+        return result
+    }
+
+    suspend fun updateOnlineState(userID: String, isOnline: Boolean) {
+        val currentUserUID = firebaseAuth.currentUser!!.uid
+        val friends = getUserById(userID)[FRIENDS] as List<*>
+        for (f in friends) {
+            val friend = getUserById((f as HashMap<*, *>)[UID] as String)
+            val res = getOnlineFriends(
+                getUserById(friend.id)
+            ).toMutableList()
+            // add current user to the list of online friends of the friend
+            // or remove from the list
+            if (!isOnline)
+                res.removeIf {
+                    it.uid == currentUserUID
+                }
+            else {
+                val friendsOfFriend = friend[FRIENDS] as List<*>
+                for (i in friendsOfFriend) {
+                    val friendOfFriend = i as HashMap<*, *>
+                    if (friendOfFriend[UID] == currentUserUID) {
+                        if (isOnline)
+                            res.add(
+                                Friend(
+                                    uid = friendOfFriend[UID] as String,
+                                    name = friendOfFriend[NAME] as String,
+                                    avatarURI = friendOfFriend[AVATAR_URI] as String,
+                                    conversationID = friendOfFriend[CONVERSATION_ID] as String
+                                )
+                            )
+                    }
+                }
+            }
+            userDB.document(friend.id).update(ONLINE_FRIENDS, res)
         }
     }
 
@@ -110,7 +177,7 @@ class UserManager(
 
     suspend fun addReceivedRequest(senderId: String) {
         val currentUserID = firebaseAuth.currentUser!!.uid
-        val user = dbViewModel.getUserById(currentUserID)
+        val user = getUserById(currentUserID)
         val requests = getUserRequests(senderId, RequestType.RECEIVED).toMutableList()
         val req = FriendRequest(
             name = user[NAME] as String,

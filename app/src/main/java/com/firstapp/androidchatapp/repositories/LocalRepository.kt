@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import com.firstapp.androidchatapp.localdb.SQLiteDB
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
+import com.firstapp.androidchatapp.models.MessageBox
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
@@ -14,6 +15,7 @@ class LocalRepository(
 
     private val storageRef = FirebaseStorage.getInstance().reference
     private val userDao = SQLiteDB.getInstance(context).getUserDao()
+    private val msgBoxDao = SQLiteDB.getInstance(context).getMessageBoxDao()
 
     suspend fun upsertInfo(user: UserInfo) =
         userDao.upsertInfo(user)
@@ -29,6 +31,15 @@ class LocalRepository(
 
     fun getUserInfo(): LiveData<UserInfo> =
         userDao.getUserInfo()
+
+    suspend fun addMessageBox(box: MessageBox) =
+        msgBoxDao.addMessageBox(box)
+
+    fun getMessageBoxes(): LiveData<List<MessageBox>> =
+        msgBoxDao.getMessageBoxes()
+
+    suspend fun removeMessageBoxes() =
+        msgBoxDao.removeMessageBoxes()
 
 
     /**

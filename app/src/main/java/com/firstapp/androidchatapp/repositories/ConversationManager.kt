@@ -5,6 +5,8 @@ import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
+import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
+import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
 import com.firstapp.androidchatapp.utils.Functions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -99,4 +101,10 @@ class ConversationManager {
             }
         ).await()
     }
+
+    suspend fun updatePreviewMessage(conversationID: String, content: String) =
+        conversationDB.document(conversationID).update(PREVIEW_MESSAGE, content).await()
+
+    suspend fun updateLastSendTime(conversationID: String, time: Long) =
+        conversationDB.document(conversationID).update(TIME, time).await()
 }

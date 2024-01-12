@@ -45,6 +45,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.firebase:firebase-firestore:24.10.0")
     implementation("com.google.firebase:firebase-storage:20.3.0")
+    implementation("androidx.lifecycle:lifecycle-service:2.6.2")
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -65,4 +67,10 @@ dependencies {
 
     // splash screen
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // easy permissions
+    implementation("com.vmadalin:easypermissions-ktx:1.0.0")
+
+    // okhttp3
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

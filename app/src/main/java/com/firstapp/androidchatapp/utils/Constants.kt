@@ -34,7 +34,6 @@ class Constants {
         const val MESSAGE_BOXES = "messageBoxes"
         const val NOT_LOGIN_ERROR_CODE = "ERROR_NOT_LOGIN"
         const val MESSAGE_BOX_LIST_ID = "messageBoxListId"
-        const val MESSAGE_BOXES_LIST = "messageBoxesList"
         const val PREVIEW_MESSAGE = "previewMessage"
         const val UNREAD_MESSAGES = "unreadMessages"
         const val READ = "read"
@@ -47,5 +46,16 @@ class Constants {
         const val SENT_REQUESTS = "sentRequests"
         const val RECEIVED_REQUESTS = "receivedRequests"
         const val MESSAGE_BOX_INDEX = "messageBoxIndex"
+        const val ONLINE_FRIENDS = "onlineFriends"
+        const val ACTION_RECEIVED_FRIEND_REQUEST = "ACTION_RECEIVED_FRIEND_REQUEST"
+        const val NOTIFICATION_CHANNEL_ID = "NOTIFICATION_CHANNEL_ID"
+        const val NOTIFICATION_CHANnEL_NAME = "Main Channel"
+        const val PERMISSION_REQUEST_CODE = 8
+        const val ACTION_ONLINE = "ACTION_ONLINE"
+        const val ACTION_PREPARE_OFFLINE = "ACTION_PREPARE_OFFLINE"
+        const val FRIEND_UID = "friendUID"
+        const val INDEX = "index"
+        const val MAIN_SHARED_PREFERENCE = "MAIN_SHARED_PREFERENCE"
+        const val SP_MESSAGE_BOX_NUMBER = "MESSAGE_BOX_NUMBER"
     }
 }

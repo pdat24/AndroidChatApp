@@ -16,11 +16,11 @@
         android:background="@color/bg_cover_layer" />
 
     <LinearLayout
-        android:clickable="true"
         android:id="@+id/floatBlock"
         android:layout_width="@dimen/menu_drawer_width"
         android:layout_height="match_parent"
         android:background="@drawable/bg_drawer_menu"
+        android:clickable="true"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintEnd_toStartOf="parent">
@@ -117,7 +117,6 @@
                 android:textStyle="bold" />
 
             <ImageView
-                android:clickable="true"
                 android:id="@+id/ivEditName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -125,6 +124,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@id/tvName"
                 android:background="@drawable/bg_back_button"
+                android:clickable="true"
                 android:contentDescription="@string/check_icon"
                 android:padding="2dp"
                 android:src="@drawable/baseline_edit_note" />
@@ -136,72 +136,45 @@
             android:layout_marginVertical="20dp"
             app:dividerColor="@color/light_pink_grey" />
 
-        <com.google.android.material.card.MaterialCardView
+        <TextView
+            android:id="@+id/tvAddFriend"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            app:cardCornerRadius="32dp"
-            app:strokeWidth="0dp">
+            android:clickable="true"
+            android:drawablePadding="12dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
+            android:text="@string/add_friend"
+            android:textColor="@color/indicator"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/baseline_person_add_20" />
 
-            <TextView
-                android:id="@+id/tvAddFriend"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:background="@drawable/bg_menu_nav_btn"
-                android:clickable="true"
-                android:drawablePadding="12dp"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="12dp"
-                android:text="@string/add_friend"
-                android:textColor="@color/indicator"
-                android:textStyle="bold"
-                app:drawableStartCompat="@drawable/baseline_person_add_20" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
+        <TextView
+            android:id="@+id/tvFriendRequests"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            app:cardCornerRadius="32dp"
-            app:strokeWidth="0dp">
+            android:clickable="true"
+            android:drawablePadding="12dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
+            android:text="@string/friend_requests"
+            android:textColor="@color/indicator"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/baseline_people_24" />
 
-            <TextView
-                android:id="@+id/tvFriendRequests"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:background="@drawable/bg_menu_nav_btn"
-                android:clickable="true"
-                android:drawablePadding="12dp"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="12dp"
-                android:text="@string/friend_requests"
-                android:textColor="@color/indicator"
-                android:textStyle="bold"
-                app:drawableStartCompat="@drawable/baseline_people_24" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
+        <TextView
+            android:id="@+id/tvSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            app:cardCornerRadius="32dp"
-            app:strokeWidth="0dp">
-
-            <TextView
-                android:id="@+id/tvSettings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_menu_nav_btn"
-                android:clickable="true"
-                android:drawablePadding="12dp"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="12dp"
-                android:text="@string/settings"
-                android:textColor="@color/indicator"
-                android:textStyle="bold"
-                app:drawableStartCompat="@drawable/baseline_settings_20" />
-        </com.google.android.material.card.MaterialCardView>
+            android:clickable="true"
+            android:drawablePadding="12dp"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="12dp"
+            android:text="@string/settings"
+            android:textColor="@color/indicator"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/baseline_settings_20" />
     </LinearLayout>
 </androidx.constraintlayout.motion.widget.MotionLayout>

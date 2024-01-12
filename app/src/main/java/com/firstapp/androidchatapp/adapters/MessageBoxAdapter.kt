@@ -16,13 +16,21 @@ import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.activities.ChatActivity
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
+import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
+import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
+import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
+import com.firstapp.androidchatapp.utils.Constants.Companion.UNREAD_MESSAGES
 import com.firstapp.androidchatapp.utils.Functions
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -60,8 +68,28 @@ class MessageBoxAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val messageBox = messageBoxes[position]
         holder.container.setOnClickListener {
-            toChatActivity(position, messageBox)
+            toChatActivity(messageBox)
             changeStateToRead(position)
+        }
+        FirebaseFirestore.getInstance().collection(CONVERSATIONS_COLLECTION_PATH).document(
+            messageBox.conversationID
+        ).addSnapshotListener { value, error ->
+            value?.let {
+                CoroutineScope(Dispatchers.IO).launch {
+                    // TODO: can cause exceptions, let's test it
+                    val tmp = dbViewModel.getMessageBoxList()[MESSAGE_BOXES] as List<*>
+                    val m = tmp[messageBox.index] as HashMap<*, *>
+                    withContext(Dispatchers.Main) {
+                        val unreadMsg = m[UNREAD_MESSAGES] as Long
+                        if (unreadMsg != 0L) {
+                            holder.msgNumberView.visibility = View.VISIBLE
+                            holder.msgNumberView.text = unreadMsg.toString()
+                        }
+                        holder.previewMsgView.text = value[PREVIEW_MESSAGE] as String
+                        holder.timView.text = parseSendingTime(value[TIME] as Long)
+                    }
+                }
+            }
         }
         Glide.with(context).load(messageBox.avatarURI).into(holder.avatarView)
         holder.nameView.text = messageBox.name
@@ -82,12 +110,13 @@ class MessageBoxAdapter(
                 dbViewModel.updateMsgBoxReadState(index, true)
         }
 
-    private fun toChatActivity(index: Int, msgBox: MessageBox) {
+    private fun toChatActivity(msgBox: MessageBox) {
         val intent = Intent(context, ChatActivity::class.java)
         intent.putExtra(CONVERSATION_ID, msgBox.conversationID)
+        intent.putExtra(FRIEND_UID, msgBox.friendUID)
         intent.putExtra(AVATAR_URI, msgBox.avatarURI)
         intent.putExtra(NAME, msgBox.name)
-        intent.putExtra(MESSAGE_BOX_INDEX, index)
+        intent.putExtra(MESSAGE_BOX_INDEX, msgBox.index)
         context.startActivity(intent)
     }
 
