@@ -67,6 +67,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var rcvMessages: RecyclerView
     private lateinit var conversationID: String
     private lateinit var loadingView: View
+    private lateinit var emptyConversationView: View
     private lateinit var pickImgLauncher: ActivityResultLauncher<Intent>
     private lateinit var takePhotoLauncher: ActivityResultLauncher<Intent>
     private lateinit var pickFileLauncher: ActivityResultLauncher<Intent>
@@ -81,7 +82,7 @@ class ChatActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        window.statusBarColor = getColor(R.color.chat_input_bg)
+        window.statusBarColor = getColor(R.color.light_black)
         // get views
         choosePhotoBtn = findViewById(R.id.ivChoosePhoto)
         takePhotoBtn = findViewById(R.id.ivTakePhoto)
@@ -92,7 +93,10 @@ class ChatActivity : AppCompatActivity() {
         messageInput = findViewById(R.id.messageInput)
         chatBar = findViewById(R.id.chatBar)
         loadingView = findViewById(R.id.loading)
+        emptyConversationView = findViewById(R.id.emptyConversionView)
         rcvMessages = findViewById(R.id.rcvMessages)
+
+        rcvMessages.layoutManager = LinearLayoutManager(this@ChatActivity)
 
         // change friend's avatar and name
         val intentExtras = intent.extras!!
@@ -174,6 +178,22 @@ class ChatActivity : AppCompatActivity() {
                 handlePickFileResult(result.data!!)
             }
         }
+        loadMoreMessages()
+    }
+
+    private fun loadMoreMessages() {
+        rcvMessages.setOnScrollChangeListener(object : View.OnScrollChangeListener {
+            override fun onScrollChange(
+                v: View?,
+                scrollX: Int,
+                scrollY: Int,
+                oldScrollX: Int,
+                oldScrollY: Int
+            ) {
+                println(scrollX)
+            }
+
+        })
     }
 
     private fun registerIntentResult(
@@ -252,15 +272,15 @@ class ChatActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     value?.let {
                         withContext(Dispatchers.Main) {
-                            rcvMessages.adapter = GroupMessageAdapter(
-                                friendAvatarURI!!,
-                                Functions.getGroupMessagesInConversation(it)
-                            )
+                            val groups = Functions.getGroupMessagesInConversation(it)
+                            if (groups.isNotEmpty())
+                                emptyConversationView.visibility = View.GONE
+                            rcvMessages.adapter = GroupMessageAdapter(friendAvatarURI!!, groups)
+                            rcvMessages.scrollToPosition(groups.size - 1)
                         }
                         // Always update the state of message box is read when user in chat activity
                         dbViewModel.updateMsgBoxReadState(msgBoxIndex!!, true)
                         dbViewModel.updateUnreadMsgNumber(msgBoxIndex!!, 0)
-                        // TODO: Cache messages
                     }
                 }
             }
@@ -280,9 +300,11 @@ class ChatActivity : AppCompatActivity() {
             val groups = Functions.getGroupMessagesInConversation(
                 getConversation(id)
             )
+            if (groups.isEmpty())
+                emptyConversationView.visibility = View.VISIBLE
             withContext(Dispatchers.Main) {
                 rcvMessages.adapter = GroupMessageAdapter(friendAvatarURI!!, groups)
-                rcvMessages.layoutManager = LinearLayoutManager(this@ChatActivity)
+                rcvMessages.scrollToPosition(groups.size - 1)
                 loadingView.visibility = View.GONE
             }
         }

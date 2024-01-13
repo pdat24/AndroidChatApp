@@ -62,7 +62,7 @@
         android:layout_gravity="end"
         android:layout_marginEnd="16dp"
         android:backgroundTint="@color/divider_color"
-        android:text="@string/recall"
+        android:text="@string/cancel"
         android:textColor="@color/red"
         app:cornerRadius="8dp" />
 

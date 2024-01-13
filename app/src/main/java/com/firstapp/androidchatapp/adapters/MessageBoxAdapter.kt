@@ -61,9 +61,7 @@ class MessageBoxAdapter(
         )
     }
 
-    override fun getItemCount(): Int {
-        return messageBoxes.size
-    }
+    override fun getItemCount(): Int = messageBoxes.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val messageBox = messageBoxes[position]
@@ -71,26 +69,7 @@ class MessageBoxAdapter(
             toChatActivity(messageBox)
             changeStateToRead(position)
         }
-        FirebaseFirestore.getInstance().collection(CONVERSATIONS_COLLECTION_PATH).document(
-            messageBox.conversationID
-        ).addSnapshotListener { value, error ->
-            value?.let {
-                CoroutineScope(Dispatchers.IO).launch {
-                    // TODO: can cause exceptions, let's test it
-                    val tmp = dbViewModel.getMessageBoxList()[MESSAGE_BOXES] as List<*>
-                    val m = tmp[messageBox.index] as HashMap<*, *>
-                    withContext(Dispatchers.Main) {
-                        val unreadMsg = m[UNREAD_MESSAGES] as Long
-                        if (unreadMsg != 0L) {
-                            holder.msgNumberView.visibility = View.VISIBLE
-                            holder.msgNumberView.text = unreadMsg.toString()
-                        }
-                        holder.previewMsgView.text = value[PREVIEW_MESSAGE] as String
-                        holder.timView.text = parseSendingTime(value[TIME] as Long)
-                    }
-                }
-            }
-        }
+        observeMessageBoxChanges(messageBox, holder)
         Glide.with(context).load(messageBox.avatarURI).into(holder.avatarView)
         holder.nameView.text = messageBox.name
         holder.previewMsgView.text = messageBox.previewMessage
@@ -102,6 +81,29 @@ class MessageBoxAdapter(
             holder.previewMsgView.typeface = Typeface.DEFAULT_BOLD
         } else
             holder.msgNumberView.visibility = View.GONE
+    }
+
+    private fun observeMessageBoxChanges(messageBox: MessageBox, holder: ViewHolder) {
+        FirebaseFirestore.getInstance().collection(CONVERSATIONS_COLLECTION_PATH).document(
+            messageBox.conversationID
+        ).addSnapshotListener { value, _ ->
+            value?.let {
+                CoroutineScope(Dispatchers.IO).launch {
+                    // TODO: can cause exceptions, let's test it
+                    val tmp = dbViewModel.getMessageBoxList()[MESSAGE_BOXES] as List<*>
+                    val m = tmp[messageBox.index] as HashMap<*, *>
+                    withContext(Dispatchers.Main) {
+                        val unreadMsg = m[UNREAD_MESSAGES] as Long
+                        if (unreadMsg != 0L) {
+                            holder.msgNumberView.visibility = View.VISIBLE
+                            holder.msgNumberView.text = unreadMsg.toString()
+                            holder.previewMsgView.text = value[PREVIEW_MESSAGE] as String
+                            holder.timView.text = parseSendingTime(value[TIME] as Long)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun changeStateToRead(index: Int) =

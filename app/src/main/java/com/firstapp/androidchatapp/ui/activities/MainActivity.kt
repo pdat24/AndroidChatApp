@@ -147,10 +147,13 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             val friend = dbViewModel.getUserById(it.friendUID)
 
             // set preview message
-            val tmp = (con[GROUP_MESSAGES] as List<*>).last() as HashMap<*, *>
+            val tmp = (con[GROUP_MESSAGES] as List<*>)
             var previewMsg = con[PREVIEW_MESSAGE] as String
-            if (tmp[SENDER_ID] == firebaseAuth.currentUser!!.uid)
-                previewMsg = "You: $previewMsg"
+            if (tmp.isNotEmpty()) {
+                val lastGroup = tmp.last() as HashMap<*, *>
+                if (lastGroup[SENDER_ID] == firebaseAuth.currentUser!!.uid)
+                    previewMsg = "You: $previewMsg"
+            }
 
             it.name = friend[NAME] as String
             it.avatarURI = friend[AVATAR_URI] as String

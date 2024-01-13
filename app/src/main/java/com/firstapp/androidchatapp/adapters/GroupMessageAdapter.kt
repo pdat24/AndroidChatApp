@@ -30,7 +30,6 @@ class GroupMessageAdapter(
 
     private lateinit var context: Context
     private val currentUser = FirebaseAuth.getInstance().currentUser
-    private var lastSend = 0L
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val group: LinearLayout = itemView.findViewById(R.id.groupMessage)
@@ -53,34 +52,19 @@ class GroupMessageAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val groupMessage = groupMessages[position]
-
+        resetViews(holder)
         Glide.with(context).load(friendAvatarURI).into(holder.friendAvatar)
-        // handle show send time
-        if (
-            convertLongToDateTime(groupMessage.sendTime).toLocalDate() !=
-            convertLongToDateTime(lastSend).toLocalDate()
-        ) {
-            holder.sendDay.text = formatSendTime(groupMessage.sendTime)
-            holder.sendDay.visibility = View.VISIBLE
-            lastSend = groupMessage.sendTime
-        }
-        // change group message side
-        var side = GroupMessageSide.LEFT
-        if (groupMessage.senderID == currentUser?.uid) {
-            holder.group.gravity = Gravity.END
-            holder.messagesContainer.gravity = Gravity.END
-            holder.friendAvatar.visibility = View.GONE
-            side = GroupMessageSide.RIGHT
-        }
+        handleShowSendTime(holder, groupMessage, position)
+        val side = putGroupOnLeftOrRight(holder, groupMessage)
+
         val messages = groupMessage.messages
         val msgNumber = messages.size
-        val container = holder.messagesContainer
         // handle render messages
         for (i in 0 until msgNumber) {
             val msg = messages[i]
             when (msg.type) {
                 TEXT -> renderTextMessage(
-                    container = container,
+                    container = holder.messagesContainer,
                     side = side,
                     index = i,
                     msgNumber = msgNumber,
@@ -93,6 +77,46 @@ class GroupMessageAdapter(
 
                 FILE -> renderFileMessage(holder.messagesContainer)
             }
+        }
+    }
+
+    /**
+     * Set this views as default to prevent cause exceptions when render due to recycling
+     */
+    private fun resetViews(holder: ViewHolder) {
+        holder.messagesContainer.removeAllViews()
+        holder.sendDay.visibility = View.GONE
+        holder.group.gravity = Gravity.START
+        holder.messagesContainer.gravity = Gravity.START
+        holder.friendAvatar.visibility = View.VISIBLE
+    }
+
+    /**
+     * Change group message side.
+     */
+    private fun putGroupOnLeftOrRight(holder: ViewHolder, group: GroupMessage): GroupMessageSide {
+        var side = GroupMessageSide.LEFT
+        if (group.senderID == currentUser?.uid) {
+            holder.group.gravity = Gravity.END
+            holder.messagesContainer.gravity = Gravity.END
+            holder.friendAvatar.visibility = View.GONE
+            side = GroupMessageSide.RIGHT
+        }
+        return side
+    }
+
+    /**
+     * handle whether show the send time of group message or not
+     */
+    private fun handleShowSendTime(holder: ViewHolder, group: GroupMessage, groupPos: Int) {
+        if (
+            groupPos == 0 || (
+                    convertLongToDateTime(group.sendTime).toLocalDate() !=
+                            convertLongToDateTime(groupMessages[groupPos - 1].sendTime).toLocalDate()
+                    )
+        ) {
+            holder.sendDay.text = formatSendTime(group.sendTime)
+            holder.sendDay.visibility = View.VISIBLE
         }
     }
 

@@ -67,4 +67,5 @@
     <string name="sent_a_file">Sent a file</string>
     <string name="confirm">Confirm</string>
     <string name="change_name">Change name</string>
+    <string name="empty_conversation_desc">Let\'s start chatting</string>
 </resources>

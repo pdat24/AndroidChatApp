@@ -91,7 +91,15 @@
         android:id="@+id/rcvMessages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingHorizontal="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/bottomDivider"
+        app:layout_constraintTop_toBottomOf="@id/topDivider" />
+
+    <include
+        android:id="@+id/emptyConversionView"
+        layout="@layout/view_empty_conversation"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/bottomDivider"
         app:layout_constraintTop_toBottomOf="@id/topDivider" />
 
