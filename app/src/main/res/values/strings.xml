@@ -68,4 +68,7 @@
     <string name="confirm">Confirm</string>
     <string name="change_name">Change name</string>
     <string name="empty_conversation_desc">Let\'s start chatting</string>
+    <string name="sending">Sending</string>
+    <string name="friends">Friends</string>
+    <string name="unfriend">Unfriend</string>
 </resources>

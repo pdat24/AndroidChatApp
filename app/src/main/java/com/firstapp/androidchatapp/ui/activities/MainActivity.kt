@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
-import com.firstapp.androidchatapp.adapters.FriendAdapter
+import com.firstapp.androidchatapp.adapters.OnlineFriendAdapter
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.MessageBoxesList
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 onlineFriendsLoading.visibility = View.VISIBLE
                 val friends = dbViewModel.getOnlineFriends()
                 onlineNumberView.text = friends.size.toString()
-                rcvOnlineFriends.adapter = FriendAdapter(friends)
+                rcvOnlineFriends.adapter = OnlineFriendAdapter(friends)
                 rcvOnlineFriends.layoutManager =
                     LinearLayoutManager(this@MainActivity, RecyclerView.HORIZONTAL, false)
                 onlineFriendsLoading.visibility = View.GONE
@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 if (value != null) {
                     val onlineFriends = dbViewModel.getOnlineFriends(value)
                     withContext(Dispatchers.Main) {
-                        rcvOnlineFriends.adapter = FriendAdapter(onlineFriends)
+                        rcvOnlineFriends.adapter = OnlineFriendAdapter(onlineFriends)
                     }
                 }
             }

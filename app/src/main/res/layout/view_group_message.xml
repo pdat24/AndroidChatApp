@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="16dp"
-    android:paddingHorizontal="8dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingHorizontal="8dp">
 
     <TextView
         android:id="@+id/tvSendDay"
@@ -17,59 +17,84 @@
         android:visibility="gone" />
 
     <LinearLayout
-        android:id="@+id/groupMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:baselineAligned="false"
-        android:weightSum="10">
+        android:orientation="vertical">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="0dp"
+        <LinearLayout
+            android:id="@+id/groupMessage"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="8"
-            android:orientation="horizontal">
+            android:baselineAligned="false"
+            android:weightSum="10">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/avatarContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="100dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:id="@+id/ivAvatar"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:contentDescription="@string/avatar" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <Space
-                android:id="@+id/space"
-                android:layout_width="4dp"
-                android:layout_height="0dp"
-                app:layout_constraintEnd_toStartOf="@id/messageContainer"
-                app:layout_constraintStart_toEndOf="@id/avatarContainer"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <LinearLayout
-                android:id="@+id/messageContainer"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/space" />
+                android:layout_weight="8">
 
-            <TextView
-                android:id="@+id/tvSendingStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:textSize="12sp"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/messageContainer" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/avatarContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="100dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@string/avatar" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <Space
+                    android:id="@+id/space"
+                    android:layout_width="4dp"
+                    android:layout_height="0dp"
+                    app:layout_constraintEnd_toStartOf="@id/messageContainer"
+                    app:layout_constraintStart_toEndOf="@id/avatarContainer"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:id="@+id/messageContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/space" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvSendingStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:drawablePadding="2dp"
+            android:text="@string/sending"
+            android:textColor="@color/send_status"
+            android:textSize="10sp"
+            android:layout_marginTop="-2dp"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/sending"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/messageContainer" />
+
+        <TextView
+            android:id="@+id/tvSendingStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:drawablePadding="2dp"
+            android:text="@string/sent"
+            android:textColor="@color/send_status"
+            android:textSize="10sp"
+            android:layout_marginTop="-2dp"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/sent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/messageContainer" />
     </LinearLayout>
 </LinearLayout>

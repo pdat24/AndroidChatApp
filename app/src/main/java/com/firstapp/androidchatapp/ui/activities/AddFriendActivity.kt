@@ -49,6 +49,8 @@ class AddFriendActivity : AppCompatActivity() {
         rcvSearchResult = findViewById(R.id.rcvSearchResults)
         searchByGroup.check(R.id.rbName)
 
+        rcvSearchResult.layoutManager = LinearLayoutManager(this)
+
         dbViewModel = ViewModelProvider(
             this,
             DatabaseViewModelFactory(this)
@@ -90,7 +92,6 @@ class AddFriendActivity : AppCompatActivity() {
         // observe search results change
         searchResults.observe(this) {
             rcvSearchResult.adapter = SearchResultAdapter(dbViewModel, it)
-            rcvSearchResult.layoutManager = LinearLayoutManager(this)
         }
 
         // observe search filter change

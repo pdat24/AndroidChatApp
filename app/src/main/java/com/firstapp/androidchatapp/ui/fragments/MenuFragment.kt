@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.ui.activities.AddFriendActivity
+import com.firstapp.androidchatapp.ui.activities.FriendActivity
 import com.firstapp.androidchatapp.ui.activities.FriendRequestsActivity
 import com.firstapp.androidchatapp.ui.activities.MainActivity
 import com.firstapp.androidchatapp.ui.activities.SettingsActivity
@@ -39,6 +40,7 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
     private lateinit var container: MotionLayout
     private lateinit var coverLayer: FrameLayout
     private lateinit var addFriendNavBtn: TextView
+    private lateinit var friendsNavBtn: TextView
     private lateinit var friendReqNavBtn: TextView
     private lateinit var settingsNavBtn: TextView
     private lateinit var imgPickerFragment: FragmentContainerView
@@ -54,6 +56,7 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
         // get views
         addFriendNavBtn = view.findViewById(R.id.tvAddFriend)
         friendReqNavBtn = view.findViewById(R.id.tvFriendRequests)
+        friendsNavBtn = view.findViewById(R.id.tvFriends)
         settingsNavBtn = view.findViewById(R.id.tvSettings)
         changeAvatarBtn = view.findViewById(R.id.changeAvatarBtn)
         editNameBtn = view.findViewById(R.id.ivEditName)
@@ -95,6 +98,9 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
 
     private fun addEventListeners() {
         // add event listeners
+        friendsNavBtn.setOnClickListener {
+            startActivity(Intent(requireContext(), FriendActivity::class.java))
+        }
         addFriendNavBtn.setOnClickListener {
             startActivity(Intent(requireContext(), AddFriendActivity::class.java))
         }

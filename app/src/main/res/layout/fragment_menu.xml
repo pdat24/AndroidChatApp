@@ -137,18 +137,34 @@
             app:dividerColor="@color/light_pink_grey" />
 
         <TextView
+            android:id="@+id/tvFriends"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:clickable="true"
+            android:drawablePadding="12dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="12dp"
+            android:text="@string/friends"
+            android:textColor="@color/indicator"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/friends" />
+
+        <TextView
             android:id="@+id/tvAddFriend"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
             android:clickable="true"
             android:drawablePadding="12dp"
-            android:paddingHorizontal="20dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
             android:paddingVertical="12dp"
             android:text="@string/add_friend"
             android:textColor="@color/indicator"
             android:textStyle="bold"
-            app:drawableStartCompat="@drawable/baseline_person_add_20" />
+            app:drawableStartCompat="@drawable/add_friend" />
 
         <TextView
             android:id="@+id/tvFriendRequests"
@@ -157,12 +173,13 @@
             android:layout_marginBottom="4dp"
             android:clickable="true"
             android:drawablePadding="12dp"
-            android:paddingHorizontal="20dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
             android:paddingVertical="12dp"
             android:text="@string/friend_requests"
             android:textColor="@color/indicator"
             android:textStyle="bold"
-            app:drawableStartCompat="@drawable/baseline_people_24" />
+            app:drawableStartCompat="@drawable/friend_requests" />
 
         <TextView
             android:id="@+id/tvSettings"
@@ -170,11 +187,12 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:drawablePadding="12dp"
-            android:paddingHorizontal="20dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
             android:paddingVertical="12dp"
             android:text="@string/settings"
             android:textColor="@color/indicator"
             android:textStyle="bold"
-            app:drawableStartCompat="@drawable/baseline_settings_20" />
+            app:drawableStartCompat="@drawable/settings" />
     </LinearLayout>
 </androidx.constraintlayout.motion.widget.MotionLayout>

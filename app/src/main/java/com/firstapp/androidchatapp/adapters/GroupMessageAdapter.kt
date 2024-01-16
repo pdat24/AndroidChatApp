@@ -51,12 +51,13 @@ class GroupMessageAdapter(
     override fun getItemCount(): Int = groupMessages.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val groupMessage = groupMessages[position]
         resetViews(holder)
+        val groupMessage = groupMessages[position]
+
         Glide.with(context).load(friendAvatarURI).into(holder.friendAvatar)
         handleShowSendTime(holder, groupMessage, position)
-        val side = putGroupOnLeftOrRight(holder, groupMessage)
 
+        val side = putGroupOnLeftOrRight(holder, groupMessage)
         val messages = groupMessage.messages
         val msgNumber = messages.size
         // handle render messages
@@ -101,6 +102,8 @@ class GroupMessageAdapter(
             holder.messagesContainer.gravity = Gravity.END
             holder.friendAvatar.visibility = View.GONE
             side = GroupMessageSide.RIGHT
+
+            holder.sendingStatus.visibility = View.VISIBLE
         }
         return side
     }

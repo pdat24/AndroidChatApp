@@ -84,6 +84,12 @@ class Functions {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             return cm.activeNetworkInfo?.isConnected == true
         }
+
+        fun search(list: List<String>, input: String): List<String> {
+            return list.filter {
+                it.startsWith(input, true) || it.split(" ").contains(input)
+            }
+        }
     }
 
 }
