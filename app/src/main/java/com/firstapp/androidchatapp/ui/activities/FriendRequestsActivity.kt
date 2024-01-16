@@ -5,79 +5,106 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.ReceivedRequestAdapter
-import com.firstapp.androidchatapp.adapters.SentRequestAdapter
+import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.repositories.UserManager
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
+import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class FriendRequestsActivity : AppCompatActivity() {
 
-    private lateinit var noSentReqView: TextView
-    private lateinit var noReceivedReqView: TextView
-    private lateinit var rcvSentRequests: RecyclerView
-    private lateinit var rcvReceivedRequests: RecyclerView
+    private lateinit var noRequest: TextView
+    private lateinit var rcvRequests: RecyclerView
     private lateinit var dbViewModel: DatabaseViewModel
-    private lateinit var receivedReqLoading: CircularProgressIndicator
-    private lateinit var sentReqLoading: CircularProgressIndicator
+    private lateinit var mainViewModel: MainViewModel
+    private lateinit var loading: CircularProgressIndicator
+    private lateinit var tabLayout: TabLayout
+    private var sentRequests: List<FriendRequest>? = null
+    private var receivedRequests: List<FriendRequest>? = null
+    private var openInFirstTime = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_friend_requests)
-        // get views
-        noSentReqView = findViewById(R.id.tvNoSentReq)
-        noReceivedReqView = findViewById(R.id.tvNoReceivedReq)
-        rcvSentRequests = findViewById(R.id.rcvSentRequests)
-        rcvReceivedRequests = findViewById(R.id.rcvReceivedRequests)
-        sentReqLoading = findViewById(R.id.sentReqLoading)
-        receivedReqLoading = findViewById(R.id.receivedReqLoading)
+        window.statusBarColor = getColor(R.color.dialog_bg)
 
+        // get views
+        noRequest = findViewById(R.id.tvNoRequest)
+        rcvRequests = findViewById(R.id.rcvRequests)
+        loading = findViewById(R.id.loading)
+        tabLayout = findViewById(R.id.tabLayout)
+
+        rcvRequests.layoutManager = LinearLayoutManager(this)
+
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    loading.visibility = View.VISIBLE
+                    if (tab?.position == 0) {
+                        showReceivedRequests()
+                        mainViewModel.tabPosition = 0
+                    } else if (tab?.position == 1) {
+                        showSentRequests()
+                        mainViewModel.tabPosition = 1
+                    }
+                    loading.visibility = View.GONE
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+
+        })
+
+        // view models
         dbViewModel = ViewModelProvider(
             this,
             DatabaseViewModelFactory(this)
         )[DatabaseViewModel::class.java]
-
-        showSentRequests()
-        showReceivedRequests()
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
     }
 
-    private fun showSentRequests() {
-        lifecycleScope.launch {
-            withContext(Dispatchers.Main) {
-                sentReqLoading.visibility = View.VISIBLE
-                val sentRequests = dbViewModel.getUserRequests(UserManager.RequestType.SENT)
-                if (sentRequests.isEmpty())
-                    noSentReqView.visibility = View.VISIBLE
-                else
-                    noSentReqView.visibility = View.GONE
-                rcvSentRequests.adapter = SentRequestAdapter(dbViewModel, sentRequests)
-                rcvSentRequests.layoutManager = LinearLayoutManager(this@FriendRequestsActivity)
-                sentReqLoading.visibility = View.GONE
+    override fun onStart() {
+        super.onStart()
+        CoroutineScope(Dispatchers.Main).launch {
+            if (openInFirstTime) {
+                showReceivedRequests()
+                openInFirstTime = false
             }
+        }
+        tabLayout.selectTab(tabLayout.getTabAt(mainViewModel.tabPosition))
+    }
+
+    private suspend fun showSentRequests() {
+        sentRequests = sentRequests ?: dbViewModel.getUserRequests(UserManager.RequestType.SENT)
+        sentRequests?.let {
+            if (it.isEmpty())
+                noRequest.visibility = View.VISIBLE
+            else
+                noRequest.visibility = View.GONE
+            rcvRequests.adapter = ReceivedRequestAdapter(dbViewModel, it)
         }
     }
 
-    private fun showReceivedRequests() {
-        lifecycleScope.launch {
-            withContext(Dispatchers.Main) {
-                receivedReqLoading.visibility = View.VISIBLE
-                val receivedRequests = dbViewModel.getUserRequests(UserManager.RequestType.RECEIVED)
-                if (receivedRequests.isEmpty())
-                    noReceivedReqView.visibility = View.VISIBLE
-                else
-                    noReceivedReqView.visibility = View.GONE
-                rcvReceivedRequests.adapter = ReceivedRequestAdapter(dbViewModel, receivedRequests)
-                rcvReceivedRequests.layoutManager = LinearLayoutManager(this@FriendRequestsActivity)
-                receivedReqLoading.visibility = View.GONE
-            }
+    private suspend fun showReceivedRequests() {
+        receivedRequests =
+            receivedRequests ?: dbViewModel.getUserRequests(UserManager.RequestType.RECEIVED)
+        receivedRequests?.let {
+            if (it.isEmpty())
+                noRequest.visibility = View.VISIBLE
+            else
+                noRequest.visibility = View.GONE
+            rcvRequests.adapter = ReceivedRequestAdapter(dbViewModel, it)
         }
     }
 

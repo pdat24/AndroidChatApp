@@ -15,184 +15,189 @@
         android:alpha="0"
         android:background="@color/bg_cover_layer" />
 
-    <LinearLayout
+    <ScrollView
         android:id="@+id/floatBlock"
-        android:layout_width="@dimen/menu_drawer_width"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@drawable/bg_drawer_menu"
-        android:clickable="true"
-        android:orientation="vertical"
-        android:padding="16dp"
         app:layout_constraintEnd_toStartOf="parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/menu_drawer_width"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="36dp"
-            android:layout_marginBottom="12dp"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:clickable="true"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="100dp">
+                android:layout_gravity="center"
+                android:layout_marginTop="36dp"
+                android:layout_marginBottom="12dp"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <ImageView
-                    android:id="@+id/ivAvatar"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:contentDescription="@string/avatar" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <RelativeLayout
-                android:id="@+id/changeAvatarBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginStart="-30dp"
-                android:background="@drawable/bg_edit_avatar_icon"
-                android:padding="5dp">
-
-                <ImageView
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/image_desc"
-                    android:src="@drawable/baseline_camera_alt_24" />
-            </RelativeLayout>
-        </LinearLayout>
+                    app:cardCornerRadius="100dp">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clipToPadding="false"
-            android:paddingHorizontal="30dp">
+                    <ImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:contentDescription="@string/avatar" />
+                </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/editNameLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:visibility="invisible">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editNameInput"
-                    android:layout_width="200dp"
+                <RelativeLayout
+                    android:id="@+id/changeAvatarBtn"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:lines="1"
-                    android:padding="8dp"
-                    android:textColor="@color/white"
-                    android:textSize="14sp" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="-30dp"
+                    android:background="@drawable/bg_edit_avatar_icon"
+                    android:padding="5dp">
 
-            <ImageView
-                android:id="@+id/ivConfirmChangeName"
-                android:layout_width="wrap_content"
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/image_desc"
+                        android:src="@drawable/baseline_camera_alt_24" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="8dp"
-                android:layout_toEndOf="@id/editNameLayout"
-                android:background="@drawable/bg_back_button"
-                android:contentDescription="@string/check_icon"
-                android:padding="2dp"
-                android:src="@drawable/baseline_check_24"
-                android:visibility="invisible" />
+                android:clipToPadding="false"
+                android:paddingHorizontal="30dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/editNameLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="invisible">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editNameInput"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:lines="1"
+                        android:padding="8dp"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <ImageView
+                    android:id="@+id/ivConfirmChangeName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@id/editNameLayout"
+                    android:background="@drawable/bg_back_button"
+                    android:contentDescription="@string/check_icon"
+                    android:padding="2dp"
+                    android:src="@drawable/baseline_check_24"
+                    android:visibility="invisible" />
+
+                <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:layout_gravity="center"
+                    android:drawablePadding="16dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Hello World!"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/ivEditName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@id/tvName"
+                    android:background="@drawable/bg_back_button"
+                    android:clickable="true"
+                    android:contentDescription="@string/check_icon"
+                    android:padding="2dp"
+                    android:src="@drawable/baseline_edit_note" />
+            </RelativeLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="20dp"
+                app:dividerColor="@color/light_pink_grey" />
 
             <TextView
-                android:id="@+id/tvName"
-                android:layout_width="wrap_content"
+                android:id="@+id/tvFriends"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_gravity="center"
-                android:drawablePadding="16dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Hello World!"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/ivEditName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="8dp"
-                android:layout_toEndOf="@id/tvName"
-                android:background="@drawable/bg_back_button"
+                android:layout_marginBottom="4dp"
                 android:clickable="true"
-                android:contentDescription="@string/check_icon"
-                android:padding="2dp"
-                android:src="@drawable/baseline_edit_note" />
-        </RelativeLayout>
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="12dp"
+                android:text="@string/friends"
+                android:textColor="@color/indicator"
+                android:textStyle="bold"
+                app:drawableStartCompat="@drawable/friends" />
 
-        <com.google.android.material.divider.MaterialDivider
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="20dp"
-            app:dividerColor="@color/light_pink_grey" />
+            <TextView
+                android:id="@+id/tvAddFriend"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:clickable="true"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="12dp"
+                android:text="@string/add_friend"
+                android:textColor="@color/indicator"
+                android:textStyle="bold"
+                app:drawableStartCompat="@drawable/add_friend" />
 
-        <TextView
-            android:id="@+id/tvFriends"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:clickable="true"
-            android:drawablePadding="12dp"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="12dp"
-            android:text="@string/friends"
-            android:textColor="@color/indicator"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/friends" />
+            <TextView
+                android:id="@+id/tvFriendRequests"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:clickable="true"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="12dp"
+                android:text="@string/friend_requests"
+                android:textColor="@color/indicator"
+                android:textStyle="bold"
+                app:drawableStartCompat="@drawable/friend_requests" />
 
-        <TextView
-            android:id="@+id/tvAddFriend"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:clickable="true"
-            android:drawablePadding="12dp"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="12dp"
-            android:text="@string/add_friend"
-            android:textColor="@color/indicator"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/add_friend" />
-
-        <TextView
-            android:id="@+id/tvFriendRequests"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:clickable="true"
-            android:drawablePadding="12dp"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="12dp"
-            android:text="@string/friend_requests"
-            android:textColor="@color/indicator"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/friend_requests" />
-
-        <TextView
-            android:id="@+id/tvSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:drawablePadding="12dp"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="12dp"
-            android:text="@string/settings"
-            android:textColor="@color/indicator"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/settings" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tvSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:drawablePadding="12dp"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="12dp"
+                android:text="@string/settings"
+                android:textColor="@color/indicator"
+                android:textStyle="bold"
+                app:drawableStartCompat="@drawable/settings" />
+        </LinearLayout>
+    </ScrollView>
 </androidx.constraintlayout.motion.widget.MotionLayout>

@@ -71,4 +71,6 @@
     <string name="sending">Sending</string>
     <string name="friends">Friends</string>
     <string name="unfriend">Unfriend</string>
+    <string name="received">Received</string>
+    <string name="no_request">No request</string>
 </resources>

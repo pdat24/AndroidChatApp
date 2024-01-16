@@ -8,4 +8,5 @@ class MainViewModel : ViewModel() {
     var imgPickerState = MutableStateFlow(false)
     var openMenu = MutableLiveData(false)
     var avatarState = MutableStateFlow("")
+    var tabPosition = 0
 }
