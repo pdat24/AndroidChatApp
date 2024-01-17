@@ -169,6 +169,25 @@ class UserManager {
         userDB.document(userID).update(FRIENDS, friends).await()
     }
 
+    suspend fun removeFriend(userID: String, friendId: String) {
+        val user = getUserById(userID)
+        val tmp = user[FRIENDS] as List<*>
+        val res = mutableListOf<Friend>()
+        tmp.forEach {
+            val friend = it as HashMap<*, *>
+            if (friend[UID] != friendId)
+                res.add(
+                    Friend(
+                        uid = friend[UID] as String,
+                        name = friend[NAME] as String,
+                        avatarURI = friend[AVATAR_URI] as String,
+                        conversationID = friend[CONVERSATION_ID] as String
+                    )
+                )
+        }
+        userDB.document(userID).update(FRIENDS, res).await()
+    }
+
     suspend fun addSentRequest(userID: String, newRequest: FriendRequest) {
         val requests = getUserRequests(userID, RequestType.SENT).toMutableList()
         requests.add(newRequest)

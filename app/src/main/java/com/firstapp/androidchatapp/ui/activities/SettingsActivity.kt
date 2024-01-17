@@ -64,12 +64,12 @@ class SettingsActivity : AppCompatActivity() {
      * */
     fun signOut(view: View) {
         MaterialAlertDialogBuilder(this)
-            .setTitle("Confirm")
+            .setTitle("Sign out")
             .setBackground(
                 AppCompatResources.getDrawable(this, R.drawable.bg_sign_out_dialog)
             )
             .setMessage("Are you sure want to sign out?")
-            .setPositiveButton("Sign out") { _, _ ->
+            .setPositiveButton("Confirm") { _, _ ->
                 // sign out
                 onAgreeSignOut()
             }.setNegativeButton("Cancel") { dialog, _ ->

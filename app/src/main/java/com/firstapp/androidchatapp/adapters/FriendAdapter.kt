@@ -6,14 +6,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FriendAdapter(
+    private val flow: MutableStateFlow<String?>,
     private val dbViewModel: DatabaseViewModel,
     private val friends: List<Friend>
 ) : RecyclerView.Adapter<FriendAdapter.ViewHolder>() {
@@ -44,11 +53,25 @@ class FriendAdapter(
         holder.name.text = user.name
         holder.uid.text = user.uid
         holder.btnUnfriend.setOnClickListener {
-            handleUnfriend(user)
+            MaterialAlertDialogBuilder(context)
+                .setTitle("Unfriend")
+                .setBackground(
+                    AppCompatResources.getDrawable(context, R.drawable.bg_sign_out_dialog)
+                )
+                .setMessage("Are your sure want to unfriend?")
+                .setPositiveButton("Confirm") { _, _ ->
+                    handleUnfriend(user)
+                }.setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.cancel()
+                }.show()
         }
     }
 
-    private fun handleUnfriend(friend: Friend) {
-        // TODO: Unfriend
+    private fun handleUnfriend(friend: Friend) = CoroutineScope(Dispatchers.IO).launch {
+        dbViewModel.removeFriend(friend.uid)
+        flow.emit(friend.uid)
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context, "Unfriended with ${friend.name}", Toast.LENGTH_SHORT).show()
+        }
     }
 }

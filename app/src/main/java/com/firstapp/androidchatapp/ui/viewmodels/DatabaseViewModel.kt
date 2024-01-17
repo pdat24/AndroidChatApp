@@ -175,6 +175,10 @@ class DatabaseViewModel(
         }
     }
 
+    suspend fun removeFriend(friendId: String) {
+        userManager.removeFriend(firebaseAuth.currentUser!!.uid, friendId)
+        userManager.removeFriend(friendId, firebaseAuth.currentUser!!.uid)
+    }
 
     /**
      * @return the ID of message boxes list

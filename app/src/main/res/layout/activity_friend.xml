@@ -74,4 +74,39 @@
         android:layout_marginTop="20dp"
         android:indeterminate="true"
         android:visibility="gone" />
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/tvNoFriend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:flexDirection="row"
+        app:flexWrap="wrap"
+        app:justifyContent="center">
+
+        <TextView
+            android:textSize="14sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_friend" />
+
+        <TextView
+            android:textSize="14sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="toAddFriendActivity"
+            android:text="@string/add_friend_underline"
+            android:textColor="@color/blue"
+            android:textStyle="bold" />
+    </com.google.android.flexbox.FlexboxLayout>
+
+    <TextView
+        android:textSize="14sp"
+        android:id="@+id/tvNoResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_search_result"
+        android:textAlignment="center"
+        android:textStyle="italic"
+        android:visibility="gone" />
 </LinearLayout>
