@@ -221,7 +221,7 @@ class GroupMessageAdapter(
     }
 
     private fun renderFileMessage(container: ViewGroup) {
-        TODO("Not yet implemented")
+        // TODO: render file message
     }
 
     private fun renderImageMessage(container: ViewGroup, imgURI: String) {

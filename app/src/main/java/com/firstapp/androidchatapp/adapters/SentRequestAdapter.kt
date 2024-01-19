@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 
 class SentRequestAdapter(
     private val dbViewModel: DatabaseViewModel,
-    private val requests: List<FriendRequest>
+    private val requests: List<FriendRequest>,
 ) : RecyclerView.Adapter<SentRequestAdapter.ViewHolder>() {
 
     private lateinit var context: Context
@@ -50,7 +50,7 @@ class SentRequestAdapter(
         holder.btnRecall.setOnClickListener {
             if (Functions.isInternetConnected(context)) {
                 CoroutineScope(Dispatchers.Main).launch {
-                    recallRequest(req.uid).join()
+                    Functions(dbViewModel).removeRequests(req)
                     holder.btnRecall.visibility = View.GONE
                     // add send event
                     holder.btnSend.setOnClickListener {
@@ -67,16 +67,6 @@ class SentRequestAdapter(
                 Functions.showNoInternetNotification()
         }
     }
-
-    private fun recallRequest(uid: String): Job =
-        CoroutineScope(Dispatchers.IO).launch {
-            CoroutineScope(Dispatchers.IO).launch {
-                dbViewModel.removeSentRequest(uid)
-            }
-            CoroutineScope(Dispatchers.IO).launch {
-                dbViewModel.removeReceivedRequest(uid)
-            }
-        }
 
     private fun sendFriendRequest(req: FriendRequest): Job =
         CoroutineScope(Dispatchers.IO).launch {

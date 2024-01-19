@@ -98,8 +98,7 @@ class FriendActivity : AppCompatActivity() {
                     }
                     if (newFriendList.isEmpty())
                         tvNoFriend.visibility = View.VISIBLE
-                    else
-                        rcvFriends.adapter = FriendAdapter(flow, dbViewModel, newFriendList)
+                    rcvFriends.adapter = FriendAdapter(flow, dbViewModel, newFriendList)
                 }
             }
         }

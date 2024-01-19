@@ -80,6 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginTop="24dp"
             android:indeterminate="true"
             android:visibility="gone" />
 
@@ -87,6 +88,7 @@
             android:id="@+id/rcvRequests"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
+            android:layout_marginTop="24dp"
+            android:paddingHorizontal="16dp" />
     </FrameLayout>
 </LinearLayout>

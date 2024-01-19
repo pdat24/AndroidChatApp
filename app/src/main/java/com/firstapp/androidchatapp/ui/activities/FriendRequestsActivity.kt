@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.ReceivedRequestAdapter
+import com.firstapp.androidchatapp.adapters.SentRequestAdapter
 import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.repositories.UserManager
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
@@ -92,7 +93,7 @@ class FriendRequestsActivity : AppCompatActivity() {
                 noRequest.visibility = View.VISIBLE
             else
                 noRequest.visibility = View.GONE
-            rcvRequests.adapter = ReceivedRequestAdapter(dbViewModel, it)
+            rcvRequests.adapter = SentRequestAdapter(dbViewModel, it)
         }
     }
 

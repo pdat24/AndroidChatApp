@@ -11,6 +11,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -37,6 +38,7 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
 import com.firstapp.androidchatapp.utils.Constants.Companion.ICON
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE_STORAGE_PATH
+import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
@@ -63,7 +65,9 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var likeBtn: ImageView
     private lateinit var sendMsgBtn: ImageView
     private lateinit var messageInput: TextInputEditText
-    private lateinit var chatBar: LinearLayout
+    private lateinit var chatBarContainer: RelativeLayout
+    private lateinit var chatToolBar: LinearLayout
+    private lateinit var tvNotFriend: TextView
     private lateinit var rcvMessages: RecyclerView
     private lateinit var conversationID: String
     private lateinit var loadingView: View
@@ -76,7 +80,8 @@ class ChatActivity : AppCompatActivity() {
     private var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
     private var friendAvatarURI: String? = null
-    private var friendUID: String? = null
+    private var userUID: String? = null
+    private var userIsFriend: Boolean? = null
     private var msgBoxIndex: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,10 +96,12 @@ class ChatActivity : AppCompatActivity() {
         likeBtn = findViewById(R.id.ivLikeIcon)
         sendMsgBtn = findViewById(R.id.ivSendMsg)
         messageInput = findViewById(R.id.messageInput)
-        chatBar = findViewById(R.id.chatBar)
+        chatBarContainer = findViewById(R.id.chatBarContainer)
         loadingView = findViewById(R.id.loading)
         emptyConversationView = findViewById(R.id.emptyConversionView)
         rcvMessages = findViewById(R.id.rcvMessages)
+        chatToolBar = findViewById(R.id.chatToolbar)
+        tvNotFriend = findViewById(R.id.tvNotFriend)
 
         rcvMessages.layoutManager = LinearLayoutManager(this@ChatActivity)
 
@@ -105,7 +112,8 @@ class ChatActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvName).text = intentExtras.getString(NAME)
         friendAvatarURI = intentExtras.getString(AVATAR_URI)
         msgBoxIndex = intentExtras.getInt(MESSAGE_BOX_INDEX)
-        friendUID = intentExtras.getString(FRIEND_UID)
+        userUID = intentExtras.getString(FRIEND_UID)
+        userIsFriend = intentExtras.getBoolean(IS_FRIEND)
         conversationID = intentExtras.getString(CONVERSATION_ID)
             ?: throw IllegalArgumentException("Conversation ID is null!")
 
@@ -115,6 +123,8 @@ class ChatActivity : AppCompatActivity() {
         // view models
         dbViewModel =
             ViewModelProvider(this, DatabaseViewModelFactory(this))[DatabaseViewModel::class.java]
+
+        blockChatIfNotFriend()
 
         // add event listeners
         choosePhotoBtn.setOnClickListener { view ->
@@ -330,7 +340,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private suspend fun unreadFriendMessageBox() {
-        val tmp = dbViewModel.getMessageBoxList(friendUID)
+        val tmp = dbViewModel.getMessageBoxList(userUID)
         val msgBox = dbViewModel.getMessageBoxes(tmp).toMutableList()
         msgBox.forEach {
             if (it.conversationID == conversationID) {
@@ -339,7 +349,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
         FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH).document(
-            dbViewModel.getMessageBoxListId(friendUID!!)
+            dbViewModel.getMessageBoxListId(userUID!!)
         ).update(MESSAGE_BOXES, msgBox)
     }
 
@@ -366,6 +376,16 @@ class ChatActivity : AppCompatActivity() {
             )
     }
 
+    private fun blockChatIfNotFriend() = lifecycleScope.launch {
+        if (userIsFriend == false) {
+            tvNotFriend.visibility = View.VISIBLE
+            chatToolBar.visibility = View.GONE
+        } else {
+            tvNotFriend.visibility = View.GONE
+            chatToolBar.visibility = View.VISIBLE
+        }
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if (ev?.action == MotionEvent.ACTION_DOWN) {
             val view = currentFocus
@@ -373,7 +393,7 @@ class ChatActivity : AppCompatActivity() {
                 val msgInputBox = Rect()
                 val chatBarBox = Rect()
                 view.getGlobalVisibleRect(msgInputBox)
-                chatBar.getGlobalVisibleRect(chatBarBox)
+                chatBarContainer.getGlobalVisibleRect(chatBarBox)
                 if (
                     !msgInputBox.contains(ev.rawX.toInt(), ev.rawY.toInt()) &&
                     !chatBarBox.contains(ev.rawX.toInt(), ev.rawY.toInt())

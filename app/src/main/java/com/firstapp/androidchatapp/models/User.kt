@@ -4,7 +4,6 @@ data class User(
     val name: String,
     val avatarURI: String,
     val messageBoxListId: String,
-    val isOnline: Boolean = false,
     val friends: List<Friend> = listOf(),
     val sentRequests: List<FriendRequest> = listOf(),
     val receivedRequests: List<FriendRequest> = listOf(),

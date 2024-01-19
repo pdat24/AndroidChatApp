@@ -219,7 +219,7 @@ class UserManager {
      * @param receiverId the id of current user
      * @param senderId the id of user want to reject
      */
-    suspend fun removeReceivedRequest(receiverId: String, senderId: String) {
+    suspend fun removeReceivedRequest(senderId: String, receiverId: String) {
         val requests = getUserRequests(receiverId, RequestType.RECEIVED) { id ->
             id != senderId
         }

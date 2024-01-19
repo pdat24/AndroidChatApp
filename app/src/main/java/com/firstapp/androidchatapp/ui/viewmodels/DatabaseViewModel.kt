@@ -147,12 +147,12 @@ class DatabaseViewModel(
         userManager.addReceivedRequest(senderId)
     }
 
-    suspend fun removeSentRequest(senderId: String) {
-        userManager.removeSentRequest(senderId, firebaseAuth.currentUser!!.uid)
+    suspend fun removeSentRequest(senderId: String, receiverId: String) {
+        userManager.removeSentRequest(senderId, receiverId)
     }
 
-    suspend fun removeReceivedRequest(senderId: String) {
-        userManager.removeReceivedRequest(firebaseAuth.currentUser!!.uid, senderId)
+    suspend fun removeReceivedRequest(senderId: String, receiverId: String, ) {
+        userManager.removeReceivedRequest(senderId, receiverId)
     }
 
     suspend fun addFriend(friend: Friend) {
@@ -193,8 +193,8 @@ class DatabaseViewModel(
         )
     }
 
-    fun getMessageBoxes(msgBoxesDocument: DocumentSnapshot): List<MessageBox> {
-        val msgBoxes = msgBoxesDocument[MESSAGE_BOXES] as List<*>
+    fun getMessageBoxes(msgBoxesList: DocumentSnapshot): List<MessageBox> {
+        val msgBoxes = msgBoxesList[MESSAGE_BOXES] as List<*>
         val result = mutableListOf<MessageBox>()
         for (i in msgBoxes) {
             val box = i as HashMap<*, *>

@@ -55,6 +55,7 @@ class Constants {
         const val ACTION_PREPARE_OFFLINE = "ACTION_PREPARE_OFFLINE"
         const val FRIEND_UID = "friendUID"
         const val INDEX = "index"
+        const val IS_FRIEND = "IS_FRIEND"
         const val MAIN_SHARED_PREFERENCE = "MAIN_SHARED_PREFERENCE"
         const val SP_MESSAGE_BOX_NUMBER = "MESSAGE_BOX_NUMBER"
     }

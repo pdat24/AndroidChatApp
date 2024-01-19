@@ -87,7 +87,9 @@ class SettingsActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 firebaseAuth.signOut()
                 startActivity(
-                    Intent(this@SettingsActivity, IntroduceActivity::class.java)
+                    Intent(this@SettingsActivity, IntroduceActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    }
                 )
                 finish()
             }

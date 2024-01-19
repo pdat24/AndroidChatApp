@@ -12,6 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
+import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.activities.ChatActivity
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
@@ -19,6 +20,7 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
+import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
@@ -42,6 +44,7 @@ class MessageBoxAdapter(
 ) : RecyclerView.Adapter<MessageBoxAdapter.ViewHolder>() {
 
     private lateinit var context: Context
+    private lateinit var friendsID: List<String>
 
     class ViewHolder(
         itemView: View
@@ -56,6 +59,11 @@ class MessageBoxAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         context = parent.context
+        CoroutineScope(Dispatchers.IO).launch {
+            friendsID = dbViewModel.getFriends().map {
+                it.uid
+            }
+        }
         return ViewHolder(
             LayoutInflater.from(context).inflate(R.layout.view_message_box, parent, false)
         )
@@ -89,7 +97,6 @@ class MessageBoxAdapter(
         ).addSnapshotListener { value, _ ->
             value?.let {
                 CoroutineScope(Dispatchers.IO).launch {
-                    // TODO: can cause exceptions, let's test it
                     val tmp = dbViewModel.getMessageBoxList()[MESSAGE_BOXES] as List<*>
                     val m = tmp[messageBox.index] as HashMap<*, *>
                     withContext(Dispatchers.Main) {
@@ -119,6 +126,7 @@ class MessageBoxAdapter(
         intent.putExtra(AVATAR_URI, msgBox.avatarURI)
         intent.putExtra(NAME, msgBox.name)
         intent.putExtra(MESSAGE_BOX_INDEX, msgBox.index)
+        intent.putExtra(IS_FRIEND, friendsID.contains(msgBox.friendUID))
         context.startActivity(intent)
     }
 

@@ -55,12 +55,13 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/input"
+            android:singleLine="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@null"
             android:drawableStart="@drawable/baseline_search_24"
             android:drawablePadding="8dp"
-            android:hint="@string/search"
+            android:hint="@string/search_user"
             android:textSize="14sp"
             android:textStyle="bold" />
     </RelativeLayout>

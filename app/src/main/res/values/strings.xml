@@ -75,4 +75,6 @@
     <string name="no_request">No request</string>
     <string name="add_friend_underline"><u>Add friend.</u></string>
     <string name="no_friend">"You have no friends. "</string>
+    <string name="search_user">Search user</string>
+    <string name="you_are_not_friends"><u>You guys are not friends!</u></string>
 </resources>

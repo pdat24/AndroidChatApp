@@ -3,10 +3,15 @@ package com.firstapp.androidchatapp.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.view.View
+import com.firstapp.androidchatapp.localdb.entities.UserInfo
+import com.firstapp.androidchatapp.models.Friend
+import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
+import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOT_LOGIN_ERROR_CODE
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +25,9 @@ import java.time.ZoneOffset
 /**
  * Contain functions that is used in many places on project
  */
-class Functions {
+class Functions(
+    private val dbViewModel: DatabaseViewModel
+) {
 
     companion object {
 
@@ -92,4 +99,115 @@ class Functions {
         }
     }
 
+    /**
+     * Create new message box for user and friend
+     */
+    private fun createMessageBoxes(req: FriendRequest, conID: String) =
+        CoroutineScope(Dispatchers.IO).launch {
+            // create message box for current user
+            createMsgBoxForCurrentUser(req, conID)
+            // create message box for user is sent this request
+            createMsgBoxForUserSentRequest(req, conID)
+        }
+
+    private suspend fun createMsgBoxForCurrentUser(req: FriendRequest, conID: String) {
+        val newBox = MessageBox(
+            index = dbViewModel.getCachedMessageBoxNumber(),
+            friendUID = req.uid,
+            avatarURI = req.avatarURI,
+            name = req.name,
+            conversationID = conID,
+            previewMessage = Constants.DEFAULT_PREVIEW_MESSAGE,
+            time = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+        )
+        dbViewModel.createMessageBox(
+            msgBoxListId = dbViewModel.getMessageBoxListId(
+                dbViewModel.firebaseAuth.currentUser!!.uid
+            ),
+            msgBox = newBox
+        )
+        // add new message box to cache
+        dbViewModel.cacheMessageBox(newBox)
+    }
+
+    private suspend fun createMsgBoxForUserSentRequest(req: FriendRequest, conID: String) {
+        val getUserInfo: (UserInfo) -> Unit = {
+            CoroutineScope(Dispatchers.IO).launch {
+                val msgBoxNumber =
+                    dbViewModel.getMessageBoxList(req.uid)[Constants.MESSAGE_BOXES] as List<*>
+                dbViewModel.createMessageBox(
+                    msgBoxListId = dbViewModel.getMessageBoxListId(req.uid),
+                    msgBox = MessageBox(
+                        index = msgBoxNumber.size,
+                        friendUID = FirebaseAuth.getInstance().currentUser!!.uid,
+                        avatarURI = it.avatarURI,
+                        name = it.name,
+                        conversationID = conID,
+                        previewMessage = Constants.DEFAULT_PREVIEW_MESSAGE,
+                        time = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                    ),
+                )
+            }
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            dbViewModel.getCachedUserInfo().observeForever(getUserInfo)
+            dbViewModel.getCachedUserInfo().removeObserver(getUserInfo)
+        }
+    }
+
+    /**
+     * Add friend for user and friend
+     * @param conID the id of conversation
+     */
+    private fun addFriend(req: FriendRequest, conID: String) =
+        CoroutineScope(Dispatchers.IO).launch {
+            dbViewModel.addFriend(
+                Friend(
+                    uid = req.uid,
+                    name = req.name,
+                    avatarURI = req.avatarURI,
+                    conversationID = conID
+                )
+            )
+        }
+
+    /**
+     * Remove the sent request of new friend and the received request of current user
+     */
+    fun removeRequests(req: FriendRequest) = CoroutineScope(Dispatchers.IO).launch {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null)
+            throwUserNotLoginError()
+        CoroutineScope(Dispatchers.IO).launch {
+            dbViewModel.removeSentRequest(senderId = currentUser!!.uid, receiverId = req.uid)
+            dbViewModel.removeReceivedRequest(senderId = currentUser.uid, receiverId = req.uid)
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            dbViewModel.removeReceivedRequest(senderId = req.uid, receiverId = currentUser!!.uid)
+            dbViewModel.removeSentRequest(senderId = req.uid, receiverId = currentUser.uid)
+        }
+    }
+
+    fun acceptRequest(req: FriendRequest) =
+        CoroutineScope(Dispatchers.IO).launch {
+            val func = Functions(dbViewModel)
+            // create new conversation
+            var conID: String? = null
+            var msgBoxIsExisted = false
+            dbViewModel.getMessageBoxes(
+                dbViewModel.getMessageBoxList()
+            ).forEach {
+                if (it.friendUID == req.uid) {
+                    msgBoxIsExisted = true
+                    conID = it.conversationID
+                }
+            }
+            if (!msgBoxIsExisted) {
+                conID = dbViewModel.createEmptyConversation()
+                func.createMessageBoxes(req, conID!!)
+            }
+            func.addFriend(req, conID!!).join()
+            func.removeRequests(req)
+        }
 }
