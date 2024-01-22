@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
@@ -21,6 +22,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class SettingsActivity : AppCompatActivity() {
+    companion object {
+        var active = false
+    }
 
     private lateinit var modeSwitcher: MaterialSwitch
     private lateinit var notificationSwitcher: MaterialSwitch
@@ -48,6 +52,19 @@ class SettingsActivity : AppCompatActivity() {
             DatabaseViewModelFactory(this)
         )[DatabaseViewModel::class.java]
         mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+    }
+
+    override fun onResume() {
+        super.onResume()
+        active = true
+        MainApp.cancelPrepareOfflineJob(this)
+        MainApp.startOnlineStatus()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        active = false
+        MainApp.prepareOffline(this)
     }
 
     private fun toggleNightMode(isChecked: Boolean) {
@@ -83,6 +100,7 @@ class SettingsActivity : AppCompatActivity() {
             dbViewModel.removeCachedUser()
             dbViewModel.removeCachedMessageBoxes()
             dbViewModel.cacheMessageBoxNumber(-1)
+            dbViewModel.updateOnlineState(false)
             // sign out
             withContext(Dispatchers.Main) {
                 firebaseAuth.signOut()

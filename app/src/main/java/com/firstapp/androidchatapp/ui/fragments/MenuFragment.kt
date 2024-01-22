@@ -19,7 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.ui.activities.AddFriendActivity
-import com.firstapp.androidchatapp.ui.activities.FriendActivity
+import com.firstapp.androidchatapp.ui.activities.FriendsActivity
 import com.firstapp.androidchatapp.ui.activities.FriendRequestsActivity
 import com.firstapp.androidchatapp.ui.activities.MainActivity
 import com.firstapp.androidchatapp.ui.activities.SettingsActivity
@@ -99,7 +99,7 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
     private fun addEventListeners() {
         // add event listeners
         friendsNavBtn.setOnClickListener {
-            startActivity(Intent(requireContext(), FriendActivity::class.java))
+            startActivity(Intent(requireContext(), FriendsActivity::class.java))
         }
         addFriendNavBtn.setOnClickListener {
             startActivity(Intent(requireContext(), AddFriendActivity::class.java))

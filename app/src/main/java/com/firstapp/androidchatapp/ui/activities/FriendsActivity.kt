@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.FriendAdapter
 import com.firstapp.androidchatapp.models.Friend
@@ -29,7 +30,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class FriendActivity : AppCompatActivity() {
+class FriendsActivity : AppCompatActivity() {
+    companion object {
+        var active = false
+    }
 
     private lateinit var rcvFriends: RecyclerView
     private lateinit var dbViewModel: DatabaseViewModel
@@ -102,6 +106,19 @@ class FriendActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        active = true
+        MainApp.cancelPrepareOfflineJob(this)
+        MainApp.startOnlineStatus()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        active = false
+        MainApp.prepareOffline(this)
     }
 
     fun back(view: View) = finish()

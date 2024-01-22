@@ -47,12 +47,12 @@
             </com.google.android.material.card.MaterialCardView>
 
             <RelativeLayout
+                android:id="@+id/statusIndicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginStart="-16dp"
+                android:layout_marginStart="-12dp"
                 android:layout_marginBottom="2dp"
-                android:background="@drawable/view_online_indicator"
                 android:padding="10dp" />
         </LinearLayout>
 
@@ -73,9 +73,9 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Active 14m ago"
                 android:textColor="@color/indicator"
                 android:textSize="12sp" />
         </LinearLayout>

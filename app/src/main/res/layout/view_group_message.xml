@@ -67,31 +67,32 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvSendingStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:drawablePadding="2dp"
-            android:text="@string/sending"
-            android:textColor="@color/send_status"
-            android:textSize="10sp"
-            android:layout_marginTop="-2dp"
-            android:visibility="gone"
-            app:drawableStartCompat="@drawable/sending"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/messageContainer" />
+        <!--                <TextView-->
+        <!--                    android:id="@+id/tvSendingStatus"-->
+        <!--                    android:layout_width="wrap_content"-->
+        <!--                    android:layout_height="wrap_content"-->
+        <!--                    android:layout_gravity="end"-->
+        <!--                    android:drawablePadding="2dp"-->
+        <!--                    android:text="@string/sending"-->
+        <!--                    android:textColor="@color/send_status"-->
+        <!--                    android:textSize="10sp"-->
+        <!--                    android:layout_marginTop="-2dp"-->
+        <!--                    android:visibility="gone"-->
+        <!--                    app:drawableStartCompat="@drawable/sending"-->
+        <!--                    app:layout_constraintEnd_toEndOf="parent"-->
+        <!--                    app:layout_constraintTop_toBottomOf="@id/messageContainer" />-->
 
         <TextView
             android:id="@+id/tvSendingStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
+            android:layout_marginTop="-2dp"
+            android:layout_marginBottom="12dp"
             android:drawablePadding="2dp"
             android:text="@string/sent"
             android:textColor="@color/send_status"
             android:textSize="10sp"
-            android:layout_marginTop="-2dp"
             android:visibility="gone"
             app:drawableStartCompat="@drawable/sent"
             app:layout_constraintEnd_toEndOf="parent"

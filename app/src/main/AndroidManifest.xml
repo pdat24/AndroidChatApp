@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
+        android:name=".MainApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -19,7 +20,7 @@
         android:theme="@style/Theme.AndroidChatApp"
         tools:targetApi="31">
         <activity
-            android:name=".ui.activities.FriendActivity"
+            android:name=".ui.activities.FriendsActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activities.FriendRequestsActivity"
@@ -56,9 +57,8 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service
-            android:name=".services.OnlineService"
-            android:exported="false" />
+
+        <receiver android:name=".receivers.OfflineReceiver" />
     </application>
 
 </manifest>

@@ -79,6 +79,9 @@ class GroupMessageAdapter(
                 FILE -> renderFileMessage(holder.messagesContainer)
             }
         }
+        if (position == groupMessages.size - 1 && groupMessage.senderID == currentUser!!.uid) {
+            holder.sendingStatus.visibility = View.VISIBLE
+        }
     }
 
     /**
@@ -102,8 +105,7 @@ class GroupMessageAdapter(
             holder.messagesContainer.gravity = Gravity.END
             holder.friendAvatar.visibility = View.GONE
             side = GroupMessageSide.RIGHT
-
-            holder.sendingStatus.visibility = View.VISIBLE
+//            holder.sendingStatus.visibility = View.VISIBLE
         }
         return side
     }

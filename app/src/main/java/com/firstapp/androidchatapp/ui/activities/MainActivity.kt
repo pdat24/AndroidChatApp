@@ -15,9 +15,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
-import com.firstapp.androidchatapp.adapters.OnlineFriendAdapter
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
+import com.firstapp.androidchatapp.adapters.OnlineFriendAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
@@ -46,6 +47,9 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
+    companion object {
+        var active = false
+    }
 
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
@@ -119,10 +123,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 fragMenu.findViewById<TextView>(R.id.tvName).text = it.name
             }
         }
-        // update online status
-//        startService(Intent(this, OnlineService::class.java).apply {
-//            action = ACTION_ONLINE
-//        })
     }
 
     override fun onStart() {
@@ -133,8 +133,17 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     override fun onResume() {
-        synchronizeCachedMessageBoxes()
         super.onResume()
+        active = true
+        synchronizeCachedMessageBoxes()
+        MainApp.cancelPrepareOfflineJob(this)
+        MainApp.startOnlineStatus()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        active = false
+        MainApp.prepareOffline(this)
     }
 
     private fun synchronizeCachedMessageBoxes() = lifecycleScope.launch {
@@ -248,7 +257,12 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
     }
 
-    override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
+    override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {}
 
-    }
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        startService(Intent(this, OnlineService::class.java).apply {
+//            action = ACTION_OFFLINE
+//        })
+//    }
 }

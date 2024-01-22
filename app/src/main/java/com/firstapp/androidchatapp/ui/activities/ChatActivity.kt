@@ -24,11 +24,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.GroupMessageAdapter
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
+import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
@@ -44,8 +46,10 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
+import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Functions
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
@@ -57,6 +61,9 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class ChatActivity : AppCompatActivity() {
+    companion object {
+        var active = false
+    }
 
     private lateinit var choosePhotoBtn: ImageView
     private lateinit var takePhotoBtn: ImageView
@@ -71,11 +78,14 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var rcvMessages: RecyclerView
     private lateinit var conversationID: String
     private lateinit var loadingView: View
+    private lateinit var tvActiveStatus: TextView
+    private lateinit var statusIndicator: RelativeLayout
     private lateinit var emptyConversationView: View
     private lateinit var pickImgLauncher: ActivityResultLauncher<Intent>
     private lateinit var takePhotoLauncher: ActivityResultLauncher<Intent>
     private lateinit var pickFileLauncher: ActivityResultLauncher<Intent>
     private lateinit var dbViewModel: DatabaseViewModel
+    private lateinit var mainViewModel: MainViewModel
     private val firestore = FirebaseFirestore.getInstance()
     private var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
@@ -83,6 +93,7 @@ class ChatActivity : AppCompatActivity() {
     private var userUID: String? = null
     private var userIsFriend: Boolean? = null
     private var msgBoxIndex: Int? = null
+    private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +113,8 @@ class ChatActivity : AppCompatActivity() {
         rcvMessages = findViewById(R.id.rcvMessages)
         chatToolBar = findViewById(R.id.chatToolbar)
         tvNotFriend = findViewById(R.id.tvNotFriend)
+        tvActiveStatus = findViewById(R.id.tvStatus)
+        statusIndicator = findViewById(R.id.statusIndicator)
 
         rcvMessages.layoutManager = LinearLayoutManager(this@ChatActivity)
 
@@ -121,9 +134,13 @@ class ChatActivity : AppCompatActivity() {
         fileStoragePath = "$FILE_STORAGE_PATH/$conversationID"
 
         // view models
-        dbViewModel =
-            ViewModelProvider(this, DatabaseViewModelFactory(this))[DatabaseViewModel::class.java]
+        dbViewModel = ViewModelProvider(
+            this,
+            DatabaseViewModelFactory(this)
+        )[DatabaseViewModel::class.java]
+        mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
+        renderUserActiveStatus()
         blockChatIfNotFriend()
 
         // add event listeners
@@ -150,7 +167,10 @@ class ChatActivity : AppCompatActivity() {
         sendMsgBtn.setOnClickListener { view ->
             val text = messageInput.text.toString()
             messageInput.text?.clear()
-            sendMessage(text.trim(), type = TEXT)
+            if (Functions.isInternetConnected(this))
+                sendMessage(text.trim(), type = TEXT)
+            else
+                Functions.showNoInternetNotification()
         }
         messageInput.setOnClickListener {
             scaleMessageInput()
@@ -171,6 +191,7 @@ class ChatActivity : AppCompatActivity() {
         }
         renderMessages(conversationID)
         observeConversationUpdates()
+        observeOnlineStatusChange()
 
         // intent result launchers
         pickImgLauncher = registerIntentResult { result ->
@@ -188,22 +209,45 @@ class ChatActivity : AppCompatActivity() {
                 handlePickFileResult(result.data!!)
             }
         }
-        loadMoreMessages()
     }
 
-    private fun loadMoreMessages() {
-        rcvMessages.setOnScrollChangeListener(object : View.OnScrollChangeListener {
-            override fun onScrollChange(
-                v: View?,
-                scrollX: Int,
-                scrollY: Int,
-                oldScrollX: Int,
-                oldScrollY: Int
-            ) {
-                println(scrollX)
-            }
+    override fun onResume() {
+        super.onResume()
+        active = true
+        MainApp.cancelPrepareOfflineJob(this)
+        MainApp.startOnlineStatus()
+    }
 
-        })
+    override fun onStop() {
+        super.onStop()
+        active = false
+        MainApp.prepareOffline(this)
+    }
+
+    private fun renderUserActiveStatus() {
+        CoroutineScope(Dispatchers.Main).launch {
+            var text = R.string.inactive
+            var indicator = R.drawable.view_offline_indicator
+            dbViewModel.getOnlineFriends().forEach {
+                // the default is inactive
+                if (it.uid == userUID) {
+                    // active
+                    text = R.string.active
+                    indicator = R.drawable.view_online_indicator
+                }
+            }
+            tvActiveStatus.text = getString(text)
+            statusIndicator.setBackgroundResource(indicator)
+        }
+    }
+
+    private fun observeOnlineStatusChange() {
+        firestore.collection(USERS_COLLECTION_PATH).document(currentUserUID)
+            .addSnapshotListener { value, _ ->
+                value?.let {
+                    renderUserActiveStatus()
+                }
+            }
     }
 
     private fun registerIntentResult(
@@ -285,7 +329,8 @@ class ChatActivity : AppCompatActivity() {
                             val groups = Functions.getGroupMessagesInConversation(it)
                             if (groups.isNotEmpty())
                                 emptyConversationView.visibility = View.GONE
-                            rcvMessages.adapter = GroupMessageAdapter(friendAvatarURI!!, groups)
+                            rcvMessages.adapter =
+                                GroupMessageAdapter(friendAvatarURI!!, groups.asReversed())
                             rcvMessages.scrollToPosition(groups.size - 1)
                         }
                         // Always update the state of message box is read when user in chat activity
@@ -313,7 +358,7 @@ class ChatActivity : AppCompatActivity() {
             if (groups.isEmpty())
                 emptyConversationView.visibility = View.VISIBLE
             withContext(Dispatchers.Main) {
-                rcvMessages.adapter = GroupMessageAdapter(friendAvatarURI!!, groups)
+                rcvMessages.adapter = GroupMessageAdapter(friendAvatarURI!!, groups.asReversed())
                 rcvMessages.scrollToPosition(groups.size - 1)
                 loadingView.visibility = View.GONE
             }

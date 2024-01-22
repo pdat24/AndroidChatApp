@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_message_box"
+    android:paddingHorizontal="16dp">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/avatarContainer"
@@ -106,6 +108,6 @@
         <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            app:dividerColor="@color/divider_color" />
+            app:dividerColor="@color/chat_input_bg" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

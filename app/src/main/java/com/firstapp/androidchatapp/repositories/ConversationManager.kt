@@ -8,6 +8,7 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
 import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
 import com.firstapp.androidchatapp.utils.Functions
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -50,12 +51,12 @@ class ConversationManager {
         val groups = Functions.getGroupMessagesInConversation(getConversation(conversationID))
         if (
             groups.isEmpty() ||
-            groups.last().senderID != uid ||
-            !isSentToday(groups.last())
+            groups.first().senderID != uid ||
+            !isSentToday(groups.first())
         ) {
-            createGroupMsgAtEnd(conversationID)
+            createNewGroupMsg(conversationID)
         }
-        appendMessageToLastGroup(conversationID, message)
+        appendMessageToLatestGroup(conversationID, message)
     }
 
     private fun isSentToday(g1: GroupMessage): Boolean {
@@ -69,7 +70,7 @@ class ConversationManager {
     /**
      * @param id the id of conversation
      */
-    private suspend fun createGroupMsgAtEnd(id: String) {
+    private suspend fun createNewGroupMsg(id: String) {
         val uid = firebaseAuth.currentUser!!.uid
         val con = conversationDB.document(id)
         val groups = Functions.getGroupMessagesInConversation(getConversation(id))
@@ -77,6 +78,7 @@ class ConversationManager {
             GROUP_MESSAGES,
             groups.toMutableList().apply {
                 add(
+                    0,
                     GroupMessage(
                         uid,
                         emptyList(),
@@ -87,13 +89,13 @@ class ConversationManager {
         ).await()
     }
 
-    private suspend fun appendMessageToLastGroup(id: String, msg: Message) {
+    private suspend fun appendMessageToLatestGroup(id: String, msg: Message) {
         val con = conversationDB.document(id)
         val groups = Functions.getGroupMessagesInConversation(getConversation(id))
         con.update(
             GROUP_MESSAGES,
             groups.apply {
-                last().apply {
+                first().apply {
                     messages = messages.toMutableList().apply {
                         add(msg)
                     }
@@ -102,9 +104,9 @@ class ConversationManager {
         ).await()
     }
 
-    suspend fun updatePreviewMessage(conversationID: String, content: String) =
-        conversationDB.document(conversationID).update(PREVIEW_MESSAGE, content).await()
+    fun updatePreviewMessage(conversationID: String, content: String): Task<Void> =
+        conversationDB.document(conversationID).update(PREVIEW_MESSAGE, content)
 
-    suspend fun updateLastSendTime(conversationID: String, time: Long) =
-        conversationDB.document(conversationID).update(TIME, time).await()
+    fun updateLastSendTime(conversationID: String, time: Long): Task<Void> =
+        conversationDB.document(conversationID).update(TIME, time)
 }

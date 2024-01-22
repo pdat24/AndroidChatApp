@@ -78,11 +78,11 @@ class DatabaseViewModel(
         conversationManager.addMessage(id, message)
     }
 
-    suspend fun updatePreviewMessage(conversationID: String, content: String) {
+    fun updatePreviewMessage(conversationID: String, content: String) {
         conversationManager.updatePreviewMessage(conversationID, content)
     }
 
-    suspend fun updateLastSendTime(conversationID: String, time: Long) {
+    fun updateLastSendTime(conversationID: String, time: Long) {
         conversationManager.updateLastSendTime(conversationID, time)
     }
 

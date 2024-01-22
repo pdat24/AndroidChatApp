@@ -52,7 +52,7 @@ class Constants {
         const val NOTIFICATION_CHANnEL_NAME = "Main Channel"
         const val PERMISSION_REQUEST_CODE = 8
         const val ACTION_ONLINE = "ACTION_ONLINE"
-        const val ACTION_PREPARE_OFFLINE = "ACTION_PREPARE_OFFLINE"
+        const val ACTION_OFFLINE = "ACTION_PREPARE_OFFLINE"
         const val FRIEND_UID = "friendUID"
         const val INDEX = "index"
         const val IS_FRIEND = "IS_FRIEND"

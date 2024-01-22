@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.SearchResultAdapter
 import com.firstapp.androidchatapp.models.Friend
@@ -35,6 +36,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class AddFriendActivity : AppCompatActivity() {
+    companion object {
+        var active = false
+    }
 
     private val itemMutationFlow = MutableStateFlow(false)
     private lateinit var dbViewModel: DatabaseViewModel
@@ -143,6 +147,19 @@ class AddFriendActivity : AppCompatActivity() {
                     searchUserByID(searchContent)
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        active = true
+        MainApp.cancelPrepareOfflineJob(this)
+        MainApp.startOnlineStatus()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        active = false
+        MainApp.prepareOffline(this)
     }
 
     private fun refreshCollections() = lifecycleScope.launch {

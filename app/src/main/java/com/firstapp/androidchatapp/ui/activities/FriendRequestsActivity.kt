@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.ReceivedRequestAdapter
 import com.firstapp.androidchatapp.adapters.SentRequestAdapter
@@ -22,6 +23,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class FriendRequestsActivity : AppCompatActivity() {
+    companion object {
+        var active = false
+    }
 
     private lateinit var noRequest: TextView
     private lateinit var rcvRequests: RecyclerView
@@ -84,6 +88,19 @@ class FriendRequestsActivity : AppCompatActivity() {
             }
         }
         tabLayout.selectTab(tabLayout.getTabAt(mainViewModel.tabPosition))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        active = true
+        MainApp.cancelPrepareOfflineJob(this)
+        MainApp.startOnlineStatus()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        active = false
+        MainApp.prepareOffline(this)
     }
 
     private suspend fun showSentRequests() {

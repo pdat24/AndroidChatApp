@@ -76,10 +76,15 @@ class UserManager {
     }
 
     suspend fun updateOnlineState(userID: String, isOnline: Boolean) {
+        /**
+         * Each user have a list to store online friends, we'll get all friends of [userID]
+         * and add current user to that list of every friend
+         */
         val currentUserUID = firebaseAuth.currentUser!!.uid
         val friends = getUserById(userID)[FRIENDS] as List<*>
         for (f in friends) {
             val friend = getUserById((f as HashMap<*, *>)[UID] as String)
+            // online friends of a friend
             val res = getOnlineFriends(
                 getUserById(friend.id)
             ).toMutableList()
@@ -89,25 +94,40 @@ class UserManager {
                 res.removeIf {
                     it.uid == currentUserUID
                 }
-            else {
+            else if (isOnline && !onlineStatusIsUpdatedBefore(friend)) {
+                // get current user info in the list of online friend of the friend
+                // to get conversation id
                 val friendsOfFriend = friend[FRIENDS] as List<*>
                 for (i in friendsOfFriend) {
                     val friendOfFriend = i as HashMap<*, *>
                     if (friendOfFriend[UID] == currentUserUID) {
-                        if (isOnline)
-                            res.add(
-                                Friend(
-                                    uid = friendOfFriend[UID] as String,
-                                    name = friendOfFriend[NAME] as String,
-                                    avatarURI = friendOfFriend[AVATAR_URI] as String,
-                                    conversationID = friendOfFriend[CONVERSATION_ID] as String
-                                )
+                        res.add(
+                            Friend(
+                                uid = friendOfFriend[UID] as String,
+                                name = friendOfFriend[NAME] as String,
+                                avatarURI = friendOfFriend[AVATAR_URI] as String,
+                                conversationID = friendOfFriend[CONVERSATION_ID] as String
                             )
+                        )
                     }
                 }
             }
             userDB.document(friend.id).update(ONLINE_FRIENDS, res)
         }
+    }
+
+    /**
+     * Check whether online status is previously updated or not
+     */
+    private fun onlineStatusIsUpdatedBefore(friend: DocumentSnapshot): Boolean {
+        val currentUserUID = firebaseAuth.currentUser!!.uid
+        var result = false
+        (friend[ONLINE_FRIENDS] as List<*>).forEach {
+            val t = it as HashMap<*, *>
+            if (t[UID] == currentUserUID)
+                result = true
+        }
+        return result
     }
 
     /**
