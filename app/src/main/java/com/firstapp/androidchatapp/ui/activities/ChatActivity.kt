@@ -76,7 +76,6 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var chatToolBar: LinearLayout
     private lateinit var tvNotFriend: TextView
     private lateinit var rcvMessages: RecyclerView
-    private lateinit var conversationID: String
     private lateinit var loadingView: View
     private lateinit var tvActiveStatus: TextView
     private lateinit var statusIndicator: RelativeLayout
@@ -87,13 +86,14 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var dbViewModel: DatabaseViewModel
     private lateinit var mainViewModel: MainViewModel
     private val firestore = FirebaseFirestore.getInstance()
-    private var fileStoragePath: String? = null
+    var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
     private var friendAvatarURI: String? = null
     private var userUID: String? = null
     private var userIsFriend: Boolean? = null
     private var msgBoxIndex: Int? = null
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
+    private lateinit var conversationID: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -310,9 +310,11 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun chooseFile() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.type = "file/*"
-        pickFileLauncher.launch(intent)
+        pickFileLauncher.launch(
+            Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "image/*"
+            }
+        )
     }
 
     private fun takePhoto() {
@@ -330,7 +332,11 @@ class ChatActivity : AppCompatActivity() {
                             if (groups.isNotEmpty())
                                 emptyConversationView.visibility = View.GONE
                             rcvMessages.adapter =
-                                GroupMessageAdapter(friendAvatarURI!!, groups.asReversed())
+                                GroupMessageAdapter(
+                                    this@ChatActivity,
+                                    friendAvatarURI!!,
+                                    groups.asReversed()
+                                )
                             rcvMessages.scrollToPosition(groups.size - 1)
                         }
                         // Always update the state of message box is read when user in chat activity
@@ -358,7 +364,8 @@ class ChatActivity : AppCompatActivity() {
             if (groups.isEmpty())
                 emptyConversationView.visibility = View.VISIBLE
             withContext(Dispatchers.Main) {
-                rcvMessages.adapter = GroupMessageAdapter(friendAvatarURI!!, groups.asReversed())
+                rcvMessages.adapter =
+                    GroupMessageAdapter(this@ChatActivity, friendAvatarURI!!, groups.asReversed())
                 rcvMessages.scrollToPosition(groups.size - 1)
                 loadingView.visibility = View.GONE
             }

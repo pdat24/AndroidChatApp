@@ -1,6 +1,9 @@
 package com.firstapp.androidchatapp.adapters
 
+import android.annotation.SuppressLint
+import android.app.DownloadManager
 import android.content.Context
+import android.net.Uri
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -12,18 +15,21 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.GroupMessage
+import com.firstapp.androidchatapp.ui.activities.ChatActivity
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE
 import com.firstapp.androidchatapp.utils.Constants.Companion.ICON
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
 import com.google.android.material.card.MaterialCardView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 class GroupMessageAdapter(
+    private val activity: ChatActivity,
     private val friendAvatarURI: String,
     private val groupMessages: List<GroupMessage>
 ) : RecyclerView.Adapter<GroupMessageAdapter.ViewHolder>() {
@@ -76,7 +82,7 @@ class GroupMessageAdapter(
 
                 ICON -> renderIconMessage(holder.messagesContainer, msg.content)
 
-                FILE -> renderFileMessage(holder.messagesContainer)
+                FILE -> renderFileMessage(holder.messagesContainer, msg.content)
             }
         }
         if (position == groupMessages.size - 1 && groupMessage.senderID == currentUser!!.uid) {
@@ -222,8 +228,46 @@ class GroupMessageAdapter(
         container.addView(iconMessage)
     }
 
-    private fun renderFileMessage(container: ViewGroup) {
-        // TODO: render file message
+    private fun getFileSize(bytes: Long): String {
+        var result = ""
+        if (bytes < 1000)
+            result = "$bytes B"
+        else if (bytes in 1000..999_999)
+            result = "${bytes / 1000} KB"
+        else if (bytes in 1_000_000..999_999_999)
+            result = "${bytes / 1_000_000} MB"
+        else if (bytes in 1_000_000_000..999_999_999_999)
+            result = "${bytes / 1_000_000_000} GB"
+        return result
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun renderFileMessage(container: ViewGroup, fileURI: String) {
+        val view = LayoutInflater.from(context).inflate(
+            R.layout.view_file_message, container, false
+        )
+        val file = FirebaseStorage.getInstance().getReferenceFromUrl(fileURI)
+        file.metadata.addOnCompleteListener {
+            if (it.isSuccessful) {
+                // set file name
+                view.findViewById<TextView>(R.id.tvFileName).text =
+                    "${it.result.name}.${it.result.contentType!!.split('/').last()}"
+                view.findViewById<TextView>(R.id.tvFileCapacity).text =
+                    getFileSize(it.result.sizeBytes)
+            }
+        }
+        // download file when clicked
+        view.setOnClickListener {
+            val downloadManager =
+                activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val request = DownloadManager.Request(Uri.parse(fileURI))
+            request.setAllowedNetworkTypes(
+                DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI
+            )
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            downloadManager.enqueue(request)
+        }
+        container.addView(view)
     }
 
     private fun renderImageMessage(container: ViewGroup, imgURI: String) {
