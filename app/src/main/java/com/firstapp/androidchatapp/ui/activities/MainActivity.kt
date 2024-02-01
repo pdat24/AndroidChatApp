@@ -159,8 +159,8 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             val tmp = (con[GROUP_MESSAGES] as List<*>)
             var previewMsg = con[PREVIEW_MESSAGE] as String
             if (tmp.isNotEmpty()) {
-                val lastGroup = tmp.last() as HashMap<*, *>
-                if (lastGroup[SENDER_ID] == firebaseAuth.currentUser!!.uid)
+                val latestGroup = tmp.first() as HashMap<*, *>
+                if (latestGroup[SENDER_ID] == firebaseAuth.currentUser!!.uid)
                     previewMsg = "You: $previewMsg"
             }
 

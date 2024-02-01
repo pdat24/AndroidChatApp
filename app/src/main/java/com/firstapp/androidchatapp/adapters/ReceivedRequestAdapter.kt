@@ -57,7 +57,7 @@ class ReceivedRequestAdapter(
                     Toast.makeText(context, "Accepted Request", Toast.LENGTH_SHORT).show()
                 }
             } else
-                Functions.showNoInternetNotification()
+                Functions.showNoInternetNotification(context)
         }
 
         holder.btnReject.setOnClickListener {
@@ -68,7 +68,7 @@ class ReceivedRequestAdapter(
                     Toast.makeText(context, "Rejected Request", Toast.LENGTH_SHORT).show()
                 }
             } else
-                Functions.showNoInternetNotification()
+                Functions.showNoInternetNotification(context)
         }
     }
 

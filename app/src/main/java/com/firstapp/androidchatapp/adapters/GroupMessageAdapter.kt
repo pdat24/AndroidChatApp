@@ -251,7 +251,7 @@ class GroupMessageAdapter(
             if (it.isSuccessful) {
                 // set file name
                 view.findViewById<TextView>(R.id.tvFileName).text =
-                    "${it.result.name}.${it.result.contentType!!.split('/').last()}"
+                    it.result.name!!.split('|').first()
                 view.findViewById<TextView>(R.id.tvFileCapacity).text =
                     getFileSize(it.result.sizeBytes)
             }

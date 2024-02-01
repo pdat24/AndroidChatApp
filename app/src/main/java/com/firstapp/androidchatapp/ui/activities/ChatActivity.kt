@@ -2,10 +2,13 @@ package com.firstapp.androidchatapp.ui.activities
 
 import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -57,6 +60,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -86,7 +90,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var dbViewModel: DatabaseViewModel
     private lateinit var mainViewModel: MainViewModel
     private val firestore = FirebaseFirestore.getInstance()
-    var fileStoragePath: String? = null
+    private var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
     private var friendAvatarURI: String? = null
     private var userUID: String? = null
@@ -167,10 +171,7 @@ class ChatActivity : AppCompatActivity() {
         sendMsgBtn.setOnClickListener { view ->
             val text = messageInput.text.toString()
             messageInput.text?.clear()
-            if (Functions.isInternetConnected(this))
-                sendMessage(text.trim(), type = TEXT)
-            else
-                Functions.showNoInternetNotification()
+            sendMessage(text.trim(), type = TEXT)
         }
         messageInput.setOnClickListener {
             scaleMessageInput()
@@ -275,6 +276,24 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
+    private fun getFileName(uri: Uri): String {
+        val file = File(uri.toString())
+        var cursor: Cursor? = null
+        var name = "Attached file"
+        if (uri.toString().startsWith("content://")) {
+            try {
+                cursor = contentResolver.query(uri, null, null, null, null)
+                if (cursor != null && cursor.moveToFirst())
+                    name =
+                        cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+            } finally {
+                cursor?.close()
+            }
+        } else if (uri.toString().startsWith("file://"))
+            name = file.name
+        return name
+    }
+
     private fun handlePickFileResult(result: Intent) =
         lifecycleScope.launch {
             val uri = result.data
@@ -282,7 +301,8 @@ class ChatActivity : AppCompatActivity() {
                 // TODO: Show file uploading on ui
                 sendMessage(
                     dbViewModel.uploadFileByUri(
-                        "$fileStoragePath/${Functions.createUniqueString()}", uri
+                        "$fileStoragePath/${getFileName(uri) + "|" + Functions.createUniqueString()}",
+                        uri
                     ), type = FILE
                 )
             }
@@ -312,7 +332,7 @@ class ChatActivity : AppCompatActivity() {
     private fun chooseFile() {
         pickFileLauncher.launch(
             Intent(Intent.ACTION_GET_CONTENT).apply {
-                type = "image/*"
+                type = "file/*"
             }
         )
     }
@@ -373,22 +393,25 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun sendMessage(content: String, type: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            dbViewModel.addMessage(conversationID, Message(content, type))
-            var previewMsg = ""
-            when (type) {
-                TEXT -> previewMsg = content
-                IMAGE -> previewMsg = getString(R.string.sent_an_image)
-                FILE -> previewMsg = getString(R.string.sent_a_file)
-            }
-            dbViewModel.updatePreviewMessage(conversationID, previewMsg)
-            dbViewModel.updateLastSendTime(
-                conversationID, LocalDateTime.now().toEpochSecond(
-                    ZoneOffset.UTC
+        if (Functions.isInternetConnected(this))
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.addMessage(conversationID, Message(content, type))
+                var previewMsg = ""
+                when (type) {
+                    TEXT -> previewMsg = content
+                    IMAGE -> previewMsg = getString(R.string.sent_an_image)
+                    FILE -> previewMsg = getString(R.string.sent_a_file)
+                }
+                dbViewModel.updatePreviewMessage(conversationID, previewMsg)
+                dbViewModel.updateLastSendTime(
+                    conversationID, LocalDateTime.now().toEpochSecond(
+                        ZoneOffset.UTC
+                    )
                 )
-            )
-            unreadFriendMessageBox()
-        }
+                unreadFriendMessageBox()
+            }
+        else
+            Functions.showNoInternetNotification(this)
     }
 
     private suspend fun unreadFriendMessageBox() {

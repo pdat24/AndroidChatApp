@@ -64,7 +64,7 @@ class SentRequestAdapter(
                     holder.btnSend.visibility = View.VISIBLE
                 }
             } else
-                Functions.showNoInternetNotification()
+                Functions.showNoInternetNotification(context)
         }
     }
 

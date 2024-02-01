@@ -80,4 +80,5 @@
     <string name="check_internet_connection">Check your internet connection</string>
     <string name="active">Active</string>
     <string name="inactive">Inactive</string>
+    <string name="no_internet_connection">No internet connection.</string>
 </resources>

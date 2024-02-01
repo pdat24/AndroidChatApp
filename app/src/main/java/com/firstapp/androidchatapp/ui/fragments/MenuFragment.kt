@@ -19,8 +19,8 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.ui.activities.AddFriendActivity
-import com.firstapp.androidchatapp.ui.activities.FriendsActivity
 import com.firstapp.androidchatapp.ui.activities.FriendRequestsActivity
+import com.firstapp.androidchatapp.ui.activities.FriendsActivity
 import com.firstapp.androidchatapp.ui.activities.MainActivity
 import com.firstapp.androidchatapp.ui.activities.SettingsActivity
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
@@ -160,7 +160,7 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
     }
 
     private fun showNoInternetNotification() {
-        Functions.showNoInternetNotification()
+        Functions.showNoInternetNotification(requireContext())
     }
 
     private fun showImgPickerDialog() {

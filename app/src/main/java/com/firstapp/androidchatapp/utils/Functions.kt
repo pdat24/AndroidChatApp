@@ -2,7 +2,11 @@ package com.firstapp.androidchatapp.utils
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
+import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.models.FriendRequest
@@ -11,6 +15,7 @@ import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOT_LOGIN_ERROR_CODE
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.DocumentSnapshot
@@ -83,8 +88,16 @@ class Functions(
             }
         }
 
-        fun showNoInternetNotification() {
-            // TODO: show no internet notification
+        fun showNoInternetNotification(context: Context) {
+            val view = LayoutInflater.from(context)
+                .inflate(R.layout.view_no_connection, LinearLayout(context), false)
+            val dialog = MaterialAlertDialogBuilder(context)
+                .setView(view)
+                .create()
+            view.findViewById<ImageView>(R.id.btnClose).setOnClickListener {
+                dialog.dismiss()
+            }
+            dialog.show()
         }
 
         fun isInternetConnected(context: Context): Boolean {
