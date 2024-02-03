@@ -98,12 +98,12 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingVertical="20dp">
+                    android:paddingVertical="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/delay_sending"
+                        android:text="@string/active_status"
                         android:textColor="#C3C1C1"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -111,14 +111,15 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/activeStatusToggle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:contentDescription="@string/image_desc"
-                        android:src="@drawable/baseline_navigate_next_24"
+                        android:checked="true"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:thumbTint="@color/white" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <com.google.android.material.divider.MaterialDivider

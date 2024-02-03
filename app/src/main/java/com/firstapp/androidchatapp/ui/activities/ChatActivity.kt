@@ -57,6 +57,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -98,6 +100,7 @@ class ChatActivity : AppCompatActivity() {
     private var msgBoxIndex: Int? = null
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
     private lateinit var conversationID: String
+    private val sentStatusFlow = MutableStateFlow(true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,7 +123,9 @@ class ChatActivity : AppCompatActivity() {
         tvActiveStatus = findViewById(R.id.tvStatus)
         statusIndicator = findViewById(R.id.statusIndicator)
 
-        rcvMessages.layoutManager = LinearLayoutManager(this@ChatActivity)
+        rcvMessages.layoutManager = LinearLayoutManager(this@ChatActivity).apply {
+            stackFromEnd = true
+        }
 
         // change friend's avatar and name
         val intentExtras = intent.extras!!
@@ -168,7 +173,7 @@ class ChatActivity : AppCompatActivity() {
             createClickAnimation(view)
             sendMessage(getString(R.string.like_icon_link), type = ICON)
         }
-        sendMsgBtn.setOnClickListener { view ->
+        sendMsgBtn.setOnClickListener {
             val text = messageInput.text.toString()
             messageInput.text?.clear()
             sendMessage(text.trim(), type = TEXT)
@@ -186,9 +191,15 @@ class ChatActivity : AppCompatActivity() {
                 sendMsgBtn.visibility = View.INVISIBLE
             }
         }
-        messageInput.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
-            if (hasFocus) scaleMessageInput()
-            else collapseMessageInput()
+        messageInput.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                lifecycleScope.launch {
+                    delay(250)
+                    scrollToBottom()
+                }
+                (rcvMessages.layoutManager as LinearLayoutManager).stackFromEnd = true
+                scaleMessageInput()
+            } else collapseMessageInput()
         }
         renderMessages(conversationID)
         observeConversationUpdates()
@@ -217,6 +228,7 @@ class ChatActivity : AppCompatActivity() {
         active = true
         MainApp.cancelPrepareOfflineJob(this)
         MainApp.startOnlineStatus()
+        (rcvMessages.layoutManager!! as LinearLayoutManager).findLastVisibleItemPosition()
     }
 
     override fun onStop() {
@@ -351,13 +363,14 @@ class ChatActivity : AppCompatActivity() {
                             val groups = Functions.getGroupMessagesInConversation(it)
                             if (groups.isNotEmpty())
                                 emptyConversationView.visibility = View.GONE
+                            (rcvMessages.layoutManager as LinearLayoutManager).stackFromEnd = true
                             rcvMessages.adapter =
                                 GroupMessageAdapter(
+                                    sentStatusFlow,
                                     this@ChatActivity,
                                     friendAvatarURI!!,
                                     groups.asReversed()
                                 )
-                            rcvMessages.scrollToPosition(groups.size - 1)
                         }
                         // Always update the state of message box is read when user in chat activity
                         dbViewModel.updateMsgBoxReadState(msgBoxIndex!!, true)
@@ -365,6 +378,13 @@ class ChatActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+
+    private fun scrollToBottom(smooth: Boolean = true) {
+        if (smooth)
+            rcvMessages.smoothScrollToPosition(rcvMessages.adapter!!.itemCount - 1)
+        else
+            rcvMessages.scrollToPosition(rcvMessages.adapter!!.itemCount - 1)
     }
 
     private suspend fun getConversation(id: String): DocumentSnapshot {
@@ -385,8 +405,12 @@ class ChatActivity : AppCompatActivity() {
                 emptyConversationView.visibility = View.VISIBLE
             withContext(Dispatchers.Main) {
                 rcvMessages.adapter =
-                    GroupMessageAdapter(this@ChatActivity, friendAvatarURI!!, groups.asReversed())
-                rcvMessages.scrollToPosition(groups.size - 1)
+                    GroupMessageAdapter(
+                        sentStatusFlow,
+                        this@ChatActivity,
+                        friendAvatarURI!!,
+                        groups.asReversed()
+                    )
                 loadingView.visibility = View.GONE
             }
         }
@@ -396,11 +420,13 @@ class ChatActivity : AppCompatActivity() {
         if (Functions.isInternetConnected(this))
             CoroutineScope(Dispatchers.IO).launch {
                 dbViewModel.addMessage(conversationID, Message(content, type))
+                // get preview message
                 var previewMsg = ""
                 when (type) {
                     TEXT -> previewMsg = content
                     IMAGE -> previewMsg = getString(R.string.sent_an_image)
                     FILE -> previewMsg = getString(R.string.sent_a_file)
+                    ICON -> previewMsg = getString(R.string.liked)
                 }
                 dbViewModel.updatePreviewMessage(conversationID, previewMsg)
                 dbViewModel.updateLastSendTime(
@@ -408,6 +434,7 @@ class ChatActivity : AppCompatActivity() {
                         ZoneOffset.UTC
                     )
                 )
+                // make th message box of friend to unread
                 unreadFriendMessageBox()
             }
         else

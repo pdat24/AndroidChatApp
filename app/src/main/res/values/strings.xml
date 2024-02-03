@@ -81,4 +81,6 @@
     <string name="active">Active</string>
     <string name="inactive">Inactive</string>
     <string name="no_internet_connection">No internet connection.</string>
+    <string name="liked">Liked</string>
+    <string name="active_status">Active status</string>
 </resources>

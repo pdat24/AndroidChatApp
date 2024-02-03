@@ -23,12 +23,18 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
 import com.google.android.material.card.MaterialCardView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 class GroupMessageAdapter(
+    private val sentStatusFlow: MutableStateFlow<Boolean>,
     private val activity: ChatActivity,
     private val friendAvatarURI: String,
     private val groupMessages: List<GroupMessage>
@@ -42,6 +48,7 @@ class GroupMessageAdapter(
         val friendAvatar: ImageView = itemView.findViewById(R.id.ivAvatar)
         val sendDay: TextView = itemView.findViewById(R.id.tvSendDay)
         val sendingStatus: TextView = itemView.findViewById(R.id.tvSendingStatus)
+        val sentStatus: TextView = itemView.findViewById(R.id.tvSentStatus)
         val messagesContainer: LinearLayout = itemView.findViewById(R.id.messageContainer)
     }
 
@@ -86,7 +93,19 @@ class GroupMessageAdapter(
             }
         }
         if (position == groupMessages.size - 1 && groupMessage.senderID == currentUser!!.uid) {
-            holder.sendingStatus.visibility = View.VISIBLE
+            holder.sentStatus.visibility = View.VISIBLE
+            holder.sendingStatus.visibility = View.GONE
+//            CoroutineScope(Dispatchers.Main).launch {
+//                sentStatusFlow.collectLatest { sentStatus ->
+//                    if (sentStatus) {
+//                        holder.sentStatus.visibility = View.VISIBLE
+//                        holder.sendingStatus.visibility = View.GONE
+//                    } else {
+//                        holder.sentStatus.visibility = View.GONE
+//                        holder.sendingStatus.visibility = View.VISIBLE
+//                    }
+//                }
+//            }
         }
     }
 
@@ -111,7 +130,6 @@ class GroupMessageAdapter(
             holder.messagesContainer.gravity = Gravity.END
             holder.friendAvatar.visibility = View.GONE
             side = GroupMessageSide.RIGHT
-//            holder.sendingStatus.visibility = View.VISIBLE
         }
         return side
     }
