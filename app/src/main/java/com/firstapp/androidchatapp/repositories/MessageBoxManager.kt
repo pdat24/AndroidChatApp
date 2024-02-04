@@ -66,20 +66,39 @@ class MessageBoxManager(
         messageBoxDB.document(id).update(MESSAGE_BOXES, list)
     }
 
-    suspend fun updateUnreadMsgNumber(id: String, msgBoxIndex: Int, number: Int) {
+    suspend fun updateUnreadMsgNumber(id: String, conversationID: String, number: Int) {
         val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
         msgBoxes.forEach {
-            if (msgBoxIndex == it.index)
+            if (it.conversationID == conversationID)
                 it.unreadMessages = number
         }
         messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes)
     }
 
-    suspend fun updateReadState(id: String, msgBoxIndex: Int, state: Boolean) {
+    suspend fun updateReadState(id: String, conversationID: String, state: Boolean) {
         val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
         msgBoxes.forEach {
-            if (msgBoxIndex == it.index)
+            if (it.conversationID == conversationID)
                 it.read = state
+        }
+        messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes)
+    }
+
+    suspend fun putMessageBoxOnTop(id: String, conversationID: String) {
+        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        var index = 0
+        // get index of target message box and set it's index to 0
+        msgBoxes.forEach {
+            if (it.conversationID == conversationID) {
+                index = it.index
+                it.index = 0
+            }
+        }
+        // increase index of all front message boxes by 1
+        for (i in 0 until index) {
+            msgBoxes[i].apply {
+                index++
+            }
         }
         messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes)
     }

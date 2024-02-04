@@ -2,7 +2,6 @@ package com.firstapp.androidchatapp.ui.activities
 
 import android.Manifest
 import android.content.SharedPreferences
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -23,12 +22,10 @@ import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.adapters.OnlineFriendAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
-import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
-import com.firstapp.androidchatapp.utils.Constants
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
@@ -167,10 +164,10 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             val friend = dbViewModel.getUserById(it.friendUID)
 
             // set preview message
-            val tmp = (con[GROUP_MESSAGES] as List<*>)
+            val groupMessages = (con[GROUP_MESSAGES] as List<*>)
             var previewMsg = con[PREVIEW_MESSAGE] as String
-            if (tmp.isNotEmpty()) {
-                val latestGroup = tmp.first() as HashMap<*, *>
+            if (groupMessages.isNotEmpty()) {
+                val latestGroup = groupMessages.first() as HashMap<*, *>
                 if (latestGroup[SENDER_ID] == firebaseAuth.currentUser!!.uid)
                     previewMsg = "You: $previewMsg"
             }
@@ -206,9 +203,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             lifecycleScope.launch {
                 // update the number of cached message boxes
                 dbViewModel.cacheMessageBoxNumber(it.size)
-                it.sortedBy {box ->
-                    box.index
-                }
                 withContext(Dispatchers.Main) {
                     rcvMessageBoxes.adapter =
                         MessageBoxAdapter(dbViewModel, it)

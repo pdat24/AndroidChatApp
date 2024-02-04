@@ -48,7 +48,7 @@ class DatabaseViewModel(
     private val userManager = UserManager()
     private val sharedPreferences =
         context.getSharedPreferences(MAIN_SHARED_PREFERENCE, Context.MODE_PRIVATE)
-    private val msgBoxListManager = MessageBoxManager(this)
+    private val msgBoxesManager = MessageBoxManager(this)
     val firebaseAuth = FirebaseAuth.getInstance()
 
 
@@ -151,7 +151,7 @@ class DatabaseViewModel(
         userManager.removeSentRequest(senderId, receiverId)
     }
 
-    suspend fun removeReceivedRequest(senderId: String, receiverId: String, ) {
+    suspend fun removeReceivedRequest(senderId: String, receiverId: String) {
         userManager.removeReceivedRequest(senderId, receiverId)
     }
 
@@ -184,15 +184,19 @@ class DatabaseViewModel(
      * @return the ID of message boxes list
      */
     suspend fun createMsgBoxesList(msgBoxesList: MessageBoxesList): String {
-        return msgBoxListManager.createMessageBoxList(msgBoxesList)
+        return msgBoxesManager.createMessageBoxList(msgBoxesList)
     }
 
     suspend fun getMessageBoxList(userID: String? = null): DocumentSnapshot {
-        return msgBoxListManager.getMessageBoxList(
+        return msgBoxesManager.getMessageBoxList(
             getMessageBoxListId(userID ?: firebaseAuth.currentUser!!.uid)
         )
     }
 
+    /**
+     * @param msgBoxesList The message box list
+     * @return The list of message box that is sorted ascending by index
+     */
     fun getMessageBoxes(msgBoxesList: DocumentSnapshot): List<MessageBox> {
         val msgBoxes = msgBoxesList[MESSAGE_BOXES] as List<*>
         val result = mutableListOf<MessageBox>()
@@ -212,7 +216,14 @@ class DatabaseViewModel(
                 )
             )
         }
+        result.sortedBy {
+            it.index
+        }
         return result
+    }
+
+    suspend fun putMessageBoxOnTop(msgBoxListId: String, conversationID: String) {
+        msgBoxesManager.putMessageBoxOnTop(msgBoxListId, conversationID)
     }
 
     /**
@@ -220,11 +231,11 @@ class DatabaseViewModel(
      * @param msgBoxListId the id of message box list, the default value is of signed in user
      */
     suspend fun createMessageBox(msgBoxListId: String, msgBox: MessageBox) {
-        msgBoxListManager.createMessageBox(msgBoxListId, msgBox)
+        msgBoxesManager.createMessageBox(msgBoxListId, msgBox)
     }
 
     suspend fun updateMessageBoxList(msgBox: MessageBoxesList) {
-        msgBoxListManager.updateMessageBoxList(
+        msgBoxesManager.updateMessageBoxList(
             getMessageBoxListId(firebaseAuth.currentUser!!.uid),
             msgBox
         )
@@ -234,15 +245,15 @@ class DatabaseViewModel(
         return getUserById(userID)[MESSAGE_BOX_LIST_ID] as String
     }
 
-    suspend fun updateMsgBoxReadState(msgBoxIndex: Int, state: Boolean) {
-        msgBoxListManager.updateReadState(
-            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, state
+    suspend fun updateMsgBoxReadState(conversationID: String, state: Boolean) {
+        msgBoxesManager.updateReadState(
+            getMessageBoxListId(firebaseAuth.currentUser!!.uid), conversationID, state
         )
     }
 
-    suspend fun updateUnreadMsgNumber(msgBoxIndex: Int, n: Int) {
-        msgBoxListManager.updateUnreadMsgNumber(
-            getMessageBoxListId(firebaseAuth.currentUser!!.uid), msgBoxIndex, n
+    suspend fun updateUnreadMsgNumber(conversationID: String, n: Int) {
+        msgBoxesManager.updateUnreadMsgNumber(
+            getMessageBoxListId(firebaseAuth.currentUser!!.uid), conversationID, n
         )
     }
 

@@ -12,7 +12,7 @@ interface MessageBoxDao {
     @Upsert
     suspend fun addMessageBox(box: MessageBox)
 
-    @Query("SELECT * FROM MessageBoxes")
+    @Query("SELECT * FROM MessageBoxes ORDER BY `index` ASC")
     fun getMessageBoxes(): LiveData<List<MessageBox>>
 
     @Query("DELETE FROM MessageBoxes")

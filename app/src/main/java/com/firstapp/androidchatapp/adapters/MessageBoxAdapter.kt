@@ -69,7 +69,7 @@ class MessageBoxAdapter(
         val messageBox = messageBoxes[position]
         holder.container.setOnClickListener {
             toChatActivity(messageBox)
-            changeStateToRead(position)
+            changeStateToRead(messageBox)
         }
         observeMessageBoxChanges(messageBox, holder)
         Glide.with(context).load(messageBox.avatarURI).into(holder.avatarView)
@@ -107,10 +107,10 @@ class MessageBoxAdapter(
         }
     }
 
-    private fun changeStateToRead(index: Int) =
+    private fun changeStateToRead(messageBox: MessageBox) =
         CoroutineScope(Dispatchers.Main).launch {
             if (isInternetConnected())
-                dbViewModel.updateMsgBoxReadState(index, true)
+                dbViewModel.updateMsgBoxReadState(messageBox.conversationID, true)
         }
 
     private fun toChatActivity(msgBox: MessageBox) {

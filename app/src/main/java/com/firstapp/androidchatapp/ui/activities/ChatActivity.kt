@@ -36,7 +36,6 @@ import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
-import com.firstapp.androidchatapp.utils.Constants
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
@@ -50,7 +49,6 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
-import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
@@ -102,7 +100,6 @@ class ChatActivity : AppCompatActivity() {
     private var friendAvatarURI: String? = null
     private var userUID: String? = null
     private var userIsFriend: Boolean? = null
-    private var msgBoxIndex: Int? = null
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
     private lateinit var conversationID: String
     private val sentStatusFlow = MutableStateFlow(true)
@@ -142,7 +139,6 @@ class ChatActivity : AppCompatActivity() {
             .into(findViewById<ImageView>(R.id.ivUserAvatar))
         findViewById<TextView>(R.id.tvName).text = intentExtras.getString(NAME)
         friendAvatarURI = intentExtras.getString(AVATAR_URI)
-        msgBoxIndex = intentExtras.getInt(MESSAGE_BOX_INDEX)
         userUID = intentExtras.getString(FRIEND_UID)
         userIsFriend = intentExtras.getBoolean(IS_FRIEND)
         conversationID = intentExtras.getString(CONVERSATION_ID)
@@ -382,8 +378,8 @@ class ChatActivity : AppCompatActivity() {
                                 )
                         }
                         // Always update the state of message box is read when user in chat activity
-                        dbViewModel.updateMsgBoxReadState(msgBoxIndex!!, true)
-                        dbViewModel.updateUnreadMsgNumber(msgBoxIndex!!, 0)
+                        dbViewModel.updateMsgBoxReadState(conversationID, true)
+                        dbViewModel.updateUnreadMsgNumber(conversationID, 0)
                     }
                 }
             }
@@ -445,6 +441,16 @@ class ChatActivity : AppCompatActivity() {
                 )
                 // make th message box of friend to unread
                 unreadFriendMessageBox()
+                // change order of the message box of current user
+                dbViewModel.putMessageBoxOnTop(
+                    dbViewModel.getMessageBoxListId(currentUserUID),
+                    conversationID
+                )
+                // change order of the message box of friend
+                dbViewModel.putMessageBoxOnTop(
+                    dbViewModel.getMessageBoxListId(userUID!!),
+                    conversationID
+                )
             }
         else
             Functions.showNoInternetNotification(this)
