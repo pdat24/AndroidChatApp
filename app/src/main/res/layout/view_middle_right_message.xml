@@ -8,8 +8,7 @@
     <TextView
         android:paddingHorizontal="@dimen/message_padding_x"
         android:paddingVertical="@dimen/message_padding_y"
-        android:textColor="@color/white"
-        android:text="Hello World!"
+        android:textColor="@color/text"
         android:textSize="@dimen/message_text_size"
         android:id="@+id/tvContent"
         android:layout_width="wrap_content"

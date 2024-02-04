@@ -114,9 +114,8 @@
                     android:drawablePadding="16dp"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Hello World!"
                     android:textAlignment="center"
-                    android:textColor="@color/white"
+                    android:textColor="@color/text"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -139,7 +138,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginVertical="20dp"
-                app:dividerColor="@color/light_pink_grey" />
+                app:dividerColor="@color/divider_color" />
 
             <TextView
                 android:id="@+id/tvFriends"
@@ -153,7 +152,7 @@
                 android:paddingHorizontal="28dp"
                 android:paddingVertical="12dp"
                 android:text="@string/friends"
-                android:textColor="@color/indicator"
+                android:textColor="@color/text_settings_options"
                 android:textStyle="bold"
                 app:drawableStartCompat="@drawable/friends" />
 
@@ -169,7 +168,7 @@
                 android:paddingHorizontal="28dp"
                 android:paddingVertical="12dp"
                 android:text="@string/add_friend"
-                android:textColor="@color/indicator"
+                android:textColor="@color/text_settings_options"
                 android:textStyle="bold"
                 app:drawableStartCompat="@drawable/add_friend" />
 
@@ -185,7 +184,7 @@
                 android:paddingHorizontal="28dp"
                 android:paddingVertical="12dp"
                 android:text="@string/friend_requests"
-                android:textColor="@color/indicator"
+                android:textColor="@color/text_settings_options"
                 android:textStyle="bold"
                 app:drawableStartCompat="@drawable/friend_requests" />
 
@@ -200,7 +199,7 @@
                 android:paddingHorizontal="28dp"
                 android:paddingVertical="12dp"
                 android:text="@string/settings"
-                android:textColor="@color/indicator"
+                android:textColor="@color/text_settings_options"
                 android:textStyle="bold"
                 app:drawableStartCompat="@drawable/settings" />
         </LinearLayout>

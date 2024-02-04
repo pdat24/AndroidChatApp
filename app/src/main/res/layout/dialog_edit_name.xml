@@ -12,8 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="@string/change_name"
-        android:textColor="@color/white"
-        android:textSize="18sp" />
+        android:textColor="@color/text"
+        android:textSize="20sp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"

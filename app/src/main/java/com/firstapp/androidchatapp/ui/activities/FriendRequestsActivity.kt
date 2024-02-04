@@ -1,9 +1,11 @@
 package com.firstapp.androidchatapp.ui.activities
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +18,8 @@ import com.firstapp.androidchatapp.repositories.UserManager
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
+import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.CoroutineScope
@@ -36,11 +40,15 @@ class FriendRequestsActivity : AppCompatActivity() {
     private var sentRequests: List<FriendRequest>? = null
     private var receivedRequests: List<FriendRequest>? = null
     private var openInFirstTime = true
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_friend_requests)
-        window.statusBarColor = getColor(R.color.dialog_bg)
+        sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
+        window.statusBarColor = getColor(R.color.bg_main_activity)
+        ViewCompat.getWindowInsetsController(window.decorView)
+            ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
 
         // get views
         noRequest = findViewById(R.id.tvNoRequest)

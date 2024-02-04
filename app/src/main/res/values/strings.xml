@@ -36,7 +36,7 @@
     <!--    settings-->
     <string name="font_size">Font Size</string>
     <string name="delay_sending">Delay Sending</string>
-    <string name="night_mode">Night Mode</string>
+    <string name="night_mode">Night mode</string>
     <string name="notification">Notification</string>
     <string name="sign_out">Sign out</string>
     <string name="check_icon">Check icon</string>
@@ -44,11 +44,9 @@
 
     <string name="chat_input_hint">Aa</string>
     <string name="like_icon_link"><![CDATA[https://firebasestorage.googleapis.com/v0/b/androidchatapp-6df26.appspot.com/o/icons%2Flike_icon.png?alt=media&token=5e48d581-06a3-465a-b95f-b4413515cc11]]></string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="friend_requests">Friend requests</string>
     <string name="add_friend">Add friend</string>
-    <string name="search">Search...</string>
+    <string name="search">Search…</string>
     <string name="no_search_result">No result were found!</string>
     <string name="send_request">Send request</string>
     <string name="username">Username</string>

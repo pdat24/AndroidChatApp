@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/bg_main_activity"
     tools:context=".ui.activities.FriendRequestsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -39,7 +40,14 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_marginTop="12dp"
+        android:layout_width="match_parent"
+        app:dividerColor="@color/divider_color"
+        android:layout_height="wrap_content"/>
+
     <com.google.android.material.tabs.TabLayout
+        android:background="@drawable/bg_friend_requests_tab_layout"
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

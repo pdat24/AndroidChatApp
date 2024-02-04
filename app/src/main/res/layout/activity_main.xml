@@ -8,6 +8,7 @@
     tools:context=".ui.activities.MainActivity">
 
     <LinearLayout
+        android:background="@color/bg_main_activity"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -141,7 +142,7 @@
                         android:id="@+id/tvOnlineNumber"
                         android:layout_width="@dimen/avatar_size"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_oline_number"
+                        android:background="@drawable/bg_online_number"
                         android:paddingVertical="2dp"
                         android:text="0"
                         android:textAlignment="center"

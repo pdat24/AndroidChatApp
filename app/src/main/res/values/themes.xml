@@ -3,6 +3,8 @@
     <style name="Base.Theme.AndroidChatApp" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimaryDark">@color/blue</item>
+        <item name="colorPrimary">@color/blue</item>
     </style>
 
     <style name="Theme.AndroidChatApp" parent="Base.Theme.AndroidChatApp" />

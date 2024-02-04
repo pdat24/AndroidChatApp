@@ -29,16 +29,14 @@
             android:ellipsize="end"
             android:lines="1"
             android:maxWidth="200dp"
-            android:text="index.html"
-            android:textColor="#E1D8D8"
+            android:textColor="@color/text_settings_options"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvFileCapacity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="256kb"
-            android:textColor="#E1D8D8"
+            android:textColor="@color/text_settings_options"
             android:textSize="11sp" />
     </LinearLayout>
 </LinearLayout>

@@ -42,7 +42,7 @@
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                app:dividerColor="#3A3939" />
+                app:dividerColor="@color/divider_color" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTakePhoto"
@@ -58,7 +58,7 @@
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                app:dividerColor="#3A3939" />
+                app:dividerColor="@color/divider_color" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"

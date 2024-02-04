@@ -2,6 +2,7 @@ package com.firstapp.androidchatapp.ui.activities
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.MotionEvent
@@ -9,6 +10,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +22,8 @@ import com.firstapp.androidchatapp.adapters.FriendAdapter
 import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
+import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
+import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Functions
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.progressindicator.CircularProgressIndicator
@@ -43,11 +47,15 @@ class FriendsActivity : AppCompatActivity() {
     private lateinit var tvNoResult: TextView
     private var friends: List<Friend>? = null
     private var flow = MutableStateFlow<String?>(null)
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_friend)
-        window.statusBarColor = getColor(R.color.dialog_bg)
+        sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
+        window.statusBarColor = getColor(R.color.bg_main_activity)
+        ViewCompat.getWindowInsetsController(window.decorView)
+            ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
 
         //get views
         rcvFriends = findViewById(R.id.rcvFriends)

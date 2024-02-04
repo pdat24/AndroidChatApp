@@ -38,7 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="2dp"
-                android:textColor="@color/white"
+                android:textColor="@color/text"
                 android:textIsSelectable="true"
                 android:textSize="16sp" />
 
@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:lines="1"
-                android:textColor="@color/indicator"
+                android:textColor="@color/text_settings_options"
                 android:textIsSelectable="true"
                 android:textSize="12sp"
                 android:textStyle="bold" />

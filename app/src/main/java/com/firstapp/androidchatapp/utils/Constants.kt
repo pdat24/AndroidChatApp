@@ -51,12 +51,13 @@ class Constants {
         const val NOTIFICATION_CHANNEL_ID = "NOTIFICATION_CHANNEL_ID"
         const val NOTIFICATION_CHANnEL_NAME = "Main Channel"
         const val PERMISSION_REQUEST_CODE = 8
-        const val ACTION_ONLINE = "ACTION_ONLINE"
-        const val ACTION_OFFLINE = "ACTION_PREPARE_OFFLINE"
         const val FRIEND_UID = "friendUID"
         const val INDEX = "index"
         const val IS_FRIEND = "IS_FRIEND"
         const val MAIN_SHARED_PREFERENCE = "MAIN_SHARED_PREFERENCE"
         const val SP_MESSAGE_BOX_NUMBER = "MESSAGE_BOX_NUMBER"
+        const val NIGHT_MODE_ON = "NIGHT_MODE_ON"
+        const val ACTIVE_STATUS_ON = "ACTIVE_STATUS_ON"
+        const val NOTIFICATION_ON = "NOTIFICATION_ON"
     }
 }

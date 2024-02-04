@@ -10,7 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/light_black"
+        android:background="@color/top_and_bottom_section"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="24dp"
@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:lines="1"
-                android:textColor="@color/white"
+                android:textColor="@color/text"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -76,7 +76,7 @@
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/indicator"
+                android:textColor="@color/text_settings_options"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
@@ -88,6 +88,7 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:background="@color/bg_chat_room"
         android:id="@+id/rcvMessages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -122,7 +123,7 @@
         android:id="@+id/chatBarContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/light_black"
+        android:background="@color/top_and_bottom_section"
         android:minHeight="56dp"
         android:paddingHorizontal="24dp"
         android:paddingVertical="8dp"
@@ -187,7 +188,7 @@
                     android:paddingHorizontal="16dp"
                     android:paddingVertical="10dp"
                     android:singleLine="true"
-                    android:textColorHint="@color/light_grey"
+                    android:textColorHint="@color/text_settings_options"
                     android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/ivLikeIcon"
@@ -224,7 +225,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/you_are_not_friends"
-            android:textColor="@color/indicator"
+            android:textColor="@color/text_settings_options"
             android:textSize="14sp"
             android:visibility="gone" />
     </RelativeLayout>

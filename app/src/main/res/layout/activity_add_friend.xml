@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_main_activity"
     tools:context=".ui.activities.AddFriendActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/add_friend"
-            android:textColor="@color/white"
+            android:textColor="@color/text"
             android:textSize="15sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -55,13 +56,13 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/input"
-            android:singleLine="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@null"
             android:drawableStart="@drawable/baseline_search_24"
             android:drawablePadding="8dp"
             android:hint="@string/search_user"
+            android:singleLine="true"
             android:textSize="14sp"
             android:textStyle="bold" />
     </RelativeLayout>
@@ -95,14 +96,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
                 android:buttonTint="@color/blue"
-                android:hint="@string/username" />
+                android:hint="@string/username"
+                android:textColorHint="@color/text_settings_options" />
 
             <RadioButton
                 android:id="@+id/rbID"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:buttonTint="@color/blue"
-                android:hint="@string/user_id" />
+                android:hint="@string/user_id"
+                android:textColorHint="@color/text_settings_options" />
         </RadioGroup>
     </LinearLayout>
 

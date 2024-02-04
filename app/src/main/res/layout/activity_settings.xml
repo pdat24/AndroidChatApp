@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_black"
+    android:background="@color/bg_settings_activity"
     tools:context=".ui.activities.SettingsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings"
-            android:textColor="@color/white"
+            android:textColor="@color/text"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -73,7 +73,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/font_size"
-                        android:textColor="#C3C1C1"
+                        android:textColor="@color/text_settings_options"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -93,7 +93,7 @@
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    app:dividerColor="#33B1AEAE" />
+                    app:dividerColor="@color/divider_color" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -104,7 +104,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/active_status"
-                        android:textColor="#C3C1C1"
+                        android:textColor="@color/text_settings_options"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -112,20 +112,20 @@
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/activeStatusToggle"
+                        android:id="@+id/activeStatusSwitcher"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:thumbTint="@color/white" />
+                        app:thumbTint="@color/switcher_thumb" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    app:dividerColor="#33B1AEAE" />
+                    app:dividerColor="@color/divider_color" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -136,7 +136,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/night_mode"
-                        android:textColor="#C3C1C1"
+                        android:textColor="@color/text_settings_options"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -151,13 +151,13 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:thumbTint="@color/white" />
+                        app:thumbTint="@color/switcher_thumb" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    app:dividerColor="#33B1AEAE" />
+                    app:dividerColor="@color/divider_color" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -168,7 +168,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/notification"
-                        android:textColor="#C3C1C1"
+                        android:textColor="@color/text_settings_options"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -182,7 +182,7 @@
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:thumbTint="@color/white" />
+                        app:thumbTint="@color/switcher_thumb" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
         </ScrollView>
@@ -191,10 +191,10 @@
             android:id="@+id/btnSignOut"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:backgroundTint="#332196F3"
-            android:minHeight="54dp"
             android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="@color/sign_out_btn"
+            android:minHeight="54dp"
             android:onClick="signOut"
             android:text="@string/sign_out"
             android:textColor="#E91E63"

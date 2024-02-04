@@ -1,6 +1,7 @@
 package com.firstapp.androidchatapp.ui.activities
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
@@ -11,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -25,7 +27,9 @@ import com.firstapp.androidchatapp.repositories.UserManager
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
+import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.CoroutineScope
@@ -56,11 +60,15 @@ class AddFriendActivity : AppCompatActivity() {
     private var friends: List<Friend>? = null
     private var sentRequests: List<FriendRequest>? = null
     private var receivedRequests: List<FriendRequest>? = null
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_friend)
-        window.statusBarColor = getColor(R.color.dialog_bg)
+        sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
+        window.statusBarColor = getColor(R.color.bg_main_activity)
+        ViewCompat.getWindowInsetsController(window.decorView)
+            ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
 
         // get views
         input = findViewById(R.id.input)

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--    General-->
+    <color name="bg_back_btn_idle">#4D928E98</color>
+    <color name="bg_back_btn_pressed">#80928E98</color>
+    <color name="text">#fff</color>
+    <color name="divider_color">#33B1AEAE</color>
+
+    <!--    Setting activity-->
+    <color name="bg_settings_activity">#282A36</color>
+    <color name="bg_settings_options">#44475a</color>
+    <color name="text_settings_options">#C3C1C1</color>
+    <color name="switcher_thumb">#fff</color>
+    <color name="sign_out_btn">#322196F3</color>
+
+    <!--    Menu fragment-->
+    <color name="bg_edit_avatar_btn_idle">#44475A</color>
+    <color name="bg_edit_avatar_btn_pressed">#CC44475A</color>
+    <color name="bg_image_picker">#282A36</color>
+
+    <!--    Main activity-->
+    <color name="message_box_bottom_border">#802C2B2B</color>
+    <color name="bg_main_activity">#141218</color>
+
+    <!--    Chat activity-->
+    <color name="top_and_bottom_section">#282A36</color>
+    <color name="bg_chat_input">#803E3B3B</color>
+    <color name="bg_chat_room">#141218</color>
+</resources>

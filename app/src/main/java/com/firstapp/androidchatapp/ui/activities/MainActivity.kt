@@ -1,6 +1,8 @@
 package com.firstapp.androidchatapp.ui.activities
 
 import android.Manifest
+import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -8,6 +10,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
@@ -20,13 +23,17 @@ import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.adapters.OnlineFriendAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
+import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.utils.Constants
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
+import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.PERMISSION_REQUEST_CODE
 import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.SENDER_ID
@@ -65,11 +72,15 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     lateinit var dbViewModel: DatabaseViewModel
     lateinit var mainViewModel: MainViewModel
     val username = MutableLiveData<String>(null)
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        window.statusBarColor = getColor(R.color.dialog_bg)
+        sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
+        window.statusBarColor = getColor(R.color.bg_main_activity)
+        ViewCompat.getWindowInsetsController(window.decorView)
+            ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
         requestNotificationPermission()
 
         // get views
@@ -195,6 +206,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             lifecycleScope.launch {
                 // update the number of cached message boxes
                 dbViewModel.cacheMessageBoxNumber(it.size)
+                it.sortedBy {box ->
+                    box.index
+                }
                 withContext(Dispatchers.Main) {
                     rcvMessageBoxes.adapter =
                         MessageBoxAdapter(dbViewModel, it)

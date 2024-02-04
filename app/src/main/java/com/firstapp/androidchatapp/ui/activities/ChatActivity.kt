@@ -2,6 +2,7 @@ package com.firstapp.androidchatapp.ui.activities
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Rect
@@ -21,6 +22,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -34,6 +36,7 @@ import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.utils.Constants
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
@@ -44,10 +47,12 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.ICON
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE_STORAGE_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
+import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
 import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Functions
@@ -101,11 +106,15 @@ class ChatActivity : AppCompatActivity() {
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
     private lateinit var conversationID: String
     private val sentStatusFlow = MutableStateFlow(true)
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        window.statusBarColor = getColor(R.color.light_black)
+        window.statusBarColor = getColor(R.color.top_and_bottom_section)
+        sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
+        ViewCompat.getWindowInsetsController(window.decorView)
+            ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
         // get views
         choosePhotoBtn = findViewById(R.id.ivChoosePhoto)
         takePhotoBtn = findViewById(R.id.ivTakePhoto)
