@@ -1,10 +1,14 @@
 package com.firstapp.androidchatapp.ui.activities
 
 import android.Manifest
+import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -39,6 +43,7 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PA
 import com.firstapp.androidchatapp.utils.Functions
 import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
@@ -66,6 +71,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private lateinit var msgBoxLoading: CircularProgressIndicator
     private lateinit var onlineFriendsLoading: CircularProgressIndicator
     private lateinit var addFriendBtn: FrameLayout
+    private lateinit var searchInput: TextInputEditText
     lateinit var dbViewModel: DatabaseViewModel
     lateinit var mainViewModel: MainViewModel
     val username = MutableLiveData<String>(null)
@@ -88,6 +94,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         onlineFriendsLoading = findViewById(R.id.onlineFriendsLoading)
         onlineNumberView = findViewById(R.id.tvOnlineNumber)
         addFriendBtn = findViewById(R.id.btnAddFriend)
+        searchInput = findViewById(R.id.searchInput)
 
         rcvMessageBoxes.layoutManager = LinearLayoutManager(this)
         addFriendBtn.setOnClickListener {
@@ -267,10 +274,25 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {}
 
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        startService(Intent(this, OnlineService::class.java).apply {
-//            action = ACTION_OFFLINE
-//        })
-//    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
+            val view = currentFocus
+            if (view is TextInputEditText) {
+                val msgInputBox = Rect()
+                view.getGlobalVisibleRect(msgInputBox)
+                if (
+                    !msgInputBox.contains(ev.rawX.toInt(), ev.rawY.toInt())
+                ) {
+                    searchInput.clearFocus()
+                    (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                        .hideSoftInputFromWindow(
+                            searchInput.windowToken,
+                            InputMethodManager.RESULT_UNCHANGED_SHOWN
+                        )
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
 }

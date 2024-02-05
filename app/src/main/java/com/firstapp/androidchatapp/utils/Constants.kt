@@ -59,5 +59,6 @@ class Constants {
         const val NIGHT_MODE_ON = "NIGHT_MODE_ON"
         const val ACTIVE_STATUS_ON = "ACTIVE_STATUS_ON"
         const val NOTIFICATION_ON = "NOTIFICATION_ON"
+        const val NIGHT_MODE_FOLLOW_SYSTEM = "NIGHT_MODE_FOLLOW_SYSTEM"
     }
 }

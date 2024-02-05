@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.firstapp.androidchatapp.receivers.OfflineReceiver
 import com.firstapp.androidchatapp.repositories.UserManager
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
+import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_FOLLOW_SYSTEM
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
@@ -68,9 +69,12 @@ class MainApp : Application() {
 
     private fun toggleNightMode() {
         val sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
-        var mode = AppCompatDelegate.MODE_NIGHT_NO
-        if (sharedPreferences.getBoolean(NIGHT_MODE_ON, false))
-            mode = AppCompatDelegate.MODE_NIGHT_YES
+        var mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        if (!sharedPreferences.getBoolean(NIGHT_MODE_FOLLOW_SYSTEM, true)) {
+            mode = AppCompatDelegate.MODE_NIGHT_NO
+            if (sharedPreferences.getBoolean(NIGHT_MODE_ON, false))
+                mode = AppCompatDelegate.MODE_NIGHT_YES
+        }
         AppCompatDelegate.setDefaultNightMode(mode)
     }
 }

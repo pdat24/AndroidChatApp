@@ -61,6 +61,7 @@
                     android:paddingVertical="8dp">
 
                     <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/searchInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@null"

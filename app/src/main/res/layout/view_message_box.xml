@@ -84,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="4dp"
-                    android:textColor="@color/indicator"
+                    android:textColor="@color/text_settings_options"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"

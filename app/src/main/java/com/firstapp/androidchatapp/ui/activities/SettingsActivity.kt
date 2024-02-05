@@ -20,6 +20,7 @@ import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
+import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_FOLLOW_SYSTEM
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOTIFICATION_ON
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -50,7 +51,8 @@ class SettingsActivity : AppCompatActivity() {
         val nightModeIsOn = sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
         // change status bar color
         window.statusBarColor = getColor(R.color.bg_settings_activity)
-        ViewCompat.getWindowInsetsController(window.decorView)?.isAppearanceLightStatusBars = !nightModeIsOn
+        ViewCompat.getWindowInsetsController(window.decorView)?.isAppearanceLightStatusBars =
+            !nightModeIsOn
         inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         // get views
         nightModeSwitcher = findViewById(R.id.modeSwitcher)
@@ -111,6 +113,8 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun toggleNightMode(isChecked: Boolean) {
         sharedPreferences.edit().putBoolean(NIGHT_MODE_ON, isChecked).apply()
+        sharedPreferences.edit().putBoolean(NIGHT_MODE_FOLLOW_SYSTEM, false).apply()
+        println("Called")
         AppCompatDelegate.setDefaultNightMode(
             if (isChecked) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
         )
