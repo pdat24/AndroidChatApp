@@ -3,6 +3,7 @@ package com.firstapp.androidchatapp.ui.activities
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.Rect
@@ -33,12 +34,14 @@ import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.GroupMessageAdapter
 import com.firstapp.androidchatapp.models.Message
+import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.DB_ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE_STORAGE_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
@@ -74,6 +77,12 @@ class ChatActivity : AppCompatActivity() {
         var active = false
     }
 
+    init {
+        this.applyOverrideConfiguration(Configuration().apply {
+            setLocale(MainApp.locale)
+        })
+    }
+
     private lateinit var choosePhotoBtn: ImageView
     private lateinit var takePhotoBtn: ImageView
     private lateinit var attachFileBtn: ImageView
@@ -97,8 +106,9 @@ class ChatActivity : AppCompatActivity() {
     private val firestore = FirebaseFirestore.getInstance()
     private var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
-    private var friendAvatarURI: String? = null
-    private var userUID: String? = null
+    private var messageBoxAvatarURI: String? = null
+    private var messageBoxUID: String? = null
+    private var messageBoxName: String? = null
     private var userIsFriend: Boolean? = null
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
     private lateinit var conversationID: String
@@ -135,14 +145,15 @@ class ChatActivity : AppCompatActivity() {
 
         // change friend's avatar and name
         val intentExtras = intent.extras!!
-        Glide.with(this).load(intentExtras.getString(AVATAR_URI))
-            .into(findViewById<ImageView>(R.id.ivUserAvatar))
-        findViewById<TextView>(R.id.tvName).text = intentExtras.getString(NAME)
-        friendAvatarURI = intentExtras.getString(AVATAR_URI)
-        userUID = intentExtras.getString(FRIEND_UID)
+        messageBoxName = intentExtras.getString(NAME)
+        messageBoxAvatarURI = intentExtras.getString(AVATAR_URI)
+        messageBoxUID = intentExtras.getString(FRIEND_UID)
         userIsFriend = intentExtras.getBoolean(IS_FRIEND)
         conversationID = intentExtras.getString(CONVERSATION_ID)
             ?: throw IllegalArgumentException("Conversation ID is null!")
+        Glide.with(this).load(intentExtras.getString(AVATAR_URI))
+            .into(findViewById<ImageView>(R.id.ivUserAvatar))
+        findViewById<TextView>(R.id.tvName).text = messageBoxName
 
         imageStoragePath = "$IMAGE_STORAGE_PATH/$conversationID"
         fileStoragePath = "$FILE_STORAGE_PATH/$conversationID"
@@ -232,7 +243,7 @@ class ChatActivity : AppCompatActivity() {
         super.onResume()
         active = true
         MainApp.cancelPrepareOfflineJob(this)
-        MainApp.startOnlineStatus()
+        MainApp.startOnlineStatus(this)
         (rcvMessages.layoutManager!! as LinearLayoutManager).findLastVisibleItemPosition()
     }
 
@@ -244,18 +255,25 @@ class ChatActivity : AppCompatActivity() {
 
     private fun renderUserActiveStatus() {
         CoroutineScope(Dispatchers.Main).launch {
-            var text = R.string.inactive
-            var indicator = R.drawable.view_offline_indicator
-            dbViewModel.getOnlineFriends().forEach {
-                // the default is inactive
-                if (it.uid == userUID) {
-                    // active
-                    text = R.string.active
-                    indicator = R.drawable.view_online_indicator
+            val user = dbViewModel.getUserById(messageBoxUID!!)
+            val activeStatusOn = user[DB_ACTIVE_STATUS_ON] as Boolean
+            if (!activeStatusOn) {
+                tvActiveStatus.visibility = View.GONE
+                statusIndicator.visibility = View.GONE
+            } else {
+                var text = R.string.inactive
+                var indicator = R.drawable.view_offline_indicator
+                dbViewModel.getOnlineFriends().forEach {
+                    // the default is inactive
+                    if (it.uid == messageBoxUID) {
+                        // active
+                        text = R.string.active
+                        indicator = R.drawable.view_online_indicator
+                    }
                 }
+                tvActiveStatus.text = getString(text)
+                statusIndicator.setBackgroundResource(indicator)
             }
-            tvActiveStatus.text = getString(text)
-            statusIndicator.setBackgroundResource(indicator)
         }
     }
 
@@ -373,7 +391,7 @@ class ChatActivity : AppCompatActivity() {
                                 GroupMessageAdapter(
                                     sentStatusFlow,
                                     this@ChatActivity,
-                                    friendAvatarURI!!,
+                                    messageBoxAvatarURI!!,
                                     groups.asReversed()
                                 )
                         }
@@ -413,7 +431,7 @@ class ChatActivity : AppCompatActivity() {
                     GroupMessageAdapter(
                         sentStatusFlow,
                         this@ChatActivity,
-                        friendAvatarURI!!,
+                        messageBoxAvatarURI!!,
                         groups.asReversed()
                     )
                 loadingView.visibility = View.GONE
@@ -433,12 +451,23 @@ class ChatActivity : AppCompatActivity() {
                     FILE -> previewMsg = getString(R.string.sent_a_file)
                     ICON -> previewMsg = getString(R.string.liked)
                 }
-                dbViewModel.updatePreviewMessage(conversationID, previewMsg)
-                dbViewModel.updateLastSendTime(
-                    conversationID, LocalDateTime.now().toEpochSecond(
-                        ZoneOffset.UTC
+                val now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                if (!createMessageBoxIfNotExists(
+                        MessageBox(
+                            index = 0,
+                            friendUID = messageBoxUID!!,
+                            avatarURI = messageBoxAvatarURI!!,
+                            name = messageBoxName!!,
+                            conversationID = conversationID,
+                            previewMessage = previewMsg,
+                            time = now
+                        )
                     )
-                )
+                ) {
+                    // only update if message box is existing
+                    dbViewModel.updatePreviewMessage(conversationID, previewMsg)
+                    dbViewModel.updateLastSendTime(conversationID, now)
+                }
                 // make th message box of friend to unread
                 unreadFriendMessageBox()
                 // change order of the message box of current user
@@ -448,7 +477,7 @@ class ChatActivity : AppCompatActivity() {
                 )
                 // change order of the message box of friend
                 dbViewModel.putMessageBoxOnTop(
-                    dbViewModel.getMessageBoxListId(userUID!!),
+                    dbViewModel.getMessageBoxListId(messageBoxUID!!),
                     conversationID
                 )
             }
@@ -456,8 +485,28 @@ class ChatActivity : AppCompatActivity() {
             Functions.showNoInternetNotification(this)
     }
 
+    /**
+     * @return true if new messagebox is created else false
+     */
+    private suspend fun createMessageBoxIfNotExists(messageBox: MessageBox): Boolean {
+        val messageBoxes = dbViewModel.getMessageBoxes(dbViewModel.getMessageBoxList())
+        var isExisted = false
+        messageBoxes.forEach {
+            if (it.conversationID == conversationID)
+                isExisted = true
+        }
+        if (!isExisted) {
+            dbViewModel.createMessageBox(
+                dbViewModel.getMessageBoxListId(currentUserUID),
+                messageBox
+            )
+            return true
+        }
+        return false
+    }
+
     private suspend fun unreadFriendMessageBox() {
-        val tmp = dbViewModel.getMessageBoxList(userUID)
+        val tmp = dbViewModel.getMessageBoxList(messageBoxUID)
         val msgBox = dbViewModel.getMessageBoxes(tmp).toMutableList()
         msgBox.forEach {
             if (it.conversationID == conversationID) {
@@ -466,7 +515,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
         FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH).document(
-            dbViewModel.getMessageBoxListId(userUID!!)
+            dbViewModel.getMessageBoxListId(messageBoxUID!!)
         ).update(MESSAGE_BOXES, msgBox)
     }
 

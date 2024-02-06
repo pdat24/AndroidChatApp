@@ -1,0 +1,86 @@
+<resources>
+    <string name="app_name">Chat With Me</string>
+    <string name="avatar">Ảnh đại diện</string>
+    <string name="get_started">Bắt đầu</string>
+    <string name="no_account">Bạn không có tài khoản?</string>
+    <string name="sign_in">Đăng nhập</string>
+    <string name="image_desc">1 bức ảnh</string>
+    <string name="sign_in_with_others">Hoặc đăng nhập với</string>
+    <string name="facebook">Facebook</string>
+    <string name="google">Google</string>
+    <string name="email">E-mail</string>
+    <string name="password">Mật khẩu</string>
+    <string name="welcome">Xin chào! Bắt đầu cuộc trò chuyện nào.</string>
+    <string name="email_warning">Địa chỉ Email không hợp lệ hoặc không tồn tại.</string>
+    <string name="password_warning">Mật khẩu phải chứa ít nhất 6 ký tự là chũ hoặc số.</string>
+    <string name="wrong_password_warning">Mật khẩu không chính xác!</string>
+    <string name="back_btn">nút quay lại</string>
+    <string name="settings">Cài đặt</string>
+    <string name="cancel">Hủy</string>
+    <string name="choose_from_library">Chọn từ thư viện</string>
+
+    <!--    Introduce activity values-->
+    <string name="introduce_title_1">Liên hệ qua tin nhắn</string>
+    <string name="introduce_title_2">Các cơ hội ở gần bạn</string>
+    <string name="introduce_title_3">Trò chuyện với bạn bè</string>
+    <string name="introduce_title_4">Tham gia các hội nhóm</string>
+    <string name="introduce_desc">Step by step instructions to create a job search website on your own in</string>
+
+    <!--    Main activity values-->
+    <string name="search_hint">Tìm kiếm theo tên</string>
+    <string name="messages">Tin nhắn</string>
+    <string name="online">Online</string>
+
+    <!--    settings-->
+    <string name="night_mode">Chế độ tối</string>
+    <string name="notification">Thông báo</string>
+    <string name="sign_out">Đăng xuất</string>
+    <string name="check_icon">Icon check</string>
+    <string name="take_photo">Chụp ảnh</string>
+
+    <string name="chat_input_hint">Aa</string>
+    <string name="friend_requests">Yêu cầu kết bạn</string>
+    <string name="add_friend">Thêm bạn</string>
+    <string name="search">Tìm kiếm…</string>
+    <string name="no_search_result">Không tìm thấy kết quả!</string>
+    <string name="send_request">Gửi yêu cầu</string>
+    <string name="username">Tên người dùng</string>
+    <string name="search_by">Tìm kiếm theo:</string>
+    <string name="user_id">ID</string>
+    <string name="requests">Yêu cầu</string>
+    <string name="sent_requests">Yêu cầu đã gửi</string>
+    <string name="received_requests">Yêu cầu đã nhận</string>
+    <string name="accept">Chấp nhận</string>
+    <string name="reject">Từ chối</string>
+    <string name="sent">Đã gửi</string>
+    <string name="recall">Thu hồi</string>
+    <string name="empty_list">Danh sách trống</string>
+    <string name="send_again">Gửi lại</string>
+    <string name="sent_an_image">Đã gửi ảnh</string>
+    <string name="sent_a_file">Đã gửi tệp tin</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="change_name">Đổi tên</string>
+    <string name="empty_conversation_desc">Bắt đầu cuộc trò chuyện nào!</string>
+    <string name="sending">Đang gửi</string>
+    <string name="friends">Bạn bè</string>
+    <string name="unfriend">Hủy kết bạn</string>
+    <string name="received">Đã nhận</string>
+    <string name="no_request">Không có yêu cầu</string>
+    <string name="add_friend_underline"><u>Thêm bạn.</u></string>
+    <string name="no_friend">"Bạn không có bạn bè. "</string>
+    <string name="search_user">Tìm kiếm người dùng</string>
+    <string name="you_are_not_friends"><u>Các bạn không phải bạn bè!</u></string>
+    <string name="check_internet_connection">Vui lòng kiểm tra kết nối mạng.</string>
+    <string name="active">Hoạt động</string>
+    <string name="inactive">Không hoạt động</string>
+    <string name="no_internet_connection">Không có kêt nối internet.</string>
+    <string name="liked">Đã thích</string>
+    <string name="active_status">Trạng thái hoạt động</string>
+    <string name="chat">Trò chuyện</string>
+    <string name="no_message_box">Bạn không có hộp tin nhắn.</string>
+    <string name="see_friends">Xem bạn bè</string>
+    <string name="languages">Ngôn ngữ</string>
+    <string name="english">English</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="sign_out_promt">Bạn chắc chắn muốn đăng xuất?</string>
+</resources>

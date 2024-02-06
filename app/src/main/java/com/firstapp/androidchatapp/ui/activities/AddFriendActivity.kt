@@ -2,6 +2,7 @@ package com.firstapp.androidchatapp.ui.activities
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
@@ -42,6 +43,12 @@ import kotlinx.coroutines.launch
 class AddFriendActivity : AppCompatActivity() {
     companion object {
         var active = false
+    }
+
+    init {
+        this.applyOverrideConfiguration(Configuration().apply {
+            setLocale(MainApp.locale)
+        })
     }
 
     private val itemMutationFlow = MutableStateFlow(false)
@@ -161,7 +168,7 @@ class AddFriendActivity : AppCompatActivity() {
         super.onResume()
         active = true
         MainApp.cancelPrepareOfflineJob(this)
-        MainApp.startOnlineStatus()
+        MainApp.startOnlineStatus(this)
     }
 
     override fun onStop() {

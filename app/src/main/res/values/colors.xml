@@ -20,13 +20,14 @@
     <color name="bg_back_btn_pressed">#80AEB1B1</color>
     <color name="text">#333</color>
     <color name="divider_color">#33706969</color>
+    <color name="switch_track_color">#36343B</color>
 
     <!--    Setting activity-->
     <color name="bg_settings_activity">#DCDCDC</color>
     <color name="bg_settings_options">#AEB1B1</color>
     <color name="text_settings_options">#605C5C</color>
     <color name="switcher_thumb">#A9AAAA</color>
-    <color name="sign_out_btn">#802196F3</color>
+    <color name="sign_out_btn">#4194D8</color>
 
     <!--    Menu fragment-->
     <color name="bg_edit_avatar_btn_idle">#AEB1B1</color>
@@ -40,6 +41,6 @@
     <!--    Chat activity-->
     <color name="top_and_bottom_section">#33676869</color>
     <color name="icon">#67686C</color>
-    <color name="bg_chat_input">#fff</color>
+    <color name="bg_chat_input">#F5EFF6</color>
     <color name="bg_chat_room">#33D4D5D8</color>
 </resources>

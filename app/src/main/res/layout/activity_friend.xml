@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/bg_main_activity"
+    android:orientation="vertical"
     tools:context=".ui.activities.FriendsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -50,13 +50,13 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/searchInput"
-            android:singleLine="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@null"
             android:drawableStart="@drawable/baseline_search_24"
             android:drawablePadding="8dp"
             android:hint="@string/search_hint"
+            android:singleLine="true"
             android:textSize="14sp"
             android:textStyle="bold" />
     </RelativeLayout>
@@ -78,7 +78,7 @@
         android:visibility="gone" />
 
     <com.google.android.flexbox.FlexboxLayout
-        android:id="@+id/tvNoFriend"
+        android:id="@+id/tvNoMessageBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -87,28 +87,28 @@
         app:justifyContent="center">
 
         <TextView
-            android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/no_friend" />
+            android:text="@string/no_friend"
+            android:textSize="14sp" />
 
         <TextView
-            android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="toAddFriendActivity"
             android:text="@string/add_friend_underline"
             android:textColor="@color/blue"
+            android:textSize="14sp"
             android:textStyle="bold" />
     </com.google.android.flexbox.FlexboxLayout>
 
     <TextView
-        android:textSize="14sp"
         android:id="@+id/tvNoResult"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/no_search_result"
         android:textAlignment="center"
+        android:textSize="14sp"
         android:textStyle="italic"
         android:visibility="gone" />
 </LinearLayout>

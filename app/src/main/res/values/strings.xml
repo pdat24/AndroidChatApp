@@ -34,7 +34,6 @@
     <string name="online">Online</string>
 
     <!--    settings-->
-    <string name="font_size">Font Size</string>
     <string name="delay_sending">Delay Sending</string>
     <string name="night_mode">Night mode</string>
     <string name="notification">Notification</string>
@@ -81,4 +80,11 @@
     <string name="no_internet_connection">No internet connection.</string>
     <string name="liked">Liked</string>
     <string name="active_status">Active status</string>
+    <string name="chat">Chat</string>
+    <string name="no_message_box">You have no message box.</string>
+    <string name="see_friends">See friends</string>
+    <string name="languages">Languages</string>
+    <string name="english">English</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="sign_out_promt">Are you sure want to sign out?</string>
 </resources>

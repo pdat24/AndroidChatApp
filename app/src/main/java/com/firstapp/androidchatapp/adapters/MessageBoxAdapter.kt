@@ -7,12 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.MessageBox
+import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.ui.activities.ChatActivity
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
@@ -21,7 +23,6 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
 import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
-import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
@@ -52,6 +53,7 @@ class MessageBoxAdapter(
         val avatarView: ImageView = itemView.findViewById(R.id.imvAvatar)
         val nameView: TextView = itemView.findViewById(R.id.tvName)
         val previewMsgView: TextView = itemView.findViewById(R.id.tvPreviewMessage)
+        val btnDelete: RelativeLayout = itemView.findViewById(R.id.btnDelete)
         val timView: TextView = itemView.findViewById(R.id.tvTime)
         val msgNumberView: TextView = itemView.findViewById(R.id.tvMessageNumber)
     }
@@ -70,6 +72,21 @@ class MessageBoxAdapter(
         holder.container.setOnClickListener {
             toChatActivity(messageBox)
             changeStateToRead(messageBox)
+        }
+        holder.btnDelete.setOnClickListener {
+            // TODO: Handle delete message box
+            CoroutineScope(Dispatchers.IO).launch {
+                dbViewModel.updateMessageBoxList(
+                    MessageBoxesList(
+                        dbViewModel.getMessageBoxes(dbViewModel.getMessageBoxList()).filter {
+                            it.conversationID != messageBox.conversationID
+                        }
+                    )
+                )
+                withContext(Dispatchers.Main) {
+                    notifyItemRemoved(position)
+                }
+            }
         }
         observeMessageBoxChanges(messageBox, holder)
         Glide.with(context).load(messageBox.avatarURI).into(holder.avatarView)
@@ -119,7 +136,6 @@ class MessageBoxAdapter(
         intent.putExtra(FRIEND_UID, msgBox.friendUID)
         intent.putExtra(AVATAR_URI, msgBox.avatarURI)
         intent.putExtra(NAME, msgBox.name)
-        intent.putExtra(MESSAGE_BOX_INDEX, msgBox.index)
         CoroutineScope(Dispatchers.Main).launch {
             if (friendsID == null)
                 friendsID = dbViewModel.getFriends().map {

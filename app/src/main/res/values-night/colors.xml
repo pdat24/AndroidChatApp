@@ -11,7 +11,7 @@
     <color name="bg_settings_options">#44475a</color>
     <color name="text_settings_options">#C3C1C1</color>
     <color name="switcher_thumb">#fff</color>
-    <color name="sign_out_btn">#322196F3</color>
+    <color name="sign_out_btn">#194166</color>
 
     <!--    Menu fragment-->
     <color name="bg_edit_avatar_btn_idle">#44475A</color>

@@ -1,11 +1,13 @@
 package com.firstapp.androidchatapp.utils
 
+import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.Friend
@@ -14,6 +16,7 @@ import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOT_LOGIN_ERROR_CODE
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
@@ -26,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.Locale
 
 /**
  * Contain functions that is used in many places on project
@@ -109,6 +113,16 @@ class Functions(
             return list.filter {
                 it.startsWith(input, true) || it.split(" ").contains(input)
             }
+        }
+
+        fun changeLanguage(activity: Activity, languageCode: String) {
+            activity.getSharedPreferences(MAIN_SHARED_PREFERENCE, Context.MODE_PRIVATE).edit()
+                .putString(Constants.LANGUAGE, languageCode).apply()
+            MainApp.locale = Locale(languageCode)
+            activity.finish()
+            activity.overridePendingTransition(0, 0)
+            activity.startActivity(activity.intent)
+            activity.overridePendingTransition(0, 0)
         }
     }
 

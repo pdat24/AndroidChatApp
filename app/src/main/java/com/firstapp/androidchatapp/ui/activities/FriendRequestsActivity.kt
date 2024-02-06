@@ -1,6 +1,7 @@
 package com.firstapp.androidchatapp.ui.activities
 
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -29,6 +30,12 @@ import kotlinx.coroutines.launch
 class FriendRequestsActivity : AppCompatActivity() {
     companion object {
         var active = false
+    }
+
+    init {
+        this.applyOverrideConfiguration(Configuration().apply {
+            setLocale(MainApp.locale)
+        })
     }
 
     private lateinit var noRequest: TextView
@@ -102,7 +109,7 @@ class FriendRequestsActivity : AppCompatActivity() {
         super.onResume()
         active = true
         MainApp.cancelPrepareOfflineJob(this)
-        MainApp.startOnlineStatus()
+        MainApp.startOnlineStatus(this)
     }
 
     override fun onStop() {

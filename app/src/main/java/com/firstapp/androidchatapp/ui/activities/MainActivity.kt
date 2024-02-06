@@ -2,22 +2,27 @@ package com.firstapp.androidchatapp.ui.activities
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
+import android.graphics.Canvas
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -26,6 +31,7 @@ import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.MessageBoxAdapter
 import com.firstapp.androidchatapp.adapters.OnlineFriendAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
+import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
@@ -42,40 +48,54 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
 import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Functions
 import com.firstapp.androidchatapp.utils.Functions.Companion.throwUserNotLoginError
+import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.RemoteMessage
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     companion object {
         var active = false
     }
 
+    init {
+        this.applyOverrideConfiguration(Configuration().apply {
+            setLocale(MainApp.locale)
+        })
+    }
+
+    private var cachedLocale: Locale? = null
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
     private val usersDB =
         FirebaseFirestore.getInstance().collection(USERS_COLLECTION_PATH)
     private lateinit var rcvMessageBoxes: RecyclerView
     private lateinit var rcvOnlineFriends: RecyclerView
-    private lateinit var onlineNumberView: TextView
+    private lateinit var friendOnlineNumber: TextView
     private lateinit var fragMenu: FragmentContainerView
     private lateinit var msgBoxLoading: CircularProgressIndicator
     private lateinit var onlineFriendsLoading: CircularProgressIndicator
-    private lateinit var addFriendBtn: FrameLayout
-    private lateinit var searchInput: TextInputEditText
     lateinit var dbViewModel: DatabaseViewModel
     lateinit var mainViewModel: MainViewModel
     val username = MutableLiveData<String>(null)
     private lateinit var sharedPreferences: SharedPreferences
+    private var messageBoxes: List<MessageBox>? = null
+    private val searchInput: TextInputEditText by lazy {
+        findViewById(R.id.searchInput)
+    }
+    private val tvNoResult: TextView by lazy {
+        findViewById(R.id.tvNoResult)
+    }
+    private val tvNoFriend: FlexboxLayout by lazy {
+        findViewById(R.id.tvNoMessageBox)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +105,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         ViewCompat.getWindowInsetsController(window.decorView)
             ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
         requestNotificationPermission()
+        cachedLocale = MainApp.locale
 
         // get views
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
@@ -92,23 +113,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         fragMenu = findViewById(R.id.fragMenu)
         msgBoxLoading = findViewById(R.id.msgBoxLoading)
         onlineFriendsLoading = findViewById(R.id.onlineFriendsLoading)
-        onlineNumberView = findViewById(R.id.tvOnlineNumber)
-        addFriendBtn = findViewById(R.id.btnAddFriend)
-        searchInput = findViewById(R.id.searchInput)
+        friendOnlineNumber = findViewById(R.id.tvOnlineNumber)
 
         rcvMessageBoxes.layoutManager = LinearLayoutManager(this)
-        addFriendBtn.setOnClickListener {
-            lifecycleScope.launch {
-                val token = FirebaseMessaging.getInstance().token.await()
-                FirebaseMessaging.getInstance().send(
-                    RemoteMessage.Builder(token)
-                        .setMessageId("tmp")
-                        .addData("title", "Test title")
-                        .addData("body", "Some content...")
-                        .build()
-                )
-            }
-        }
         // view models
         dbViewModel = ViewModelProvider(
             this,
@@ -120,7 +127,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             withContext(Dispatchers.Main) {
                 onlineFriendsLoading.visibility = View.VISIBLE
                 val friends = dbViewModel.getOnlineFriends()
-                onlineNumberView.text = friends.size.toString()
+                friendOnlineNumber.text = friends.size.toString()
                 rcvOnlineFriends.adapter = OnlineFriendAdapter(friends)
                 rcvOnlineFriends.layoutManager =
                     LinearLayoutManager(this@MainActivity, RecyclerView.HORIZONTAL, false)
@@ -145,6 +152,8 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         observeDrawerMenuState()
         observeMessageBoxesChanges()
         observeOnlineFriends()
+        handleSearchMessageBox()
+        handleSwipeMessageBox()
     }
 
     override fun onResume() {
@@ -152,13 +161,89 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         active = true
         synchronizeCachedMessageBoxes()
         MainApp.cancelPrepareOfflineJob(this)
-        MainApp.startOnlineStatus()
+        MainApp.startOnlineStatus(this)
+        if (MainApp.locale != cachedLocale) {
+            cachedLocale = MainApp.locale
+            Functions.changeLanguage(this, cachedLocale!!.language)
+        }
     }
 
     override fun onStop() {
         super.onStop()
         active = false
         MainApp.prepareOffline(this)
+    }
+
+    private fun handleSwipeMessageBox() {
+        val limitedScrollX = convertDpToPx(64f, this)
+
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.ACTION_STATE_IDLE,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    var scrollGap = (-dX).toInt()
+                    if (isCurrentlyActive) {
+                        println(dX)
+                        println(isCurrentlyActive)
+                        if (scrollGap >= limitedScrollX) {
+                            scrollGap = limitedScrollX
+                        }
+                    } else {
+                        scrollGap = if (scrollGap < limitedScrollX)
+                            0
+                        else limitedScrollX
+                    }
+                    viewHolder.itemView.scrollTo(scrollGap, 0)
+                }
+            }
+
+        }
+        ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(rcvMessageBoxes)
+    }
+
+    private fun convertDpToPx(dp: Float, context: Context): Int {
+        return (dp * context.resources.displayMetrics.density).toInt()
+    }
+
+    private fun handleSearchMessageBox() {
+        searchInput.addTextChangedListener { text ->
+            if (text != null) {
+                messageBoxes?.let {
+                    if (it.isNotEmpty()) {
+                        val resultSet = it.filter { box ->
+                            Functions.search(
+                                it.map { f -> f.name }, text.toString()
+                            ).contains(box.name)
+                        }
+                        if (resultSet.isEmpty()) {
+                            tvNoResult.visibility = View.VISIBLE
+                            tvNoFriend.visibility = View.GONE
+                        } else {
+                            tvNoResult.visibility = View.GONE
+                        }
+                        rcvMessageBoxes.adapter = MessageBoxAdapter(dbViewModel, resultSet)
+                    }
+                }
+            }
+        }
     }
 
     private fun synchronizeCachedMessageBoxes() = lifecycleScope.launch {
@@ -210,7 +295,12 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             lifecycleScope.launch {
                 // update the number of cached message boxes
                 dbViewModel.cacheMessageBoxNumber(it.size)
+                messageBoxes = it
                 withContext(Dispatchers.Main) {
+                    if (it.isEmpty())
+                        tvNoFriend.visibility = View.VISIBLE
+                    else
+                        tvNoFriend.visibility = View.GONE
                     rcvMessageBoxes.adapter =
                         MessageBoxAdapter(dbViewModel, it)
                 }
@@ -260,6 +350,12 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
     }
 
+    fun toAddFriendActivity(view: View) =
+        startActivity(Intent(this, AddFriendActivity::class.java))
+
+    fun toFriendsActivity(view: View) =
+        startActivity(Intent(this, FriendsActivity::class.java))
+
     override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
         if (EasyPermissions.somePermissionPermanentlyDenied(
                 this,
@@ -273,7 +369,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {}
-
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if (ev?.action == MotionEvent.ACTION_DOWN) {

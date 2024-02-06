@@ -50,6 +50,9 @@ class DatabaseViewModel(
         context.getSharedPreferences(MAIN_SHARED_PREFERENCE, Context.MODE_PRIVATE)
     private val msgBoxesManager = MessageBoxManager(this)
     val firebaseAuth = FirebaseAuth.getInstance()
+    private val currentUserUID by lazy {
+        FirebaseAuth.getInstance().currentUser!!.uid
+    }
 
 
     // apis to interact with firestore database
@@ -122,25 +125,25 @@ class DatabaseViewModel(
         type: UserManager.RequestType,
         filter: ((String) -> Boolean)? = null
     ): List<FriendRequest> {
-        return userManager.getUserRequests(firebaseAuth.currentUser!!.uid, type, filter)
+        return userManager.getUserRequests(currentUserUID, type, filter)
     }
 
     suspend fun getOnlineFriends(): List<Friend> {
-        return userManager.getOnlineFriends(getUserById(firebaseAuth.currentUser!!.uid))
+        return userManager.getOnlineFriends(getUserById(currentUserUID))
     }
 
     fun getOnlineFriends(user: DocumentSnapshot): List<Friend> =
         userManager.getOnlineFriends(user)
 
     suspend fun getFriends(): List<Friend> =
-        userManager.getFriends(firebaseAuth.currentUser!!.uid)
+        userManager.getFriends(currentUserUID)
 
     suspend fun updateOnlineState(state: Boolean) {
-        return userManager.updateOnlineState(firebaseAuth.currentUser!!.uid, state)
+        return userManager.updateOnlineState(currentUserUID, state)
     }
 
     suspend fun addSentRequest(req: FriendRequest) {
-        userManager.addSentRequest(firebaseAuth.currentUser!!.uid, req)
+        userManager.addSentRequest(currentUserUID, req)
     }
 
     suspend fun addReceivedRequest(senderId: String) {
@@ -156,12 +159,12 @@ class DatabaseViewModel(
     }
 
     suspend fun addFriend(friend: Friend) {
-        userManager.addFriend(firebaseAuth.currentUser!!.uid, friend)
+        userManager.addFriend(currentUserUID, friend)
         val getUserInfo: (UserInfo) -> Unit = {
             CoroutineScope(Dispatchers.IO).launch {
                 userManager.addFriend(
                     friend.uid, Friend(
-                        uid = firebaseAuth.currentUser!!.uid,
+                        uid = currentUserUID,
                         name = it.name,
                         avatarURI = it.avatarURI,
                         conversationID = friend.conversationID
@@ -176,8 +179,8 @@ class DatabaseViewModel(
     }
 
     suspend fun removeFriend(friendId: String) {
-        userManager.removeFriend(firebaseAuth.currentUser!!.uid, friendId)
-        userManager.removeFriend(friendId, firebaseAuth.currentUser!!.uid)
+        userManager.removeFriend(currentUserUID, friendId)
+        userManager.removeFriend(friendId, currentUserUID)
     }
 
     /**
@@ -189,7 +192,7 @@ class DatabaseViewModel(
 
     suspend fun getMessageBoxList(userID: String? = null): DocumentSnapshot {
         return msgBoxesManager.getMessageBoxList(
-            getMessageBoxListId(userID ?: firebaseAuth.currentUser!!.uid)
+            getMessageBoxListId(userID ?: currentUserUID)
         )
     }
 
@@ -226,6 +229,14 @@ class DatabaseViewModel(
         msgBoxesManager.putMessageBoxOnTop(msgBoxListId, conversationID)
     }
 
+    suspend fun removeMessageBox(msgBoxListId: String, conversationID: String) {
+        msgBoxesManager.removeMessageBox(msgBoxListId, conversationID)
+    }
+
+    fun updateActiveStatus(on: Boolean) {
+        userManager.updateActiveStatus(currentUserUID, on)
+    }
+
     /**
      * Create new message box at end of message box list have id is [msgBoxListId]
      * @param msgBoxListId the id of message box list, the default value is of signed in user
@@ -236,7 +247,7 @@ class DatabaseViewModel(
 
     suspend fun updateMessageBoxList(msgBox: MessageBoxesList) {
         msgBoxesManager.updateMessageBoxList(
-            getMessageBoxListId(firebaseAuth.currentUser!!.uid),
+            getMessageBoxListId(currentUserUID),
             msgBox
         )
     }
@@ -247,13 +258,13 @@ class DatabaseViewModel(
 
     suspend fun updateMsgBoxReadState(conversationID: String, state: Boolean) {
         msgBoxesManager.updateReadState(
-            getMessageBoxListId(firebaseAuth.currentUser!!.uid), conversationID, state
+            getMessageBoxListId(currentUserUID), conversationID, state
         )
     }
 
     suspend fun updateUnreadMsgNumber(conversationID: String, n: Int) {
         msgBoxesManager.updateUnreadMsgNumber(
-            getMessageBoxListId(firebaseAuth.currentUser!!.uid), conversationID, n
+            getMessageBoxListId(currentUserUID), conversationID, n
         )
     }
 

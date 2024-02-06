@@ -1,6 +1,7 @@
 package com.firstapp.androidchatapp.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +13,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.Friend
+import com.firstapp.androidchatapp.ui.activities.ChatActivity
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
+import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
+import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
+import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +35,7 @@ class FriendAdapter(
 ) : RecyclerView.Adapter<FriendAdapter.ViewHolder>() {
 
     private lateinit var context: Context
+    private var friendsID: List<String>? = null
 
     class ViewHolder(
         itemView: View
@@ -36,6 +44,7 @@ class FriendAdapter(
         val name: TextView = itemView.findViewById(R.id.tvName)
         val uid: TextView = itemView.findViewById(R.id.tvID)
         val btnUnfriend: MaterialButton = itemView.findViewById(R.id.btnUnfriend)
+        val btnChat: TextView = itemView.findViewById(R.id.btnChat)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -64,6 +73,21 @@ class FriendAdapter(
                 }.setNegativeButton("Cancel") { dialog, _ ->
                     dialog.cancel()
                 }.show()
+        }
+        holder.btnChat.setOnClickListener {
+            val intent = Intent(context, ChatActivity::class.java)
+            intent.putExtra(CONVERSATION_ID, user.conversationID)
+            intent.putExtra(FRIEND_UID, user.uid)
+            intent.putExtra(AVATAR_URI, user.avatarURI)
+            intent.putExtra(NAME, user.name)
+            CoroutineScope(Dispatchers.Main).launch {
+                if (friendsID == null)
+                    friendsID = dbViewModel.getFriends().map {
+                        it.uid
+                    }
+                intent.putExtra(IS_FRIEND, friendsID!!.contains(user.uid))
+                context.startActivity(intent)
+            }
         }
     }
 

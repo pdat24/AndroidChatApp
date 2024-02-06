@@ -8,9 +8,9 @@
     tools:context=".ui.activities.MainActivity">
 
     <LinearLayout
-        android:background="@color/bg_main_activity"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/bg_main_activity"
         android:orientation="vertical">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -92,10 +92,10 @@
                             android:orientation="vertical">
 
                             <FrameLayout
-                                android:id="@+id/btnAddFriend"
                                 android:layout_width="68dp"
                                 android:layout_height="68dp"
-                                android:background="@drawable/bg_add_friend_avatar">
+                                android:background="@drawable/bg_add_friend_avatar"
+                                android:onClick="toAddFriendActivity">
 
                                 <ImageView
                                     android:layout_width="wrap_content"
@@ -173,6 +173,41 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="20dp"
                     android:indeterminate="true"
+                    android:visibility="gone" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/tvNoMessageBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:flexDirection="row"
+                    app:flexWrap="wrap"
+                    app:justifyContent="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_message_box"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="toFriendsActivity"
+                        android:text="@string/see_friends"
+                        android:textColor="@color/blue"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </com.google.android.flexbox.FlexboxLayout>
+
+                <TextView
+                    android:id="@+id/tvNoResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_search_result"
+                    android:textAlignment="center"
+                    android:textSize="14sp"
+                    android:textStyle="italic"
                     android:visibility="gone" />
             </LinearLayout>
         </ScrollView>

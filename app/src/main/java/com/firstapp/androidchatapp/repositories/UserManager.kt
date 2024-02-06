@@ -5,6 +5,7 @@ import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.User
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.DB_ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIENDS
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.ONLINE_FRIENDS
@@ -114,6 +115,10 @@ class UserManager {
             }
             userDB.document(friend.id).update(ONLINE_FRIENDS, res)
         }
+    }
+
+    fun updateActiveStatus(userID: String, on: Boolean) {
+        userDB.document(userID).update(DB_ACTIVE_STATUS_ON, on)
     }
 
     /**

@@ -2,6 +2,7 @@ package com.firstapp.androidchatapp.ui.activities
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -12,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.MessageBoxesList
 import com.firstapp.androidchatapp.models.User
@@ -36,6 +38,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class SignInActivity : AppCompatActivity() {
+
+    init {
+        this.applyOverrideConfiguration(Configuration().apply {
+            setLocale(MainApp.locale)
+        })
+    }
 
     private lateinit var emailInput: TextInputEditText
     private lateinit var passwordInput: TextInputEditText

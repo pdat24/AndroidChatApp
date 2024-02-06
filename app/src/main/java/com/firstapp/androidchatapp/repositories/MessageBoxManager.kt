@@ -102,4 +102,11 @@ class MessageBoxManager(
         }
         messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes)
     }
+
+    suspend fun removeMessageBox(id: String, conversationID: String) {
+        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes.filter {
+            it.conversationID != conversationID
+        })
+    }
 }

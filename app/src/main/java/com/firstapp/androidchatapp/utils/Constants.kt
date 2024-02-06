@@ -45,9 +45,7 @@ class Constants {
         const val FRIENDS = "friends"
         const val SENT_REQUESTS = "sentRequests"
         const val RECEIVED_REQUESTS = "receivedRequests"
-        const val MESSAGE_BOX_INDEX = "messageBoxIndex"
         const val ONLINE_FRIENDS = "onlineFriends"
-        const val ACTION_RECEIVED_FRIEND_REQUEST = "ACTION_RECEIVED_FRIEND_REQUEST"
         const val NOTIFICATION_CHANNEL_ID = "NOTIFICATION_CHANNEL_ID"
         const val NOTIFICATION_CHANnEL_NAME = "Main Channel"
         const val PERMISSION_REQUEST_CODE = 8
@@ -58,7 +56,9 @@ class Constants {
         const val SP_MESSAGE_BOX_NUMBER = "MESSAGE_BOX_NUMBER"
         const val NIGHT_MODE_ON = "NIGHT_MODE_ON"
         const val ACTIVE_STATUS_ON = "ACTIVE_STATUS_ON"
+        const val DB_ACTIVE_STATUS_ON = "activeStatusOn"
         const val NOTIFICATION_ON = "NOTIFICATION_ON"
         const val NIGHT_MODE_FOLLOW_SYSTEM = "NIGHT_MODE_FOLLOW_SYSTEM"
+        const val LANGUAGE = "LANGUAGE"
     }
 }

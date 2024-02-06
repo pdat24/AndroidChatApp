@@ -1,6 +1,7 @@
 package com.firstapp.androidchatapp.ui.activities
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.SlideItemAdapter
 import com.firstapp.androidchatapp.models.SlideItem
@@ -18,6 +20,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class IntroduceActivity : AppCompatActivity() {
+
+    init {
+        this.applyOverrideConfiguration(Configuration().apply {
+            setLocale(MainApp.locale)
+        })
+    }
 
     private lateinit var slide: ViewPager2
     private lateinit var indicatorContainer: LinearLayout

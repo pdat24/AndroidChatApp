@@ -3,6 +3,7 @@ package com.firstapp.androidchatapp.ui.activities
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.MotionEvent
@@ -39,10 +40,16 @@ class FriendsActivity : AppCompatActivity() {
         var active = false
     }
 
+    init {
+        this.applyOverrideConfiguration(Configuration().apply {
+            setLocale(MainApp.locale)
+        })
+    }
+
     private lateinit var rcvFriends: RecyclerView
     private lateinit var dbViewModel: DatabaseViewModel
     private lateinit var loading: CircularProgressIndicator
-    private lateinit var input: TextInputEditText
+    private lateinit var searchInput: TextInputEditText
     private lateinit var tvNoFriend: FlexboxLayout
     private lateinit var tvNoResult: TextView
     private var friends: List<Friend>? = null
@@ -60,8 +67,8 @@ class FriendsActivity : AppCompatActivity() {
         //get views
         rcvFriends = findViewById(R.id.rcvFriends)
         loading = findViewById(R.id.loading)
-        input = findViewById(R.id.searchInput)
-        tvNoFriend = findViewById(R.id.tvNoFriend)
+        searchInput = findViewById(R.id.searchInput)
+        tvNoFriend = findViewById(R.id.tvNoMessageBox)
         tvNoResult = findViewById(R.id.tvNoResult)
         rcvFriends.layoutManager = LinearLayoutManager(this)
 
@@ -80,7 +87,7 @@ class FriendsActivity : AppCompatActivity() {
             loading.visibility = View.GONE
         }
 
-        input.addTextChangedListener { text ->
+        searchInput.addTextChangedListener { text ->
             if (text != null) {
                 friends?.let {
                     if (it.isNotEmpty()) {
@@ -120,7 +127,7 @@ class FriendsActivity : AppCompatActivity() {
         super.onResume()
         active = true
         MainApp.cancelPrepareOfflineJob(this)
-        MainApp.startOnlineStatus()
+        MainApp.startOnlineStatus(this)
     }
 
     override fun onStop() {
@@ -144,10 +151,10 @@ class FriendsActivity : AppCompatActivity() {
                 if (
                     !msgInputBox.contains(ev.rawX.toInt(), ev.rawY.toInt())
                 ) {
-                    input.clearFocus()
+                    searchInput.clearFocus()
                     (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                         .hideSoftInputFromWindow(
-                            input.windowToken,
+                            searchInput.windowToken,
                             InputMethodManager.RESULT_UNCHANGED_SHOWN
                         )
                 }
