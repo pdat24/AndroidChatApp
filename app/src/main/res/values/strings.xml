@@ -78,7 +78,7 @@
     <string name="active">Active</string>
     <string name="inactive">Inactive</string>
     <string name="no_internet_connection">No internet connection.</string>
-    <string name="liked">Liked</string>
+    <string name="sent_icon">Sent an icon</string>
     <string name="active_status">Active status</string>
     <string name="chat">Chat</string>
     <string name="no_message_box">You have no message box.</string>
@@ -87,4 +87,10 @@
     <string name="english">English</string>
     <string name="vietnamese">Tiếng Việt</string>
     <string name="sign_out_promt">Are you sure want to sign out?</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="received_friend_request">You have a new friend request</string>
+    <string name="sent_you_friend_request">sent you a friend request</string>
+    <string name="reply">Reply</string>
+    <string name="receiving_notifications">Receiving notifications</string>
 </resources>

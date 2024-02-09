@@ -15,13 +15,17 @@ import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.models.MessageBox
+import com.firstapp.androidchatapp.repositories.MessageBoxManager
+import com.firstapp.androidchatapp.repositories.UserManager
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOT_LOGIN_ERROR_CODE
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -122,7 +126,62 @@ class Functions(
             activity.finish()
             activity.overridePendingTransition(0, 0)
             activity.startActivity(activity.intent)
-            activity.overridePendingTransition(0, 0)
+        }
+
+        fun getMessageBoxes(msgBoxesList: DocumentSnapshot): List<MessageBox> {
+            val msgBoxes = msgBoxesList[Constants.MESSAGE_BOXES] as List<*>
+            val result = mutableListOf<MessageBox>()
+            for (i in msgBoxes) {
+                val box = i as HashMap<*, *>
+                result.add(
+                    MessageBox(
+                        index = (box[Constants.INDEX] as Long).toInt(),
+                        friendUID = box[Constants.FRIEND_UID] as String,
+                        avatarURI = box[Constants.AVATAR_URI] as String,
+                        conversationID = box[Constants.CONVERSATION_ID] as String,
+                        name = box[Constants.NAME] as String,
+                        read = box[Constants.READ] as Boolean,
+                        unreadMessages = (box[Constants.UNREAD_MESSAGES] as Long).toInt(),
+                        previewMessage = box[Constants.PREVIEW_MESSAGE] as String,
+                        time = box[Constants.TIME] as Long
+                    )
+                )
+            }
+            result.sortedBy {
+                it.index
+            }
+            return result
+        }
+
+        fun observeConversationsChanges(
+            observer: (documentChanges: List<DocumentSnapshot>) -> Unit
+        ) {
+            FirebaseFirestore.getInstance()
+                .collection(CONVERSATIONS_COLLECTION_PATH)
+                .addSnapshotListener { value, _ ->
+                    value?.let {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            // take conversations the current user owns
+                            val conversationIdList = getMessageBoxes(
+                                MessageBoxManager().getMessageBoxList(
+                                    UserManager().getUserById(
+                                        FirebaseAuth.getInstance().currentUser!!.uid
+                                    )[Constants.MESSAGE_BOX_LIST_ID] as String
+                                )
+                            ).map {
+                                it.conversationID
+                            }
+                            val docChangesOfUser = mutableListOf<DocumentSnapshot>()
+                            for (con in it.documentChanges) {
+                                // trigger observer when a conversation user owns updates
+                                if (conversationIdList.contains(con.document.id)) {
+                                    docChangesOfUser.add(con.document)
+                                }
+                            }
+                            observer(docChangesOfUser)
+                        }
+                    }
+                }
         }
     }
 

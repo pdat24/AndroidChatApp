@@ -17,7 +17,7 @@ import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.ui.activities.ChatActivity
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE
-import com.firstapp.androidchatapp.utils.Constants.Companion.ICON
+import com.firstapp.androidchatapp.utils.Constants.Companion.ICON_LIKE
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
 import com.google.android.material.card.MaterialCardView
@@ -83,7 +83,7 @@ class GroupMessageAdapter(
 
                 IMAGE -> renderImageMessage(holder.messagesContainer, msg.content)
 
-                ICON -> renderIconMessage(holder.messagesContainer, msg.content)
+                ICON_LIKE -> renderIconMessage(holder.messagesContainer, msg.content)
 
                 FILE -> renderFileMessage(holder.messagesContainer, msg.content)
             }
@@ -153,9 +153,9 @@ class GroupMessageAdapter(
     private fun formatSendTime(time: Long): String {
         val sendTime = convertLongToDateTime(time)
         return if (sendTime.toLocalDate() == LocalDate.now())
-            "${formatTime(sendTime)}  Today"
+            "${formatTime(sendTime)}  ${context.getString(R.string.today)}"
         else if (sendTime.toLocalDate() == LocalDate.now().minusDays(1))
-            "${formatTime(sendTime)}  Yesterday"
+            "${formatTime(sendTime)}  ${context.getString(R.string.yesterday)}"
         else
             "${formatTime(sendTime)}  ${sendTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))}"
     }

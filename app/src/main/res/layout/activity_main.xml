@@ -222,7 +222,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/frmImagePicker"
-        android:name="com.firstapp.androidchatapp.ui.fragments.ImagePickerFragment"
+        android:name="com.firstapp.androidchatapp.ui.fragments.AvatarPickerFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone" />

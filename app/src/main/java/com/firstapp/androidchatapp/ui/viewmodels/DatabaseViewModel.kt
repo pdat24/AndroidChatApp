@@ -16,21 +16,12 @@ import com.firstapp.androidchatapp.repositories.ConversationManager
 import com.firstapp.androidchatapp.repositories.LocalRepository
 import com.firstapp.androidchatapp.repositories.MessageBoxManager
 import com.firstapp.androidchatapp.repositories.UserManager
-import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
-import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_PREVIEW_MESSAGE
-import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
-import com.firstapp.androidchatapp.utils.Constants.Companion.INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
-import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_LIST_ID
-import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
-import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
-import com.firstapp.androidchatapp.utils.Constants.Companion.READ
 import com.firstapp.androidchatapp.utils.Constants.Companion.SP_MESSAGE_BOX_NUMBER
-import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
-import com.firstapp.androidchatapp.utils.Constants.Companion.UNREAD_MESSAGES
 import com.firstapp.androidchatapp.utils.Functions
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.CoroutineScope
@@ -48,7 +39,7 @@ class DatabaseViewModel(
     private val userManager = UserManager()
     private val sharedPreferences =
         context.getSharedPreferences(MAIN_SHARED_PREFERENCE, Context.MODE_PRIVATE)
-    private val msgBoxesManager = MessageBoxManager(this)
+    private val msgBoxesManager = MessageBoxManager()
     val firebaseAuth = FirebaseAuth.getInstance()
     private val currentUserUID by lazy {
         FirebaseAuth.getInstance().currentUser!!.uid
@@ -77,16 +68,8 @@ class DatabaseViewModel(
      * add new message to conversation
      * @param id the id of conversation
      */
-    suspend fun addMessage(id: String, message: Message) {
-        conversationManager.addMessage(id, message)
-    }
-
-    fun updatePreviewMessage(conversationID: String, content: String) {
-        conversationManager.updatePreviewMessage(conversationID, content)
-    }
-
-    fun updateLastSendTime(conversationID: String, time: Long) {
-        conversationManager.updateLastSendTime(conversationID, time)
+    suspend fun addMessage(id: String, message: Message, previewMsg: String, sendTime: Long) {
+        conversationManager.addMessage(id, message, previewMsg, sendTime)
     }
 
 
@@ -128,12 +111,9 @@ class DatabaseViewModel(
         return userManager.getUserRequests(currentUserUID, type, filter)
     }
 
-    suspend fun getOnlineFriends(): List<Friend> {
-        return userManager.getOnlineFriends(getUserById(currentUserUID))
+    suspend fun getOnlineFriends(user: DocumentSnapshot? = null): List<Friend> {
+        return userManager.getOnlineFriends(user ?: getUserById(currentUserUID))
     }
-
-    fun getOnlineFriends(user: DocumentSnapshot): List<Friend> =
-        userManager.getOnlineFriends(user)
 
     suspend fun getFriends(): List<Friend> =
         userManager.getFriends(currentUserUID)
@@ -201,28 +181,7 @@ class DatabaseViewModel(
      * @return The list of message box that is sorted ascending by index
      */
     fun getMessageBoxes(msgBoxesList: DocumentSnapshot): List<MessageBox> {
-        val msgBoxes = msgBoxesList[MESSAGE_BOXES] as List<*>
-        val result = mutableListOf<MessageBox>()
-        for (i in msgBoxes) {
-            val box = i as HashMap<*, *>
-            result.add(
-                MessageBox(
-                    index = (box[INDEX] as Long).toInt(),
-                    friendUID = box[FRIEND_UID] as String,
-                    avatarURI = box[AVATAR_URI] as String,
-                    conversationID = box[CONVERSATION_ID] as String,
-                    name = box[NAME] as String,
-                    read = box[READ] as Boolean,
-                    unreadMessages = (box[UNREAD_MESSAGES] as Long).toInt(),
-                    previewMessage = box[PREVIEW_MESSAGE] as String,
-                    time = box[TIME] as Long
-                )
-            )
-        }
-        result.sortedBy {
-            it.index
-        }
-        return result
+        return Functions.getMessageBoxes(msgBoxesList)
     }
 
     suspend fun putMessageBoxOnTop(msgBoxListId: String, conversationID: String) {
@@ -309,6 +268,19 @@ class DatabaseViewModel(
 
     fun getCachedMessageBoxes(): LiveData<List<MessageBox>> =
         localRepository.getMessageBoxes()
+
+    fun getCachedReceivedFriendRequest(): LiveData<List<FriendRequest>> {
+        return localRepository.getReceivedFriendRequests()
+    }
+
+    suspend fun cacheReceivedFriendRequest(req: FriendRequest) =
+        localRepository.addReceivedFriendRequest(req)
+
+    suspend fun removeCachedReceivedFriendRequest(senderId: String) =
+        localRepository.removeReceivedFriendRequest(senderId)
+
+    suspend fun clearReceivedFriendRequests() =
+        localRepository.clearReceivedFriendRequests()
 
     // firebase storage
     /**

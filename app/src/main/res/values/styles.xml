@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="DarkDialog" parent="Theme.Material3.Dark.Dialog">
+        <item name="android:textColorPrimary">#B4B6C5</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DialogButton</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="android:background">@drawable/bg_dark_sign_out_dialog</item>
+    </style>
+
+    <style name="LightDialog" parent="Theme.Material3.Light.Dialog">
+        <item name="android:textColorPrimary">#333</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DialogButton</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="android:background">@drawable/bg_light_sign_out_dialog</item>
+    </style>
+
+    <style name="DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/blue</item>
+    </style>
+</resources>

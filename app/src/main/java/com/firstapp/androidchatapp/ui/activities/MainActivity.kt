@@ -33,6 +33,8 @@ import com.firstapp.androidchatapp.adapters.OnlineFriendAdapter
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.models.MessageBoxesList
+import com.firstapp.androidchatapp.repositories.UserManager
+import com.firstapp.androidchatapp.services.NotificationsService
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
@@ -41,6 +43,7 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
+import com.firstapp.androidchatapp.utils.Constants.Companion.NOTIFICATION_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.PERMISSION_REQUEST_CODE
 import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.SENDER_ID
@@ -72,6 +75,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private var cachedLocale: Locale? = null
+    private var cachedNightModeState = false
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
     private val usersDB =
@@ -106,6 +110,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
         requestNotificationPermission()
         cachedLocale = MainApp.locale
+        cachedNightModeState = MainApp.nightModeIsOn
 
         // get views
         rcvMessageBoxes = findViewById(R.id.rcvMsgBoxList)
@@ -151,20 +156,34 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         super.onStart()
         observeDrawerMenuState()
         observeMessageBoxesChanges()
+        observeConversationsUpdates()
         observeOnlineFriends()
         handleSearchMessageBox()
         handleSwipeMessageBox()
+        turnOnNotificationIfIsSet()
     }
 
     override fun onResume() {
         super.onResume()
         active = true
         synchronizeCachedMessageBoxes()
+        synchronizeCachedReceivedFriendRequests()
         MainApp.cancelPrepareOfflineJob(this)
         MainApp.startOnlineStatus(this)
-        if (MainApp.locale != cachedLocale) {
-            cachedLocale = MainApp.locale
-            Functions.changeLanguage(this, cachedLocale!!.language)
+
+        // only need reload activity once
+        // if it reloaded before it doesn't need any more
+        if (cachedNightModeState != MainApp.nightModeIsOn) {
+            finish()
+            overridePendingTransition(0, 0)
+            AppCompatDelegate.setDefaultNightMode(
+                if (MainApp.nightModeIsOn)
+                    AppCompatDelegate.MODE_NIGHT_YES
+                else AppCompatDelegate.MODE_NIGHT_NO
+            )
+            startActivity(intent)
+        } else if (MainApp.locale != cachedLocale) {
+            Functions.changeLanguage(this, MainApp.locale!!.language)
         }
     }
 
@@ -174,12 +193,21 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         MainApp.prepareOffline(this)
     }
 
+    private fun turnOnNotificationIfIsSet() {
+        if (sharedPreferences.getBoolean(NOTIFICATION_ON, true))
+            startService(Intent(this, NotificationsService::class.java))
+    }
+
     private fun handleSwipeMessageBox() {
         val limitedScrollX = convertDpToPx(64f, this)
+        var previousScrollX = 0
+        var scrollDirection = Direction.LEFT
+        var maxScrollX: Int? = null
+        var deleteBtnIsOpened = false
 
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.ACTION_STATE_IDLE,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            ItemTouchHelper.LEFT
         ) {
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -199,22 +227,49 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 isCurrentlyActive: Boolean
             ) {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-                    var scrollGap = (-dX).toInt()
+                    var scrollOffset = (-dX).toInt()
                     if (isCurrentlyActive) {
-                        println(dX)
-                        println(isCurrentlyActive)
-                        if (scrollGap >= limitedScrollX) {
-                            scrollGap = limitedScrollX
+                        scrollDirection =
+                            if (previousScrollX > scrollOffset)
+                                Direction.RIGHT
+                            else
+                                Direction.LEFT
+                        // when user scroll to left and scroll gap >= limitedScrollX
+                        // then scroll itemView to limitedScrollX
+                        if (scrollOffset >= limitedScrollX && scrollDirection == Direction.LEFT) {
+                            scrollOffset = limitedScrollX
+                            deleteBtnIsOpened = true
+                        }
+                        // when user scroll to right
+                        if (
+                            scrollOffset != 0 && deleteBtnIsOpened && scrollDirection == Direction.RIGHT
+                        ) {
+                            // get maxScrollX when user scroll to right in the first time
+                            // maxScrollX is based on the user device
+                            // use variable firstScrollToRight to get maxScrollX
+                            if (maxScrollX == null) {
+                                maxScrollX = scrollOffset
+                            }
+                            // maxScrollX - currentDXPosition is the gap user is swiped
+                            val currentDXPosition = (-dX).toInt()
+                            scrollOffset = limitedScrollX - ((maxScrollX ?: 0) - currentDXPosition)
                         }
                     } else {
-                        scrollGap = if (scrollGap < limitedScrollX)
+                        // handle when the user releases their finger
+                        scrollOffset = if (
+                            scrollOffset < limitedScrollX ||
+                            (scrollDirection == Direction.RIGHT && maxScrollX != null)
+                        ) {
+                            deleteBtnIsOpened = false
                             0
-                        else limitedScrollX
+                        } else {
+                            limitedScrollX
+                        }
                     }
-                    viewHolder.itemView.scrollTo(scrollGap, 0)
+                    previousScrollX = (-dX).toInt()
+                    viewHolder.itemView.scrollTo(scrollOffset, 0)
                 }
             }
-
         }
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(rcvMessageBoxes)
     }
@@ -243,6 +298,14 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     }
                 }
             }
+        }
+    }
+
+    private fun synchronizeCachedReceivedFriendRequests() = lifecycleScope.launch {
+        val requests = dbViewModel.getUserRequests(UserManager.RequestType.RECEIVED)
+        dbViewModel.clearReceivedFriendRequests()
+        for (req in requests) {
+            dbViewModel.cacheReceivedFriendRequest(req)
         }
     }
 
@@ -280,15 +343,22 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     private fun observeOnlineFriends() =
         usersDB.document(currentUserUID).addSnapshotListener { value, error ->
-            lifecycleScope.launch {
-                if (value != null) {
-                    val onlineFriends = dbViewModel.getOnlineFriends(value)
+            value?.let {
+                lifecycleScope.launch {
+                    val onlineFriends = dbViewModel.getOnlineFriends()
                     withContext(Dispatchers.Main) {
                         rcvOnlineFriends.adapter = OnlineFriendAdapter(onlineFriends)
                     }
                 }
             }
         }
+
+    private fun observeConversationsUpdates() {
+        Functions.observeConversationsChanges {
+            if (active)
+                synchronizeCachedMessageBoxes()
+        }
+    }
 
     private fun observeMessageBoxesChanges() =
         dbViewModel.getCachedMessageBoxes().observe(this@MainActivity) {
@@ -389,5 +459,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             }
         }
         return super.dispatchTouchEvent(ev)
+    }
+
+    enum class Direction {
+        LEFT, RIGHT
     }
 }

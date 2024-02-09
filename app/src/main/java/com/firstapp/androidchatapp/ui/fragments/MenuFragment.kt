@@ -28,6 +28,7 @@ import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Functions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -49,6 +50,9 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
     private lateinit var changeAvatarBtn: RelativeLayout
     private lateinit var editNameBtn: ImageView
     private lateinit var avatarView: ImageView
+    private val loadingView by lazy {
+        requireActivity().findViewById<View>(R.id.viewLoading)
+    }
     private var username = MutableLiveData<String>(null)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -144,14 +148,27 @@ class MenuFragment : Fragment(R.layout.fragment_menu) {
         input.requestFocus()
         confirmBtn.setOnClickListener {
             val name = input.text.toString()
-            if (name.isNotEmpty())
-                changeName(name)
-            // TODO: Show loading and close dialog
+            if (name.isNotEmpty()) {
+                showLoading()
+                dialog.dismiss()
+                CoroutineScope(Dispatchers.Main).launch {
+                    changeName(name).join()
+                    hideLoading()
+                }
+            }
         }
         cancelBtn.setOnClickListener {
             dialog.dismiss()
         }
         dialog.show()
+    }
+
+    private fun showLoading() {
+        loadingView.visibility = View.VISIBLE
+    }
+
+    private fun hideLoading() {
+        loadingView.visibility = View.GONE
     }
 
     private fun changeName(name: String): Job = lifecycleScope.launch {

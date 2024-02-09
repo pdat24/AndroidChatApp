@@ -40,14 +40,14 @@ class Constants {
         const val TEXT = "text"
         const val IMAGE = "image"
         const val FILE = "file"
-        const val ICON = "icon"
+        const val ICON_LIKE = "icon"
         const val UID = "uid"
         const val FRIENDS = "friends"
         const val SENT_REQUESTS = "sentRequests"
         const val RECEIVED_REQUESTS = "receivedRequests"
         const val ONLINE_FRIENDS = "onlineFriends"
         const val NOTIFICATION_CHANNEL_ID = "NOTIFICATION_CHANNEL_ID"
-        const val NOTIFICATION_CHANnEL_NAME = "Main Channel"
+        const val NOTIFICATION_CHANNEL_NAME = "Main Channel"
         const val PERMISSION_REQUEST_CODE = 8
         const val FRIEND_UID = "friendUID"
         const val INDEX = "index"
@@ -59,6 +59,14 @@ class Constants {
         const val DB_ACTIVE_STATUS_ON = "activeStatusOn"
         const val NOTIFICATION_ON = "NOTIFICATION_ON"
         const val NIGHT_MODE_FOLLOW_SYSTEM = "NIGHT_MODE_FOLLOW_SYSTEM"
+        const val USER_CHANGED_NIGHT_MODE = "USER_CHANGED_NIGHT_MODE"
         const val LANGUAGE = "LANGUAGE"
+        const val REPLY_RESULT_KEY = "REPLY_RESULT_KEY"
+        const val NOTIFICATION_ID = "NOTIFICATION_ID"
+        const val NEW_MESSAGE_NOTIFICATION_ID = "NEW_MESSAGE_NOTIFICATION_ID"
+        const val FRIEND_REQUEST_NOTIFICATION_ID = 34251
+        const val NOTIFICATION_SERVICE_NOTIFICATION_ID = 12345
+        const val FOREGROUND_NOTIFICATION_CHANNEL_ID = "FOREGROUND_NOTIFICATION_CHANNEL_ID"
+        const val FOREGROUND_NOTIFICATION_CHANNEL_NAME = "FOREGROUND_NOTIFICATION_CHANNEL"
     }
 }

@@ -71,10 +71,10 @@
     <string name="search_user">Tìm kiếm người dùng</string>
     <string name="you_are_not_friends"><u>Các bạn không phải bạn bè!</u></string>
     <string name="check_internet_connection">Vui lòng kiểm tra kết nối mạng.</string>
-    <string name="active">Hoạt động</string>
+    <string name="active">Đang hoạt động</string>
     <string name="inactive">Không hoạt động</string>
     <string name="no_internet_connection">Không có kêt nối internet.</string>
-    <string name="liked">Đã thích</string>
+    <string name="sent_icon">Đã gửi icon</string>
     <string name="active_status">Trạng thái hoạt động</string>
     <string name="chat">Trò chuyện</string>
     <string name="no_message_box">Bạn không có hộp tin nhắn.</string>
@@ -83,4 +83,10 @@
     <string name="english">English</string>
     <string name="vietnamese">Tiếng Việt</string>
     <string name="sign_out_promt">Bạn chắc chắn muốn đăng xuất?</string>
+    <string name="today">Hôm nay</string>
+    <string name="yesterday">Hôm qua</string>
+    <string name="received_friend_request">Bạn có 1 yêu cầu kêt bạn mới</string>
+    <string name="sent_you_friend_request">đã gửi lời mời kết bạn</string>
+    <string name="reply">Trả lời</string>
+    <string name="receiving_notifications">Đang nhận thông báo</string>
 </resources>

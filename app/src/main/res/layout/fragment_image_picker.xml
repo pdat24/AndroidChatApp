@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layoutDescription="@xml/fragment_image_picker_scene"
-    tools:context=".ui.fragments.ImagePickerFragment">
+    tools:context=".ui.fragments.AvatarPickerFragment">
 
     <RelativeLayout
         android:alpha="0"

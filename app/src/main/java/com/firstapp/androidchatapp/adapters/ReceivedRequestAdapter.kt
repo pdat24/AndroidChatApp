@@ -24,6 +24,9 @@ class ReceivedRequestAdapter(
 ) : RecyclerView.Adapter<ReceivedRequestAdapter.ViewHolder>() {
 
     private lateinit var context: Context
+    private val functions: Functions by lazy {
+        Functions(dbViewModel)
+    }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val container: LinearLayout = itemView.findViewById(R.id.container)
@@ -52,7 +55,8 @@ class ReceivedRequestAdapter(
         holder.btnAccept.setOnClickListener {
             if (isInternetConnected()) {
                 CoroutineScope(Dispatchers.Main).launch {
-                    Functions(dbViewModel).acceptRequest(req).join()
+                    functions.acceptRequest(req).join()
+                    dbViewModel.removeCachedReceivedFriendRequest(req.uid)
                     holder.container.visibility = View.GONE
                     Toast.makeText(context, "Accepted Request", Toast.LENGTH_SHORT).show()
                 }
@@ -63,7 +67,8 @@ class ReceivedRequestAdapter(
         holder.btnReject.setOnClickListener {
             if (isInternetConnected()) {
                 CoroutineScope(Dispatchers.Main).launch {
-                    Functions(dbViewModel).removeRequests(req)
+                    functions.removeRequests(req).join()
+                    dbViewModel.removeCachedReceivedFriendRequest(req.uid)
                     holder.container.visibility = View.GONE
                     Toast.makeText(context, "Rejected Request", Toast.LENGTH_SHORT).show()
                 }

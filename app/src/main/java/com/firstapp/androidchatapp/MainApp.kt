@@ -6,14 +6,21 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import com.firstapp.androidchatapp.receivers.OfflineReceiver
 import com.firstapp.androidchatapp.repositories.UserManager
+import com.firstapp.androidchatapp.ui.activities.AddFriendActivity
+import com.firstapp.androidchatapp.ui.activities.ChatActivity
+import com.firstapp.androidchatapp.ui.activities.FriendRequestsActivity
+import com.firstapp.androidchatapp.ui.activities.FriendsActivity
+import com.firstapp.androidchatapp.ui.activities.MainActivity
+import com.firstapp.androidchatapp.ui.activities.SettingsActivity
 import com.firstapp.androidchatapp.utils.Constants.Companion.ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.LANGUAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
-import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_FOLLOW_SYSTEM
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
+import com.firstapp.androidchatapp.utils.Constants.Companion.USER_CHANGED_NIGHT_MODE
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +38,13 @@ class MainApp : Application() {
         @Volatile
         private var offlineIntent: PendingIntent? = null
         var locale: Locale? = null
+        var nightModeIsOn = false
+        val isRunning = MainActivity.active ||
+                AddFriendActivity.active ||
+                ChatActivity.active ||
+                FriendsActivity.active ||
+                FriendRequestsActivity.active ||
+                SettingsActivity.active
 
         private fun getOfflinePendingIntent(context: Context): PendingIntent {
             return if (offlineIntent != null)
@@ -41,7 +55,7 @@ class MainApp : Application() {
                         context,
                         0,
                         Intent(context, OfflineReceiver::class.java),
-                        PendingIntent.FLAG_UPDATE_CURRENT
+                        PendingIntent.FLAG_IMMUTABLE
                     )
                 }
                 offlineIntent as PendingIntent
@@ -83,11 +97,27 @@ class MainApp : Application() {
     }
 
     private fun toggleNightMode() {
-        var mode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        if (!sharedPreferences.getBoolean(NIGHT_MODE_FOLLOW_SYSTEM, true)) {
-            mode = AppCompatDelegate.MODE_NIGHT_NO
-            if (sharedPreferences.getBoolean(NIGHT_MODE_ON, false))
-                mode = AppCompatDelegate.MODE_NIGHT_YES
+        val mode: Int
+        // get night mode state after the user set
+        if (sharedPreferences.getBoolean(USER_CHANGED_NIGHT_MODE, false)) {
+            nightModeIsOn = sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
+            mode = if (nightModeIsOn)
+                AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        } else {
+            // get night mode follow the system
+            nightModeIsOn =
+                when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
+                    Configuration.UI_MODE_NIGHT_YES -> {
+                        mode = AppCompatDelegate.MODE_NIGHT_YES
+                        true
+                    }
+
+                    else -> {
+                        mode = AppCompatDelegate.MODE_NIGHT_NO
+                        false
+                    }
+                }
         }
         AppCompatDelegate.setDefaultNightMode(mode)
     }

@@ -45,7 +45,7 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.DB_ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE_STORAGE_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
-import com.firstapp.androidchatapp.utils.Constants.Companion.ICON
+import com.firstapp.androidchatapp.utils.Constants.Companion.ICON_LIKE
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.IMAGE_STORAGE_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
@@ -107,7 +107,7 @@ class ChatActivity : AppCompatActivity() {
     private var fileStoragePath: String? = null
     private var imageStoragePath: String? = null
     private var messageBoxAvatarURI: String? = null
-    private var messageBoxUID: String? = null
+    private var messageBoxListUID: String? = null
     private var messageBoxName: String? = null
     private var userIsFriend: Boolean? = null
     private val currentUserUID = FirebaseAuth.getInstance().currentUser!!.uid
@@ -147,7 +147,7 @@ class ChatActivity : AppCompatActivity() {
         val intentExtras = intent.extras!!
         messageBoxName = intentExtras.getString(NAME)
         messageBoxAvatarURI = intentExtras.getString(AVATAR_URI)
-        messageBoxUID = intentExtras.getString(FRIEND_UID)
+        messageBoxListUID = intentExtras.getString(FRIEND_UID)
         userIsFriend = intentExtras.getBoolean(IS_FRIEND)
         conversationID = intentExtras.getString(CONVERSATION_ID)
             ?: throw IllegalArgumentException("Conversation ID is null!")
@@ -187,7 +187,7 @@ class ChatActivity : AppCompatActivity() {
         }
         likeBtn.setOnClickListener { view ->
             createClickAnimation(view)
-            sendMessage(getString(R.string.like_icon_link), type = ICON)
+            sendMessage(getString(R.string.like_icon_link), type = ICON_LIKE)
         }
         sendMsgBtn.setOnClickListener {
             val text = messageInput.text.toString()
@@ -244,7 +244,6 @@ class ChatActivity : AppCompatActivity() {
         active = true
         MainApp.cancelPrepareOfflineJob(this)
         MainApp.startOnlineStatus(this)
-        (rcvMessages.layoutManager!! as LinearLayoutManager).findLastVisibleItemPosition()
     }
 
     override fun onStop() {
@@ -255,7 +254,7 @@ class ChatActivity : AppCompatActivity() {
 
     private fun renderUserActiveStatus() {
         CoroutineScope(Dispatchers.Main).launch {
-            val user = dbViewModel.getUserById(messageBoxUID!!)
+            val user = dbViewModel.getUserById(messageBoxListUID!!)
             val activeStatusOn = user[DB_ACTIVE_STATUS_ON] as Boolean
             if (!activeStatusOn) {
                 tvActiveStatus.visibility = View.GONE
@@ -265,7 +264,7 @@ class ChatActivity : AppCompatActivity() {
                 var indicator = R.drawable.view_offline_indicator
                 dbViewModel.getOnlineFriends().forEach {
                     // the default is inactive
-                    if (it.uid == messageBoxUID) {
+                    if (it.uid == messageBoxListUID) {
                         // active
                         text = R.string.active
                         indicator = R.drawable.view_online_indicator
@@ -442,44 +441,43 @@ class ChatActivity : AppCompatActivity() {
     private fun sendMessage(content: String, type: String) {
         if (Functions.isInternetConnected(this))
             CoroutineScope(Dispatchers.IO).launch {
-                dbViewModel.addMessage(conversationID, Message(content, type))
+                updateFriendMessageBox()
                 // get preview message
                 var previewMsg = ""
                 when (type) {
                     TEXT -> previewMsg = content
                     IMAGE -> previewMsg = getString(R.string.sent_an_image)
                     FILE -> previewMsg = getString(R.string.sent_a_file)
-                    ICON -> previewMsg = getString(R.string.liked)
+                    ICON_LIKE -> previewMsg = getString(R.string.sent_icon)
                 }
-                val now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
-                if (!createMessageBoxIfNotExists(
-                        MessageBox(
-                            index = 0,
-                            friendUID = messageBoxUID!!,
-                            avatarURI = messageBoxAvatarURI!!,
-                            name = messageBoxName!!,
-                            conversationID = conversationID,
-                            previewMessage = previewMsg,
-                            time = now
-                        )
+                val sendTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                dbViewModel.addMessage(conversationID, Message(content, type), previewMsg, sendTime)
+                createMessageBoxIfNotExists(
+                    MessageBox(
+                        index = 0,
+                        friendUID = messageBoxListUID!!,
+                        avatarURI = messageBoxAvatarURI!!,
+                        name = messageBoxName!!,
+                        conversationID = conversationID,
+                        previewMessage = previewMsg,
+                        time = sendTime
                     )
-                ) {
-                    // only update if message box is existing
-                    dbViewModel.updatePreviewMessage(conversationID, previewMsg)
-                    dbViewModel.updateLastSendTime(conversationID, now)
-                }
-                // make th message box of friend to unread
-                unreadFriendMessageBox()
+                )
+                // make the message box of friend to unread
                 // change order of the message box of current user
-                dbViewModel.putMessageBoxOnTop(
-                    dbViewModel.getMessageBoxListId(currentUserUID),
-                    conversationID
-                )
+                lifecycleScope.launch {
+                    dbViewModel.putMessageBoxOnTop(
+                        dbViewModel.getMessageBoxListId(currentUserUID),
+                        conversationID
+                    )
+                }
                 // change order of the message box of friend
-                dbViewModel.putMessageBoxOnTop(
-                    dbViewModel.getMessageBoxListId(messageBoxUID!!),
-                    conversationID
-                )
+                lifecycleScope.launch {
+                    dbViewModel.putMessageBoxOnTop(
+                        dbViewModel.getMessageBoxListId(messageBoxListUID!!),
+                        conversationID
+                    )
+                }
             }
         else
             Functions.showNoInternetNotification(this)
@@ -505,9 +503,10 @@ class ChatActivity : AppCompatActivity() {
         return false
     }
 
-    private suspend fun unreadFriendMessageBox() {
-        val tmp = dbViewModel.getMessageBoxList(messageBoxUID)
-        val msgBox = dbViewModel.getMessageBoxes(tmp).toMutableList()
+    private suspend fun updateFriendMessageBox() {
+        val msgBox = dbViewModel.getMessageBoxes(
+            dbViewModel.getMessageBoxList(messageBoxListUID)
+        ).toMutableList()
         msgBox.forEach {
             if (it.conversationID == conversationID) {
                 it.read = false
@@ -515,7 +514,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
         FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH).document(
-            dbViewModel.getMessageBoxListId(messageBoxUID!!)
+            dbViewModel.getMessageBoxListId(messageBoxListUID!!)
         ).update(MESSAGE_BOXES, msgBox)
     }
 

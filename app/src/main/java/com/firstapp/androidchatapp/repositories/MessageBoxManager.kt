@@ -2,7 +2,6 @@ package com.firstapp.androidchatapp.repositories
 
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.models.MessageBoxesList
-import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.DEFAULT_PREVIEW_MESSAGE
@@ -11,15 +10,14 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.INDEX
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
+import com.firstapp.androidchatapp.utils.Functions
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class MessageBoxManager(
-    private val dbViewModel: DatabaseViewModel
-) {
+class MessageBoxManager() {
 
     private val messageBoxDB =
         FirebaseFirestore.getInstance().collection(MESSAGE_BOXES_COLLECTION_PATH)
@@ -67,7 +65,7 @@ class MessageBoxManager(
     }
 
     suspend fun updateUnreadMsgNumber(id: String, conversationID: String, number: Int) {
-        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        val msgBoxes = Functions.getMessageBoxes(getMessageBoxList(id)).toMutableList()
         msgBoxes.forEach {
             if (it.conversationID == conversationID)
                 it.unreadMessages = number
@@ -76,7 +74,7 @@ class MessageBoxManager(
     }
 
     suspend fun updateReadState(id: String, conversationID: String, state: Boolean) {
-        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        val msgBoxes = Functions.getMessageBoxes(getMessageBoxList(id)).toMutableList()
         msgBoxes.forEach {
             if (it.conversationID == conversationID)
                 it.read = state
@@ -85,7 +83,7 @@ class MessageBoxManager(
     }
 
     suspend fun putMessageBoxOnTop(id: String, conversationID: String) {
-        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        val msgBoxes = Functions.getMessageBoxes(getMessageBoxList(id)).toMutableList()
         var index = 0
         // get index of target message box and set it's index to 0
         msgBoxes.forEach {
@@ -104,7 +102,7 @@ class MessageBoxManager(
     }
 
     suspend fun removeMessageBox(id: String, conversationID: String) {
-        val msgBoxes = dbViewModel.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        val msgBoxes = Functions.getMessageBoxes(getMessageBoxList(id)).toMutableList()
         messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes.filter {
             it.conversationID != conversationID
         })

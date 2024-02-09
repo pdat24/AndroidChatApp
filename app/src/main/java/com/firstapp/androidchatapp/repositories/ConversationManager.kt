@@ -5,10 +5,7 @@ import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
-import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
-import com.firstapp.androidchatapp.utils.Constants.Companion.TIME
 import com.firstapp.androidchatapp.utils.Functions
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -46,7 +43,12 @@ class ConversationManager {
      * @param conversationID The ID of user
      * @param message new message
      */
-    suspend fun addMessage(conversationID: String, message: Message) {
+    suspend fun addMessage(
+        conversationID: String,
+        message: Message,
+        previewMsg: String,
+        sendTime: Long
+    ) {
         val uid = firebaseAuth.currentUser!!.uid
         val groups = Functions.getGroupMessagesInConversation(getConversation(conversationID))
         if (
@@ -56,7 +58,7 @@ class ConversationManager {
         ) {
             createNewGroupMsg(conversationID)
         }
-        appendMessageToLatestGroup(conversationID, message)
+        appendMessageToLatestGroup(conversationID, message, previewMsg, sendTime)
     }
 
     private fun isSentToday(g1: GroupMessage): Boolean {
@@ -89,24 +91,26 @@ class ConversationManager {
         ).await()
     }
 
-    private suspend fun appendMessageToLatestGroup(id: String, msg: Message) {
+    private suspend fun appendMessageToLatestGroup(
+        id: String,
+        msg: Message,
+        previewMsg: String,
+        sendTime: Long
+    ) {
         val con = conversationDB.document(id)
         val groups = Functions.getGroupMessagesInConversation(getConversation(id))
-        con.update(
-            GROUP_MESSAGES,
-            groups.apply {
-                first().apply {
-                    messages = messages.toMutableList().apply {
-                        add(msg)
+        con.set(
+            Conversation(
+                groupMessages = groups.apply {
+                    first().apply {
+                        messages = messages.toMutableList().apply {
+                            add(msg)
+                        }
                     }
-                }
-            }
+                },
+                previewMessage = previewMsg,
+                time = sendTime
+            )
         ).await()
     }
-
-    fun updatePreviewMessage(conversationID: String, content: String): Task<Void> =
-        conversationDB.document(conversationID).update(PREVIEW_MESSAGE, content)
-
-    fun updateLastSendTime(conversationID: String, time: Long): Task<Void> =
-        conversationDB.document(conversationID).update(TIME, time)
 }

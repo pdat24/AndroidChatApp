@@ -27,6 +27,7 @@ class UserManager {
      * Get user on firestore
      * @param userID ID of required user
      * @return user data
+     * @see User
      */
     suspend fun getUserById(userID: String): DocumentSnapshot {
         return userDB.document(userID).get().await()
@@ -42,17 +43,19 @@ class UserManager {
         }
     }
 
-    fun getOnlineFriends(user: DocumentSnapshot): List<Friend> {
+    suspend fun getOnlineFriends(user: DocumentSnapshot): List<Friend> {
         val result = mutableListOf<Friend>()
         val friends = user[ONLINE_FRIENDS] as List<*>
-        for (i in friends) {
-            val friend = i as HashMap<*, *>
+        for (f in friends) {
+            val friendAsHashMap = f as HashMap<*, *>
+            val friendId = friendAsHashMap[UID] as String
+            val friend = getUserById(friendId)
             result.add(
                 Friend(
-                    uid = friend[UID] as String,
+                    uid = friendId,
                     name = friend[NAME] as String,
                     avatarURI = friend[AVATAR_URI] as String,
-                    conversationID = friend[CONVERSATION_ID] as String
+                    conversationID = friendAsHashMap[CONVERSATION_ID] as String
                 )
             )
         }
@@ -62,14 +65,16 @@ class UserManager {
     suspend fun getFriends(userID: String): List<Friend> {
         val result = mutableListOf<Friend>()
         val friends = getUserById(userID)[FRIENDS] as List<*>
-        for (i in friends) {
-            val friend = i as HashMap<*, *>
+        for (f in friends) {
+            val friendAsHashMap = f as HashMap<*, *>
+            val friendId = friendAsHashMap[UID] as String
+            val friend = getUserById(friendId)
             result.add(
                 Friend(
-                    uid = friend[UID] as String,
+                    uid = friendId,
                     name = friend[NAME] as String,
                     avatarURI = friend[AVATAR_URI] as String,
-                    conversationID = friend[CONVERSATION_ID] as String
+                    conversationID = friendAsHashMap[CONVERSATION_ID] as String
                 )
             )
         }

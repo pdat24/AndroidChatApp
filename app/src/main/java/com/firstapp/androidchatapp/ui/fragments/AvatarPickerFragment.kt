@@ -31,7 +31,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
-class ImagePickerFragment : Fragment(R.layout.fragment_image_picker) {
+class AvatarPickerFragment : Fragment(R.layout.fragment_image_picker) {
 
     private lateinit var container: MotionLayout
     private lateinit var coverLayer: RelativeLayout

@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import com.firstapp.androidchatapp.localdb.SQLiteDB
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
+import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.MessageBox
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
@@ -16,6 +17,7 @@ class LocalRepository(
     private val storageRef = FirebaseStorage.getInstance().reference
     private val userDao = SQLiteDB.getInstance(context).getUserDao()
     private val msgBoxDao = SQLiteDB.getInstance(context).getMessageBoxDao()
+    private val receivedFriendRequestDao = SQLiteDB.getInstance(context).getReceivedFriendRequestDao()
 
     suspend fun upsertInfo(user: UserInfo) =
         userDao.upsertInfo(user)
@@ -41,6 +43,17 @@ class LocalRepository(
     suspend fun removeMessageBoxes() =
         msgBoxDao.removeMessageBoxes()
 
+    suspend fun addReceivedFriendRequest(req: FriendRequest) =
+        receivedFriendRequestDao.addRequest(req)
+
+    fun getReceivedFriendRequests(): LiveData<List<FriendRequest>> =
+        receivedFriendRequestDao.getRequests()
+
+    suspend fun removeReceivedFriendRequest(senderID: String) =
+        receivedFriendRequestDao.removeRequest(senderID)
+
+    suspend fun clearReceivedFriendRequests() =
+        receivedFriendRequestDao.clear()
 
     /**
      * Upload avatar to storage

@@ -7,14 +7,21 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.firstapp.androidchatapp.localdb.daos.MessageBoxDao
+import com.firstapp.androidchatapp.localdb.daos.ReceivedFriendRequestDao
 import com.firstapp.androidchatapp.localdb.daos.UserDao
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
+import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.MessageBox
 
-@Database(entities = [UserInfo::class, MessageBox::class], version = 3, exportSchema = false)
+@Database(
+    entities = [UserInfo::class, MessageBox::class, FriendRequest::class],
+    version = 4,
+    exportSchema = false
+)
 abstract class SQLiteDB : RoomDatabase() {
     abstract fun getUserDao(): UserDao
     abstract fun getMessageBoxDao(): MessageBoxDao
+    abstract fun getReceivedFriendRequestDao(): ReceivedFriendRequestDao
 
     companion object {
         @Volatile
@@ -60,6 +67,21 @@ abstract class SQLiteDB : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS ReceivedFriendsRequests")
+                db.execSQL(
+                    """
+                    CREATE TABLE ReceivedFriendsRequests(
+                        uid TEXT NOT NULL PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        avatarURI TEXT NOT NULL
+                    )
+                """.trimIndent()
+                )
+            }
+        }
+
         fun getInstance(context: Context): SQLiteDB {
             if (INSTANCE != null)
                 return INSTANCE as SQLiteDB
@@ -71,6 +93,7 @@ abstract class SQLiteDB : RoomDatabase() {
                 )
                     .addMigrations(MIGRATION_1_2)
                     .addMigrations(MIGRATION_2_3)
+                    .addMigrations(MIGRATION_3_4)
                     .build()
             }
             return INSTANCE as SQLiteDB

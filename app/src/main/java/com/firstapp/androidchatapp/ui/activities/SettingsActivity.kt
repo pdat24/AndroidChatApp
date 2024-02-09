@@ -13,7 +13,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.ListPopupWindow
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
@@ -25,15 +24,16 @@ import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.LanguageMenuAdapter
 import com.firstapp.androidchatapp.databinding.ActivitySettingsBinding
+import com.firstapp.androidchatapp.services.NotificationsService
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.ACTIVE_STATUS_ON
-import com.firstapp.androidchatapp.utils.Constants.Companion.LANGUAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_FOLLOW_SYSTEM
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOTIFICATION_ON
+import com.firstapp.androidchatapp.utils.Constants.Companion.USER_CHANGED_NIGHT_MODE
 import com.firstapp.androidchatapp.utils.Functions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -59,7 +59,6 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var dbViewModel: DatabaseViewModel
     private lateinit var mainViewModel: MainViewModel
     private lateinit var inputManager: InputMethodManager
-    private var nightModeIsOn = false
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val languagePopup: ListPopupWindow by lazy {
         ListPopupWindow(this)
@@ -67,7 +66,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private val activityScheme: MutableLiveData<Scheme> by lazy {
         MutableLiveData<Scheme>(
-            if (nightModeIsOn) Scheme.DarkScheme() else Scheme.LightScheme()
+            if (MainApp.nightModeIsOn) Scheme.DarkScheme() else Scheme.LightScheme()
         )
     }
     private val languagePicker: ConstraintLayout by lazy {
@@ -76,16 +75,19 @@ class SettingsActivity : AppCompatActivity() {
     private val btnBack: ImageView by lazy {
         findViewById(R.id.btnBack)
     }
+    private val iconArrowRight: ImageView by lazy {
+        findViewById(R.id.iconArrowRight)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding: ActivitySettingsBinding =
             DataBindingUtil.setContentView(this, R.layout.activity_settings)
         sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
-        nightModeIsOn = sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
+        MainApp.nightModeIsOn = sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
         // bind color scheme
         activityScheme.postValue(
-            if (nightModeIsOn) Scheme.DarkScheme() else Scheme.LightScheme()
+            if (MainApp.nightModeIsOn) Scheme.DarkScheme() else Scheme.LightScheme()
         )
         observeSchemeChange(binding)
         inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -95,9 +97,9 @@ class SettingsActivity : AppCompatActivity() {
         activeStatusSwitcher = findViewById(R.id.activeStatusSwitcher)
 
         // update switchers status
-        nightModeSwitcher.isChecked = nightModeIsOn
+        nightModeSwitcher.isChecked = MainApp.nightModeIsOn
         activeStatusSwitcher.isChecked = sharedPreferences.getBoolean(ACTIVE_STATUS_ON, true)
-        notificationSwitcher.isChecked = sharedPreferences.getBoolean(NOTIFICATION_ON, false)
+        notificationSwitcher.isChecked = sharedPreferences.getBoolean(NOTIFICATION_ON, true)
         // add event listeners
         activeStatusSwitcher.setOnCheckedChangeListener { _, isChecked ->
             toggleActiveStatus(isChecked)
@@ -131,9 +133,6 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        AppCompatDelegate.setDefaultNightMode(
-            if (nightModeIsOn) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
-        )
         super.onStop()
         active = false
         MainApp.prepareOffline(this)
@@ -149,11 +148,13 @@ class SettingsActivity : AppCompatActivity() {
             binding.divider = scheme.divider
             window.statusBarColor = scheme.bgSettingsActivity
             ViewCompat.getWindowInsetsController(window.decorView)?.isAppearanceLightStatusBars =
-                !nightModeIsOn
+                !MainApp.nightModeIsOn
             if (scheme is Scheme.LightScheme) {
                 btnBack.setBackgroundResource(R.drawable.bg_light_back_button)
+                iconArrowRight.setImageResource(R.drawable.light_baseline_navigate_next_24)
             } else if (scheme is Scheme.DarkScheme) {
                 btnBack.setBackgroundResource(R.drawable.bg_dark_back_button)
+                iconArrowRight.setImageResource(R.drawable.baseline_navigate_next_24)
             }
         }
 
@@ -170,7 +171,9 @@ class SettingsActivity : AppCompatActivity() {
         languagePopup.setBackgroundDrawable(
             AppCompatResources.getDrawable(
                 this,
-                R.drawable.bg_sign_out_dialog
+                if (MainApp.nightModeIsOn)
+                    R.drawable.bg_dark_sign_out_dialog
+                else R.drawable.bg_light_sign_out_dialog
             )
         )
         languagePopup.setDropDownGravity(Gravity.START)
@@ -179,10 +182,9 @@ class SettingsActivity : AppCompatActivity() {
                 this,
                 R.layout.view_language_menu,
                 listOf(getString(R.string.english), getString(R.string.vietnamese)),
-                activeLanguageCode = sharedPreferences.getString(LANGUAGE, "en")!!
             )
         )
-        languagePopup.setOnItemClickListener { parent, itemView, position, id ->
+        languagePopup.setOnItemClickListener { _, _, position, _ ->
             when (position) {
                 0 -> Functions.changeLanguage(this, "en")
 
@@ -194,9 +196,11 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun toggleNightMode(isChecked: Boolean) {
-        sharedPreferences.edit().putBoolean(NIGHT_MODE_ON, isChecked).apply()
-        sharedPreferences.edit().putBoolean(NIGHT_MODE_FOLLOW_SYSTEM, false).apply()
-        nightModeIsOn = isChecked
+        sharedPreferences.edit()
+            .putBoolean(NIGHT_MODE_ON, isChecked)
+            .putBoolean(USER_CHANGED_NIGHT_MODE, true)
+            .apply()
+        MainApp.nightModeIsOn = isChecked
         if (isChecked)
             changeToDarkScheme()
         else changeToLightScheme()
@@ -206,6 +210,10 @@ class SettingsActivity : AppCompatActivity() {
     private fun toggleNotification(isChecked: Boolean) {
         sharedPreferences.edit().putBoolean(NOTIFICATION_ON, isChecked).apply()
         changeSwitchTrackTint(notificationSwitcher)
+        if (isChecked)
+            turnOnNotifications()
+        else
+            turnOffNotifications()
     }
 
     private fun toggleActiveStatus(isChecked: Boolean) {
@@ -227,11 +235,13 @@ class SettingsActivity : AppCompatActivity() {
      * sign out if agree else cancel
      * */
     fun signOut(view: View) {
-        MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(
+            this,
+            if (MainApp.nightModeIsOn)
+                R.style.DarkDialog
+            else R.style.LightDialog
+        )
             .setTitle(getString(R.string.sign_out))
-            .setBackground(
-                AppCompatResources.getDrawable(this, R.drawable.bg_sign_out_dialog)
-            )
             .setMessage(getString(R.string.sign_out_promt))
             .setPositiveButton(getString(R.string.confirm)) { _, _ ->
                 // sign out
@@ -248,6 +258,7 @@ class SettingsActivity : AppCompatActivity() {
             dbViewModel.removeCachedMessageBoxes()
             dbViewModel.cacheMessageBoxNumber(-1)
             dbViewModel.updateOnlineState(false)
+            turnOffNotifications()
             // sign out
             withContext(Dispatchers.Main) {
                 firebaseAuth.signOut()
@@ -259,6 +270,14 @@ class SettingsActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+
+    private fun turnOffNotifications() {
+        stopService(Intent(this, NotificationsService::class.java))
+    }
+
+    private fun turnOnNotifications() {
+        startService(Intent(this, NotificationsService::class.java))
     }
 
     fun back(view: View) = finish()
