@@ -10,7 +10,7 @@
     <string name="google">Google</string>
     <string name="email">E-mail</string>
     <string name="password">Mật khẩu</string>
-    <string name="welcome">Xin chào! Bắt đầu cuộc trò chuyện nào.</string>
+    <string name="welcome">Hi! Bắt đầu cuộc trò chuyện nào.</string>
     <string name="email_warning">Địa chỉ Email không hợp lệ hoặc không tồn tại.</string>
     <string name="password_warning">Mật khẩu phải chứa ít nhất 6 ký tự là chũ hoặc số.</string>
     <string name="wrong_password_warning">Mật khẩu không chính xác!</string>

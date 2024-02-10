@@ -121,7 +121,7 @@ class ChatActivity : AppCompatActivity() {
         window.statusBarColor = getColor(R.color.top_and_bottom_section)
         sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
         ViewCompat.getWindowInsetsController(window.decorView)
-            ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
+            ?.isAppearanceLightStatusBars = !MainApp.nightModeIsOn
         // get views
         choosePhotoBtn = findViewById(R.id.ivChoosePhoto)
         takePhotoBtn = findViewById(R.id.ivTakePhoto)

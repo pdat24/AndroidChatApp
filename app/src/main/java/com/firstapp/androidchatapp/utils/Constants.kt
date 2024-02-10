@@ -46,7 +46,7 @@ class Constants {
         const val SENT_REQUESTS = "sentRequests"
         const val RECEIVED_REQUESTS = "receivedRequests"
         const val ONLINE_FRIENDS = "onlineFriends"
-        const val MAIN_NOTIFICATION_CHANNEL_ID = "NOTIFICATION_CHANNEL_ID"
+        const val MAIN_NOTIFICATION_CHANNEL_ID = "MAIN_NOTIFICATION_CHANNEL_ID"
         const val MAIN_NOTIFICATION_CHANNEL_NAME = "Main Channel"
         const val PERMISSION_REQUEST_CODE = 8
         const val FRIEND_UID = "friendUID"

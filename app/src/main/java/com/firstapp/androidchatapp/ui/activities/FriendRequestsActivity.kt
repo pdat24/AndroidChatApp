@@ -55,7 +55,7 @@ class FriendRequestsActivity : AppCompatActivity() {
         sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
         window.statusBarColor = getColor(R.color.bg_main_activity)
         ViewCompat.getWindowInsetsController(window.decorView)
-            ?.isAppearanceLightStatusBars = !sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
+            ?.isAppearanceLightStatusBars = !MainApp.nightModeIsOn
 
         // get views
         noRequest = findViewById(R.id.tvNoRequest)

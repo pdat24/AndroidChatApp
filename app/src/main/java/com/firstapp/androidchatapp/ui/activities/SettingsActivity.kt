@@ -83,7 +83,6 @@ class SettingsActivity : AppCompatActivity() {
         val binding: ActivitySettingsBinding =
             DataBindingUtil.setContentView(this, R.layout.activity_settings)
         sharedPreferences = getSharedPreferences(MAIN_SHARED_PREFERENCE, MODE_PRIVATE)
-        MainApp.nightModeIsOn = sharedPreferences.getBoolean(NIGHT_MODE_ON, false)
         // bind color scheme
         activityScheme.postValue(
             if (MainApp.nightModeIsOn) Scheme.DarkScheme() else Scheme.LightScheme()

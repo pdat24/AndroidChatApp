@@ -34,9 +34,6 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -56,6 +53,9 @@ class SignInActivity : AppCompatActivity() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val userDB = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_PATH)
     private lateinit var dbViewModel: DatabaseViewModel
+    private val loadingView: View by lazy {
+        findViewById(R.id.viewLoading)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -211,17 +211,19 @@ class SignInActivity : AppCompatActivity() {
         val password = passwordInput.text.toString()
         val validation = checkCredentialFormat(email, password)
         if (validation.emailIsValid && validation.passwordIsValid) {
+            loadingView.visibility = View.VISIBLE
             // sign in if email and password are correct format
             firebaseAuth
                 .signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
                     signedInOK()
+                    loadingView.visibility = View.GONE
                 }
                 .addOnFailureListener { e ->
                     // catch invalid credentials error
-                    println("Create user")
                     if (e is FirebaseAuthInvalidCredentialsException) {
                         tryCreateUser(email, password)
+                        loadingView.visibility = View.GONE
                     }
                 }
         } else {
@@ -245,16 +247,13 @@ class SignInActivity : AppCompatActivity() {
         googleSignInResult.launch(client.signInIntent)
     }
 
-    private fun userIsExisted(id: String): Boolean {
-        return false
-    }
-
     /**
      * Sign in with Google using intent data
      * @param intentData  result of google client sign in intent
      * @see signInWithGoogle
      */
     private fun handleGoogleIntentData(intentData: Intent?) {
+        loadingView.visibility = View.VISIBLE
         try {
             val account =
                 GoogleSignIn.getSignedInAccountFromIntent(intentData)
@@ -266,10 +265,12 @@ class SignInActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     trySaveUserOnDatabase()
                     signedInOK()
+                    loadingView.visibility = View.GONE
                 }
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
+            loadingView.visibility = View.GONE
         }
     }
 
