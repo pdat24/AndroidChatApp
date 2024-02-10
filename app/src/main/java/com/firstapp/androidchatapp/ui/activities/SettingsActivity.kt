@@ -30,7 +30,6 @@ import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
 import com.firstapp.androidchatapp.utils.Constants.Companion.ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
-import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_FOLLOW_SYSTEM
 import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOTIFICATION_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.USER_CHANGED_NIGHT_MODE

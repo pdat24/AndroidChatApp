@@ -154,6 +154,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     override fun onStart() {
         super.onStart()
+        active = true
         observeDrawerMenuState()
         observeMessageBoxesChanges()
         observeConversationsUpdates()
@@ -194,7 +195,10 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun turnOnNotificationIfIsSet() {
-        if (sharedPreferences.getBoolean(NOTIFICATION_ON, true))
+        if (
+            sharedPreferences.getBoolean(NOTIFICATION_ON, true) &&
+            !Functions.isServiceRunning(this, NotificationsService::class.java)
+        )
             startService(Intent(this, NotificationsService::class.java))
     }
 
@@ -348,6 +352,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     val onlineFriends = dbViewModel.getOnlineFriends()
                     withContext(Dispatchers.Main) {
                         rcvOnlineFriends.adapter = OnlineFriendAdapter(onlineFriends)
+                        friendOnlineNumber.text = onlineFriends.size.toString()
                     }
                 }
             }

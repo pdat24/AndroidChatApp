@@ -38,10 +38,10 @@ import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModelFactory
 import com.firstapp.androidchatapp.ui.viewmodels.MainViewModel
+import com.firstapp.androidchatapp.utils.Constants.Companion.ATTRIBUTE_ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATIONS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
-import com.firstapp.androidchatapp.utils.Constants.Companion.DB_ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE
 import com.firstapp.androidchatapp.utils.Constants.Companion.FILE_STORAGE_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
@@ -255,7 +255,7 @@ class ChatActivity : AppCompatActivity() {
     private fun renderUserActiveStatus() {
         CoroutineScope(Dispatchers.Main).launch {
             val user = dbViewModel.getUserById(messageBoxListUID!!)
-            val activeStatusOn = user[DB_ACTIVE_STATUS_ON] as Boolean
+            val activeStatusOn = user[ATTRIBUTE_ACTIVE_STATUS_ON] as Boolean
             if (!activeStatusOn) {
                 tvActiveStatus.visibility = View.GONE
                 statusIndicator.visibility = View.GONE
@@ -441,16 +441,13 @@ class ChatActivity : AppCompatActivity() {
     private fun sendMessage(content: String, type: String) {
         if (Functions.isInternetConnected(this))
             CoroutineScope(Dispatchers.IO).launch {
+                val sendTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
                 updateFriendMessageBox()
                 // get preview message
-                var previewMsg = ""
-                when (type) {
-                    TEXT -> previewMsg = content
-                    IMAGE -> previewMsg = getString(R.string.sent_an_image)
-                    FILE -> previewMsg = getString(R.string.sent_a_file)
-                    ICON_LIKE -> previewMsg = getString(R.string.sent_icon)
-                }
-                val sendTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                val previewMsg = Functions.getPreviewMessage(
+                    this@ChatActivity,
+                    Message(content, type)
+                )
                 dbViewModel.addMessage(conversationID, Message(content, type), previewMsg, sendTime)
                 createMessageBoxIfNotExists(
                     MessageBox(

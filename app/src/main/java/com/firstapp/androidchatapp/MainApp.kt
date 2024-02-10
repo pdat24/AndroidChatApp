@@ -10,12 +10,6 @@ import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import com.firstapp.androidchatapp.receivers.OfflineReceiver
 import com.firstapp.androidchatapp.repositories.UserManager
-import com.firstapp.androidchatapp.ui.activities.AddFriendActivity
-import com.firstapp.androidchatapp.ui.activities.ChatActivity
-import com.firstapp.androidchatapp.ui.activities.FriendRequestsActivity
-import com.firstapp.androidchatapp.ui.activities.FriendsActivity
-import com.firstapp.androidchatapp.ui.activities.MainActivity
-import com.firstapp.androidchatapp.ui.activities.SettingsActivity
 import com.firstapp.androidchatapp.utils.Constants.Companion.ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.LANGUAGE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
@@ -39,12 +33,6 @@ class MainApp : Application() {
         private var offlineIntent: PendingIntent? = null
         var locale: Locale? = null
         var nightModeIsOn = false
-        val isRunning = MainActivity.active ||
-                AddFriendActivity.active ||
-                ChatActivity.active ||
-                FriendsActivity.active ||
-                FriendRequestsActivity.active ||
-                SettingsActivity.active
 
         private fun getOfflinePendingIntent(context: Context): PendingIntent {
             return if (offlineIntent != null)

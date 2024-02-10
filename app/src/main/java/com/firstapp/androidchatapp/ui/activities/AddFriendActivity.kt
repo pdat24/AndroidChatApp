@@ -127,7 +127,6 @@ class AddFriendActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             itemMutationFlow.collectLatest {
                 refreshCollections().join()
-                println("Called")
                 rcvSearchResult.adapter = SearchResultAdapter(
                     itemMutationFlow,
                     friends = friends ?: emptyList(),

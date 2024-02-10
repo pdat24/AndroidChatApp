@@ -21,7 +21,6 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOX_LIST_ID
 import com.firstapp.androidchatapp.utils.Constants.Companion.SP_MESSAGE_BOX_NUMBER
 import com.firstapp.androidchatapp.utils.Functions
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.CoroutineScope

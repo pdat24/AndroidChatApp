@@ -1,6 +1,7 @@
 package com.firstapp.androidchatapp.utils
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.net.ConnectivityManager
 import android.view.LayoutInflater
@@ -182,6 +183,29 @@ class Functions(
                         }
                     }
                 }
+        }
+
+        fun createRandomInteger(): Int {
+            return (-999_999..999_999).random()
+        }
+
+        fun getPreviewMessage(context: Context, message: Message): String {
+            return when (message.type) {
+                Constants.TEXT -> message.content
+                Constants.IMAGE -> context.getString(R.string.sent_an_image)
+                Constants.FILE -> context.getString(R.string.sent_a_file)
+                Constants.ICON_LIKE -> context.getString(R.string.sent_icon)
+                else -> ""
+            }
+        }
+
+        fun isServiceRunning(context: Context, service: Class<*>): Boolean {
+            val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            for (s in manager.getRunningServices(10)) {
+                if (s.service.className == service.name)
+                    return true
+            }
+            return false
         }
     }
 

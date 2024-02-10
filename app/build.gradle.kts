@@ -75,6 +75,4 @@ dependencies {
     implementation("androidx.work:work-runtime:2.9.0")
     // flexbox
     implementation("com.google.android.flexbox:flexbox:3.0.0")
-
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

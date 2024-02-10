@@ -5,7 +5,7 @@ import com.firstapp.androidchatapp.models.FriendRequest
 import com.firstapp.androidchatapp.models.User
 import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
-import com.firstapp.androidchatapp.utils.Constants.Companion.DB_ACTIVE_STATUS_ON
+import com.firstapp.androidchatapp.utils.Constants.Companion.ATTRIBUTE_ACTIVE_STATUS_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.FRIENDS
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Constants.Companion.ONLINE_FRIENDS
@@ -123,7 +123,7 @@ class UserManager {
     }
 
     fun updateActiveStatus(userID: String, on: Boolean) {
-        userDB.document(userID).update(DB_ACTIVE_STATUS_ON, on)
+        userDB.document(userID).update(ATTRIBUTE_ACTIVE_STATUS_ON, on)
     }
 
     /**
@@ -218,23 +218,23 @@ class UserManager {
         userDB.document(userID).update(FRIENDS, res).await()
     }
 
-    suspend fun addSentRequest(userID: String, newRequest: FriendRequest) {
-        val requests = getUserRequests(userID, RequestType.SENT).toMutableList()
+    suspend fun addSentRequest(senderID: String, newRequest: FriendRequest) {
+        val requests = getUserRequests(senderID, RequestType.SENT).toMutableList()
         requests.add(newRequest)
-        userDB.document(userID).update(SENT_REQUESTS, requests).await()
+        userDB.document(senderID).update(SENT_REQUESTS, requests).await()
     }
 
-    suspend fun addReceivedRequest(senderId: String) {
+    suspend fun addReceivedRequest(receiverID: String) {
         val currentUserID = firebaseAuth.currentUser!!.uid
         val user = getUserById(currentUserID)
-        val requests = getUserRequests(senderId, RequestType.RECEIVED).toMutableList()
+        val requests = getUserRequests(receiverID, RequestType.RECEIVED).toMutableList()
         val req = FriendRequest(
             name = user[NAME] as String,
             uid = currentUserID,
             avatarURI = user[AVATAR_URI] as String
         )
         requests.add(req)
-        userDB.document(senderId).update(RECEIVED_REQUESTS, requests).await()
+        userDB.document(receiverID).update(RECEIVED_REQUESTS, requests).await()
     }
 
     suspend fun removeSentRequest(senderId: String, receiverId: String) {
