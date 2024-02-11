@@ -41,7 +41,7 @@ class LocalRepository(
         msgBoxDao.getMessageBoxes()
 
     suspend fun removeMessageBoxes() =
-        msgBoxDao.removeMessageBoxes()
+        msgBoxDao.clear()
 
     suspend fun addReceivedFriendRequest(req: FriendRequest) =
         receivedFriendRequestDao.addRequest(req)

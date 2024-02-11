@@ -16,5 +16,5 @@ interface MessageBoxDao {
     fun getMessageBoxes(): LiveData<List<MessageBox>>
 
     @Query("DELETE FROM MessageBoxes")
-    suspend fun removeMessageBoxes()
+    suspend fun clear()
 }

@@ -81,11 +81,7 @@ class FriendAdapter(
             intent.putExtra(AVATAR_URI, user.avatarURI)
             intent.putExtra(NAME, user.name)
             CoroutineScope(Dispatchers.Main).launch {
-                if (friendsID == null)
-                    friendsID = dbViewModel.getFriends().map {
-                        it.uid
-                    }
-                intent.putExtra(IS_FRIEND, friendsID!!.contains(user.uid))
+                intent.putExtra(IS_FRIEND, true)
                 context.startActivity(intent)
             }
         }

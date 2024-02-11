@@ -53,7 +53,6 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERE
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MESSAGE_BOXES_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
-import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.TEXT
 import com.firstapp.androidchatapp.utils.Constants.Companion.USERS_COLLECTION_PATH
 import com.firstapp.androidchatapp.utils.Functions
@@ -426,6 +425,7 @@ class ChatActivity : AppCompatActivity() {
             if (groups.isEmpty())
                 emptyConversationView.visibility = View.VISIBLE
             withContext(Dispatchers.Main) {
+                loadingView.visibility = View.GONE
                 rcvMessages.adapter =
                     GroupMessageAdapter(
                         sentStatusFlow,
@@ -433,7 +433,6 @@ class ChatActivity : AppCompatActivity() {
                         messageBoxAvatarURI!!,
                         groups.asReversed()
                     )
-                loadingView.visibility = View.GONE
             }
         }
     }
@@ -449,31 +448,49 @@ class ChatActivity : AppCompatActivity() {
                     Message(content, type)
                 )
                 dbViewModel.addMessage(conversationID, Message(content, type), previewMsg, sendTime)
-                createMessageBoxIfNotExists(
-                    MessageBox(
-                        index = 0,
-                        friendUID = messageBoxListUID!!,
-                        avatarURI = messageBoxAvatarURI!!,
-                        name = messageBoxName!!,
-                        conversationID = conversationID,
-                        previewMessage = previewMsg,
-                        time = sendTime
-                    )
-                )
                 // make the message box of friend to unread
                 // change order of the message box of current user
                 lifecycleScope.launch {
+                    // create message box if not exists for current user
+                    createMessageBoxIfNotExists(
+                        currentUserUID,
+                        MessageBox(
+                            index = 0,
+                            friendUID = messageBoxListUID!!,
+                            avatarURI = messageBoxAvatarURI!!,
+                            name = messageBoxName!!,
+                            conversationID = conversationID,
+                            previewMessage = previewMsg,
+                            time = sendTime,
+                            read = true,
+                            unreadMessages = 0
+                        )
+                    )
                     dbViewModel.putMessageBoxOnTop(
                         dbViewModel.getMessageBoxListId(currentUserUID),
                         conversationID
                     )
                 }
                 // change order of the message box of friend
-                lifecycleScope.launch {
-                    dbViewModel.putMessageBoxOnTop(
-                        dbViewModel.getMessageBoxListId(messageBoxListUID!!),
-                        conversationID
-                    )
+                Functions.observeLiveValueOneTime(dbViewModel.getCachedUserInfo()) {
+                    lifecycleScope.launch {
+                        createMessageBoxIfNotExists(
+                            messageBoxListUID!!,
+                            MessageBox(
+                                index = 0,
+                                friendUID = currentUserUID,
+                                avatarURI = it.avatarURI,
+                                name = it.name,
+                                conversationID = conversationID,
+                                previewMessage = previewMsg,
+                                time = sendTime,
+                            )
+                        )
+                        dbViewModel.putMessageBoxOnTop(
+                            dbViewModel.getMessageBoxListId(messageBoxListUID!!),
+                            conversationID
+                        )
+                    }
                 }
             }
         else
@@ -481,18 +498,23 @@ class ChatActivity : AppCompatActivity() {
     }
 
     /**
+     * Create new message box for user
+     * @param userID the id of user will be created message box
      * @return true if new messagebox is created else false
      */
-    private suspend fun createMessageBoxIfNotExists(messageBox: MessageBox): Boolean {
-        val messageBoxes = dbViewModel.getMessageBoxes(dbViewModel.getMessageBoxList())
+    private suspend fun createMessageBoxIfNotExists(
+        userID: String,
+        messageBox: MessageBox
+    ): Boolean {
+        val messageBoxes = dbViewModel.getMessageBoxes(dbViewModel.getMessageBoxList(userID))
         var isExisted = false
         messageBoxes.forEach {
             if (it.conversationID == conversationID)
                 isExisted = true
         }
         if (!isExisted) {
-            dbViewModel.createMessageBox(
-                dbViewModel.getMessageBoxListId(currentUserUID),
+            dbViewModel.createMessageBoxOnTop(
+                dbViewModel.getMessageBoxListId(userID),
                 messageBox
             )
             return true

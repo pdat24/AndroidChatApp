@@ -187,10 +187,6 @@ class DatabaseViewModel(
         msgBoxesManager.putMessageBoxOnTop(msgBoxListId, conversationID)
     }
 
-    suspend fun removeMessageBox(msgBoxListId: String, conversationID: String) {
-        msgBoxesManager.removeMessageBox(msgBoxListId, conversationID)
-    }
-
     fun updateActiveStatus(on: Boolean) {
         userManager.updateActiveStatus(currentUserUID, on)
     }
@@ -199,8 +195,8 @@ class DatabaseViewModel(
      * Create new message box at end of message box list have id is [msgBoxListId]
      * @param msgBoxListId the id of message box list, the default value is of signed in user
      */
-    suspend fun createMessageBox(msgBoxListId: String, msgBox: MessageBox) {
-        msgBoxesManager.createMessageBox(msgBoxListId, msgBox)
+    suspend fun createMessageBoxOnTop(msgBoxListId: String, msgBox: MessageBox) {
+        msgBoxesManager.createMessageBoxOnTop(msgBoxListId, msgBox)
     }
 
     suspend fun updateMessageBoxList(msgBox: MessageBoxesList) {
@@ -256,6 +252,7 @@ class DatabaseViewModel(
         localRepository.getUserInfo()
 
     suspend fun cacheMessageBoxes(boxes: List<MessageBox>) {
+        localRepository.removeMessageBoxes()
         for (box in boxes) {
             localRepository.addMessageBox(box)
         }
@@ -267,10 +264,6 @@ class DatabaseViewModel(
 
     fun getCachedMessageBoxes(): LiveData<List<MessageBox>> =
         localRepository.getMessageBoxes()
-
-    fun getCachedReceivedFriendRequest(): LiveData<List<FriendRequest>> {
-        return localRepository.getReceivedFriendRequests()
-    }
 
     suspend fun cacheReceivedFriendRequest(req: FriendRequest) =
         localRepository.addReceivedFriendRequest(req)

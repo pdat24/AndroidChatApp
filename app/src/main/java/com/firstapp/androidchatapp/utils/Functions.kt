@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.lifecycle.LiveData
 import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.localdb.entities.UserInfo
@@ -29,7 +30,10 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
@@ -207,6 +211,21 @@ class Functions(
             }
             return false
         }
+
+        fun <T> observeLiveValueOneTime(livedata: LiveData<T>, observer: (T) -> Job?) =
+            CoroutineScope(Dispatchers.Main).launch {
+                val isFinished = MutableStateFlow(false)
+                val tmp: (T) -> Unit = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        observer(it)?.join()
+                        isFinished.emit(false)
+                    }
+                }
+                livedata.observeForever(tmp)
+                isFinished.collectLatest {
+                    if (it) livedata.removeObserver(tmp)
+                }
+            }
     }
 
     /**
@@ -230,7 +249,7 @@ class Functions(
             previewMessage = Constants.DEFAULT_PREVIEW_MESSAGE,
             time = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
         )
-        dbViewModel.createMessageBox(
+        dbViewModel.createMessageBoxOnTop(
             msgBoxListId = dbViewModel.getMessageBoxListId(
                 dbViewModel.firebaseAuth.currentUser!!.uid
             ),
@@ -245,7 +264,7 @@ class Functions(
             CoroutineScope(Dispatchers.IO).launch {
                 val msgBoxNumber =
                     dbViewModel.getMessageBoxList(req.uid)[Constants.MESSAGE_BOXES] as List<*>
-                dbViewModel.createMessageBox(
+                dbViewModel.createMessageBoxOnTop(
                     msgBoxListId = dbViewModel.getMessageBoxListId(req.uid),
                     msgBox = MessageBox(
                         index = msgBoxNumber.size,

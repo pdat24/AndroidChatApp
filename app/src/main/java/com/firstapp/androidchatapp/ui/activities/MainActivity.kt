@@ -42,7 +42,6 @@ import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
 import com.firstapp.androidchatapp.utils.Constants.Companion.GROUP_MESSAGES
 import com.firstapp.androidchatapp.utils.Constants.Companion.MAIN_SHARED_PREFERENCE
 import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
-import com.firstapp.androidchatapp.utils.Constants.Companion.NIGHT_MODE_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.NOTIFICATION_ON
 import com.firstapp.androidchatapp.utils.Constants.Companion.PERMISSION_REQUEST_CODE
 import com.firstapp.androidchatapp.utils.Constants.Companion.PREVIEW_MESSAGE
@@ -97,7 +96,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private val tvNoResult: TextView by lazy {
         findViewById(R.id.tvNoResult)
     }
-    private val tvNoFriend: FlexboxLayout by lazy {
+    private val tvNoMessageBox: FlexboxLayout by lazy {
         findViewById(R.id.tvNoMessageBox)
     }
 
@@ -294,7 +293,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                         }
                         if (resultSet.isEmpty()) {
                             tvNoResult.visibility = View.VISIBLE
-                            tvNoFriend.visibility = View.GONE
+                            tvNoMessageBox.visibility = View.GONE
                         } else {
                             tvNoResult.visibility = View.GONE
                         }
@@ -373,9 +372,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 messageBoxes = it
                 withContext(Dispatchers.Main) {
                     if (it.isEmpty())
-                        tvNoFriend.visibility = View.VISIBLE
+                        tvNoMessageBox.visibility = View.VISIBLE
                     else
-                        tvNoFriend.visibility = View.GONE
+                        tvNoMessageBox.visibility = View.GONE
                     rcvMessageBoxes.adapter =
                         MessageBoxAdapter(dbViewModel, it)
                 }
@@ -425,8 +424,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
     }
 
-    fun toAddFriendActivity(view: View) =
+    fun toAddFriendActivity(view: View) {
         startActivity(Intent(this, AddFriendActivity::class.java))
+    }
 
     fun toFriendsActivity(view: View) =
         startActivity(Intent(this, FriendsActivity::class.java))

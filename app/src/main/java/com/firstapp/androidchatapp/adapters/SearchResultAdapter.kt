@@ -1,6 +1,7 @@
 package com.firstapp.androidchatapp.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +13,13 @@ import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.models.Friend
 import com.firstapp.androidchatapp.models.FriendRequest
+import com.firstapp.androidchatapp.ui.activities.ChatActivity
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
+import com.firstapp.androidchatapp.utils.Constants.Companion.AVATAR_URI
+import com.firstapp.androidchatapp.utils.Constants.Companion.CONVERSATION_ID
+import com.firstapp.androidchatapp.utils.Constants.Companion.FRIEND_UID
+import com.firstapp.androidchatapp.utils.Constants.Companion.IS_FRIEND
+import com.firstapp.androidchatapp.utils.Constants.Companion.NAME
 import com.firstapp.androidchatapp.utils.Functions
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +50,7 @@ class SearchResultAdapter(
         val name: TextView = itemView.findViewById(R.id.tvName)
         val uid: TextView = itemView.findViewById(R.id.tvID)
         val btnUnfriend: MaterialButton = itemView.findViewById(R.id.btnUnfriend)
+        val btnChat: MaterialButton = itemView.findViewById(R.id.btnChat)
     }
 
     class SentRequestViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -133,6 +141,24 @@ class SearchResultAdapter(
                     CoroutineScope(Dispatchers.IO).launch {
                         unfriend(result.uid, result.name).join()
                         notifyItemMutation()
+                    }
+                }
+                view.btnChat.setOnClickListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        var conversationID = ""
+                        dbViewModel.getFriends().forEach {
+                            if (it.uid == result.uid)
+                                conversationID = it.conversationID
+                        }
+                        val intent = Intent(context, ChatActivity::class.java)
+                        intent.putExtra(CONVERSATION_ID, conversationID)
+                        intent.putExtra(FRIEND_UID, result.uid)
+                        intent.putExtra(AVATAR_URI, result.avatarURI)
+                        intent.putExtra(NAME, result.name)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            intent.putExtra(IS_FRIEND, true)
+                            context.startActivity(intent)
+                        }
                     }
                 }
             }

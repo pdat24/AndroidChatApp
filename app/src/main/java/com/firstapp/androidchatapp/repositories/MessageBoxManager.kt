@@ -43,14 +43,14 @@ class MessageBoxManager() {
      * Add message box to the message box list have the id is [id]
      * @param id the id of the message box list
      */
-    suspend fun createMessageBox(id: String, msgBox: MessageBox) {
+    suspend fun createMessageBoxOnTop(id: String, msgBox: MessageBox) {
         val msgBoxList = getMessageBoxList(id)[MESSAGE_BOXES] as List<*>
         val list = mutableListOf<MessageBox>()
         for (i in msgBoxList) {
             val box = i as HashMap<*, *>
             list.add(
                 MessageBox(
-                    index = box[INDEX] as Int,
+                    index = (box[INDEX] as Long).toInt() + 1,
                     friendUID = box[FRIEND_UID] as String,
                     avatarURI = box[AVATAR_URI] as String,
                     name = box[NAME] as String,
@@ -60,7 +60,7 @@ class MessageBoxManager() {
                 )
             )
         }
-        list.add(msgBox)
+        list.add(0, msgBox)
         messageBoxDB.document(id).update(MESSAGE_BOXES, list)
     }
 
@@ -82,21 +82,19 @@ class MessageBoxManager() {
         messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes)
     }
 
+    /**
+     * Put message box contains conversation id is [conversationID] on top
+     * @param id the id of message box list
+     * @param conversationID conversation id of tha message box want to put on top
+     */
     suspend fun putMessageBoxOnTop(id: String, conversationID: String) {
         val msgBoxes = Functions.getMessageBoxes(getMessageBoxList(id)).toMutableList()
-        var index = 0
-        // get index of target message box and set it's index to 0
-        msgBoxes.forEach {
-            if (it.conversationID == conversationID) {
-                index = it.index
-                it.index = 0
-            }
-        }
         // increase index of all front message boxes by 1
-        for (i in 0 until index) {
-            msgBoxes[i].apply {
-                index++
-            }
+        for (i in msgBoxes) {
+            if (i.conversationID == conversationID) {
+                i.index = 0
+                break
+            } else i.index++
         }
         messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes)
     }
