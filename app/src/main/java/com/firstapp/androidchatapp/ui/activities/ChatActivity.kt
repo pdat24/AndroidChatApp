@@ -25,6 +25,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,6 +34,7 @@ import com.bumptech.glide.Glide
 import com.firstapp.androidchatapp.MainApp
 import com.firstapp.androidchatapp.R
 import com.firstapp.androidchatapp.adapters.GroupMessageAdapter
+import com.firstapp.androidchatapp.models.GroupMessage
 import com.firstapp.androidchatapp.models.Message
 import com.firstapp.androidchatapp.models.MessageBox
 import com.firstapp.androidchatapp.ui.viewmodels.DatabaseViewModel
@@ -68,6 +70,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -113,6 +116,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var conversationID: String
     private val sentStatusFlow = MutableStateFlow(true)
     private lateinit var sharedPreferences: SharedPreferences
+    private val groupMessages = MutableLiveData<List<GroupMessage>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -191,6 +195,9 @@ class ChatActivity : AppCompatActivity() {
         sendMsgBtn.setOnClickListener {
             val text = messageInput.text.toString()
             messageInput.text?.clear()
+            lifecycleScope.launch {
+                sentStatusFlow.emit(false)
+            }
             sendMessage(text.trim(), type = TEXT)
         }
         messageInput.setOnClickListener {
@@ -216,6 +223,7 @@ class ChatActivity : AppCompatActivity() {
                 scaleMessageInput()
             } else collapseMessageInput()
         }
+        observeToUpdateMessages()
         renderMessages(conversationID)
         observeConversationUpdates()
         observeOnlineStatusChange()
@@ -298,11 +306,16 @@ class ChatActivity : AppCompatActivity() {
             val data = result.clipData
             if (data != null) {
                 for (i in 0 until data.itemCount) {
-                    // TODO: Show image uploading on ui
+                    val uri = data.getItemAt(i).uri
+                    sentStatusFlow.emit(false)
+                    addMessageToCachedConversation(
+                        Message(uri.toString(), IMAGE),
+                        LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                    )
                     sendMessage(
                         dbViewModel.uploadFileByUri(
                             "$imageStoragePath/${Functions.createUniqueString()}",
-                            data.getItemAt(i).uri
+                            uri
                         ), type = IMAGE
                     )
                 }
@@ -346,13 +359,24 @@ class ChatActivity : AppCompatActivity() {
             val bitmap = result.extras?.get("data") as Bitmap
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-            // TODO: Show file uploading on ui
+            sentStatusFlow.emit(false)
+            // create temp image to get uri
+            val tmpFile = File.createTempFile(Functions.createUniqueString(), ".jpeg")
+            val outputStream = FileOutputStream(tmpFile)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.close()
+            addMessageToCachedConversation(
+                Message(Uri.fromFile(tmpFile).toString(), IMAGE),
+                LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+            )
             sendMessage(
                 dbViewModel.uploadImageByBytes(
                     "$imageStoragePath/${Functions.createUniqueString()}",
                     stream.toByteArray()
                 ), type = IMAGE
             )
+            // delete temp image after use
+            tmpFile.delete()
         }
 
     private fun pickImage() {
@@ -385,13 +409,8 @@ class ChatActivity : AppCompatActivity() {
                             if (groups.isNotEmpty())
                                 emptyConversationView.visibility = View.GONE
                             (rcvMessages.layoutManager as LinearLayoutManager).stackFromEnd = true
-                            rcvMessages.adapter =
-                                GroupMessageAdapter(
-                                    sentStatusFlow,
-                                    this@ChatActivity,
-                                    messageBoxAvatarURI!!,
-                                    groups.asReversed()
-                                )
+                            if (groups.first().senderID != currentUserUID)
+                                groupMessages.postValue(groups)
                         }
                         // Always update the state of message box is read when user in chat activity
                         dbViewModel.updateMsgBoxReadState(conversationID, true)
@@ -426,13 +445,42 @@ class ChatActivity : AppCompatActivity() {
                 emptyConversationView.visibility = View.VISIBLE
             withContext(Dispatchers.Main) {
                 loadingView.visibility = View.GONE
-                rcvMessages.adapter =
-                    GroupMessageAdapter(
-                        sentStatusFlow,
-                        this@ChatActivity,
-                        messageBoxAvatarURI!!,
-                        groups.asReversed()
+                groupMessages.postValue(groups)
+            }
+        }
+    }
+
+    private fun observeToUpdateMessages() {
+        groupMessages.observe(this) {
+            rcvMessages.adapter =
+                GroupMessageAdapter(
+                    sentStatusFlow,
+                    this@ChatActivity,
+                    messageBoxAvatarURI!!,
+                    it.asReversed()
+                )
+        }
+    }
+
+    private fun addMessageToCachedConversation(message: Message, sendTime: Long) {
+        groupMessages.value?.let {
+            lifecycleScope.launch {
+                val tmp = it.toMutableList()
+                val latestGroup = tmp.first()
+                if (latestGroup.senderID == currentUserUID)
+                    tmp.apply {
+                        first().apply {
+                            messages = latestGroup.messages.toMutableList().apply {
+                                add(message)
+                            }
+                        }
+                    }
+                else {
+                    tmp.add(
+                        GroupMessage(currentUserUID, listOf(message), sendTime)
                     )
+                }
+                groupMessages.postValue(tmp)
             }
         }
     }
@@ -441,13 +489,18 @@ class ChatActivity : AppCompatActivity() {
         if (Functions.isInternetConnected(this))
             CoroutineScope(Dispatchers.IO).launch {
                 val sendTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                if (type == TEXT || type == ICON_LIKE)
+                    addMessageToCachedConversation(Message(content, type), sendTime)
                 updateFriendMessageBox()
                 // get preview message
                 val previewMsg = Functions.getPreviewMessage(
                     this@ChatActivity,
                     Message(content, type)
                 )
-                dbViewModel.addMessage(conversationID, Message(content, type), previewMsg, sendTime)
+                dbViewModel.addMessage(
+                    conversationID, Message(content, type), previewMsg, sendTime
+                )
+                sentStatusFlow.emit(true)
                 // make the message box of friend to unread
                 // change order of the message box of current user
                 lifecycleScope.launch {

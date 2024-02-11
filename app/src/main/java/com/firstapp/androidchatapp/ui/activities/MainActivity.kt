@@ -156,7 +156,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         active = true
         observeDrawerMenuState()
         observeMessageBoxesChanges()
-        observeConversationsUpdates()
         observeOnlineFriends()
         handleSearchMessageBox()
         handleSwipeMessageBox()
@@ -166,7 +165,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     override fun onResume() {
         super.onResume()
         active = true
-        synchronizeCachedMessageBoxes()
+        observeConversationsUpdates()
         synchronizeCachedReceivedFriendRequests()
         MainApp.cancelPrepareOfflineJob(this)
         MainApp.startOnlineStatus(this)
@@ -340,12 +339,13 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         // cache message boxes number
         dbViewModel.updateMessageBoxList(MessageBoxesList(messageBoxes))
         dbViewModel.cacheMessageBoxNumber(messageBoxes.size)
+        println("Sync")
         dbViewModel.cacheMessageBoxes(messageBoxes)
         msgBoxLoading.visibility = View.GONE
     }
 
     private fun observeOnlineFriends() =
-        usersDB.document(currentUserUID).addSnapshotListener { value, error ->
+        usersDB.document(currentUserUID).addSnapshotListener { value, _ ->
             value?.let {
                 lifecycleScope.launch {
                     val onlineFriends = dbViewModel.getOnlineFriends()
@@ -367,6 +367,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private fun observeMessageBoxesChanges() =
         dbViewModel.getCachedMessageBoxes().observe(this@MainActivity) {
             lifecycleScope.launch {
+                println("Called")
                 // update the number of cached message boxes
                 dbViewModel.cacheMessageBoxNumber(it.size)
                 messageBoxes = it
@@ -375,8 +376,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                         tvNoMessageBox.visibility = View.VISIBLE
                     else
                         tvNoMessageBox.visibility = View.GONE
-                    rcvMessageBoxes.adapter =
-                        MessageBoxAdapter(dbViewModel, it)
+                    rcvMessageBoxes.adapter = MessageBoxAdapter(dbViewModel, it)
                 }
             }
         }
