@@ -252,10 +252,7 @@ class DatabaseViewModel(
         localRepository.getUserInfo()
 
     suspend fun cacheMessageBoxes(boxes: List<MessageBox>) {
-        localRepository.removeMessageBoxes()
-        for (box in boxes) {
-            localRepository.addMessageBox(box)
-        }
+        localRepository.addMessageBoxes(boxes)
     }
 
     suspend fun cacheMessageBox(box: MessageBox) {

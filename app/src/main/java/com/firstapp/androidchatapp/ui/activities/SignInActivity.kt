@@ -130,9 +130,14 @@ class SignInActivity : AppCompatActivity() {
         return if (currentUser!!.displayName != null)
             currentUser.displayName!!
         else {
-            "Anonymous"
+            "User@${createRandomIntFrom029()}" +
+                    "${createRandomIntFrom029()}" +
+                    "${createRandomIntFrom029()}" +
+                    "${createRandomIntFrom029()}"
         }
     }
+
+    private fun createRandomIntFrom029() = (0..9).random()
 
     /**
      * Create new conversation, message box for new user and
@@ -242,6 +247,7 @@ class SignInActivity : AppCompatActivity() {
             .requestIdToken(getString(R.string.google_server_client_id))
             .requestEmail()
             .build()
+
         val client = GoogleSignIn.getClient(this, googleOptions)
         client.revokeAccess()
         googleSignInResult.launch(client.signInIntent)

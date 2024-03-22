@@ -406,11 +406,13 @@ class ChatActivity : AppCompatActivity() {
                     value?.let {
                         withContext(Dispatchers.Main) {
                             val groups = Functions.getGroupMessagesInConversation(it)
-                            if (groups.isNotEmpty())
+                            if (groups.isNotEmpty()) {
                                 emptyConversationView.visibility = View.GONE
-                            (rcvMessages.layoutManager as LinearLayoutManager).stackFromEnd = true
-                            if (groups.first().senderID != currentUserUID)
-                                groupMessages.postValue(groups)
+                                (rcvMessages.layoutManager as LinearLayoutManager).stackFromEnd =
+                                    true
+                                if (groups.first().senderID != currentUserUID)
+                                    groupMessages.postValue(groups)
+                            }
                         }
                         // Always update the state of message box is read when user in chat activity
                         dbViewModel.updateMsgBoxReadState(conversationID, true)
@@ -421,10 +423,12 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun scrollToBottom(smooth: Boolean = true) {
-        if (smooth)
-            rcvMessages.smoothScrollToPosition(rcvMessages.adapter!!.itemCount - 1)
-        else
-            rcvMessages.scrollToPosition(rcvMessages.adapter!!.itemCount - 1)
+        if (rcvMessages.adapter!!.itemCount > 0) {
+            if (smooth)
+                rcvMessages.smoothScrollToPosition(rcvMessages.adapter!!.itemCount - 1)
+            else
+                rcvMessages.scrollToPosition(rcvMessages.adapter!!.itemCount - 1)
+        }
     }
 
     private suspend fun getConversation(id: String): DocumentSnapshot {
@@ -466,21 +470,23 @@ class ChatActivity : AppCompatActivity() {
         groupMessages.value?.let {
             lifecycleScope.launch {
                 val tmp = it.toMutableList()
-                val latestGroup = tmp.first()
-                if (latestGroup.senderID == currentUserUID)
-                    tmp.apply {
-                        first().apply {
-                            messages = latestGroup.messages.toMutableList().apply {
-                                add(message)
+                if (tmp.isNotEmpty()) {
+                    val latestGroup = tmp.first()
+                    if (latestGroup.senderID == currentUserUID)
+                        tmp.apply {
+                            first().apply {
+                                messages = latestGroup.messages.toMutableList().apply {
+                                    add(message)
+                                }
                             }
                         }
+                    else {
+                        tmp.add(
+                            GroupMessage(currentUserUID, listOf(message), sendTime)
+                        )
                     }
-                else {
-                    tmp.add(
-                        GroupMessage(currentUserUID, listOf(message), sendTime)
-                    )
+                    groupMessages.postValue(tmp)
                 }
-                groupMessages.postValue(tmp)
             }
         }
     }

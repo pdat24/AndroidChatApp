@@ -160,24 +160,26 @@ class NotificationsService : LifecycleService() {
     private fun observeNewMessages() {
         Functions.observeConversationsChanges { documentChanges ->
             for (con in documentChanges) {
-                val latestGroup =
-                    Functions.getGroupMessagesInConversation(con).first()
-                val senderID = latestGroup.senderID
-                if (
-                    senderID != currentUserUID &&
-                    latestGroup.messages.isNotEmpty() &&
-                    !(
-                            MainActivity.active ||
-                                    AddFriendActivity.active ||
-                                    ChatActivity.active ||
-                                    FriendsActivity.active ||
-                                    FriendRequestsActivity.active ||
-                                    SettingsActivity.active
-                            )
-                ) {
-                    pushDirectReplyNotification(
-                        con.id, senderID, latestGroup.messages.last()
-                    )
+                if (Functions.getGroupMessagesInConversation(con).isNotEmpty()) {
+                    val latestGroup =
+                        Functions.getGroupMessagesInConversation(con).first()
+                    val senderID = latestGroup.senderID
+                    if (
+                        senderID != currentUserUID &&
+                        latestGroup.messages.isNotEmpty() &&
+                        !(
+                                MainActivity.active ||
+                                        AddFriendActivity.active ||
+                                        ChatActivity.active ||
+                                        FriendsActivity.active ||
+                                        FriendRequestsActivity.active ||
+                                        SettingsActivity.active
+                                )
+                    ) {
+                        pushDirectReplyNotification(
+                            con.id, senderID, latestGroup.messages.last()
+                        )
+                    }
                 }
             }
         }

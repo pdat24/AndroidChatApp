@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -144,7 +143,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 cacheUserOnLocalDB()
             else {
                 Glide.with(this).load(it.avatarURI)
-                    .into(fragMenu.findViewById<ImageView>(R.id.ivAvatar))
+                    .into(fragMenu.findViewById(R.id.ivAvatar))
                 username.postValue(it.name)
                 fragMenu.findViewById<TextView>(R.id.tvName).text = it.name
             }
@@ -157,16 +156,16 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         observeDrawerMenuState()
         observeMessageBoxesChanges()
         observeOnlineFriends()
+        observeConversationsUpdates()
         handleSearchMessageBox()
         handleSwipeMessageBox()
         turnOnNotificationIfIsSet()
+        synchronizeCachedReceivedFriendRequests()
     }
 
     override fun onResume() {
         super.onResume()
         active = true
-        observeConversationsUpdates()
-        synchronizeCachedReceivedFriendRequests()
         MainApp.cancelPrepareOfflineJob(this)
         MainApp.startOnlineStatus(this)
 
@@ -231,11 +230,10 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     var scrollOffset = (-dX).toInt()
                     if (isCurrentlyActive) {
-                        scrollDirection =
-                            if (previousScrollX > scrollOffset)
-                                Direction.RIGHT
-                            else
-                                Direction.LEFT
+                        scrollDirection = if (previousScrollX > scrollOffset)
+                            Direction.RIGHT
+                        else
+                            Direction.LEFT
                         // when user scroll to left and scroll gap >= limitedScrollX
                         // then scroll itemView to limitedScrollX
                         if (scrollOffset >= limitedScrollX && scrollDirection == Direction.LEFT) {
@@ -339,7 +337,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         // cache message boxes number
         dbViewModel.updateMessageBoxList(MessageBoxesList(messageBoxes))
         dbViewModel.cacheMessageBoxNumber(messageBoxes.size)
-        println("Sync")
         dbViewModel.cacheMessageBoxes(messageBoxes)
         msgBoxLoading.visibility = View.GONE
     }
@@ -367,7 +364,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private fun observeMessageBoxesChanges() =
         dbViewModel.getCachedMessageBoxes().observe(this@MainActivity) {
             lifecycleScope.launch {
-                println("Called")
                 // update the number of cached message boxes
                 dbViewModel.cacheMessageBoxNumber(it.size)
                 messageBoxes = it

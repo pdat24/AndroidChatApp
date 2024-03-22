@@ -10,14 +10,13 @@ import com.firstapp.androidchatapp.models.MessageBox
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
-class LocalRepository(
-    context: Context,
-) {
+class LocalRepository(context: Context) {
 
     private val storageRef = FirebaseStorage.getInstance().reference
     private val userDao = SQLiteDB.getInstance(context).getUserDao()
     private val msgBoxDao = SQLiteDB.getInstance(context).getMessageBoxDao()
-    private val receivedFriendRequestDao = SQLiteDB.getInstance(context).getReceivedFriendRequestDao()
+    private val receivedFriendRequestDao =
+        SQLiteDB.getInstance(context).getReceivedFriendRequestDao()
 
     suspend fun upsertInfo(user: UserInfo) =
         userDao.upsertInfo(user)
@@ -36,6 +35,9 @@ class LocalRepository(
 
     suspend fun addMessageBox(box: MessageBox) =
         msgBoxDao.addMessageBox(box)
+
+    suspend fun addMessageBoxes(boxes: List<MessageBox>) =
+        msgBoxDao.addMessageBoxes(boxes)
 
     fun getMessageBoxes(): LiveData<List<MessageBox>> =
         msgBoxDao.getMessageBoxes()
