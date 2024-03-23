@@ -259,8 +259,8 @@ class SettingsActivity : AppCompatActivity() {
             dbViewModel.updateOnlineState(false)
             turnOffNotifications()
             // sign out
+            firebaseAuth.signOut()
             withContext(Dispatchers.Main) {
-                firebaseAuth.signOut()
                 startActivity(
                     Intent(this@SettingsActivity, IntroduceActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
