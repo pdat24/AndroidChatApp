@@ -243,7 +243,7 @@ class SettingsActivity : AppCompatActivity() {
             .setMessage(getString(R.string.sign_out_promt))
             .setPositiveButton(getString(R.string.confirm)) { dialog, _ ->
                 // sign out
-                dialog.dismiss();
+                dialog.dismiss()
                 onAgreeSignOut()
             }.setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.cancel()

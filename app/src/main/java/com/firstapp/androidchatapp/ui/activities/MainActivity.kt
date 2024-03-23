@@ -201,10 +201,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     private fun handleSwipeMessageBox() {
         val limitedScrollX = convertDpToPx(64f, this)
-        var previousScrollX = 0
         var scrollDirection = Direction.LEFT
-        var maxScrollX: Int? = null
-        var deleteBtnIsOpened = false
 
         val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.ACTION_STATE_IDLE,
@@ -230,43 +227,20 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     var scrollOffset = (-dX).toInt()
                     if (isCurrentlyActive) {
-                        scrollDirection = if (previousScrollX > scrollOffset)
-                            Direction.RIGHT
-                        else
-                            Direction.LEFT
+                        scrollDirection = Direction.LEFT
                         // when user scroll to left and scroll gap >= limitedScrollX
                         // then scroll itemView to limitedScrollX
                         if (scrollOffset >= limitedScrollX && scrollDirection == Direction.LEFT) {
                             scrollOffset = limitedScrollX
-                            deleteBtnIsOpened = true
-                        }
-                        // when user scroll to right
-                        if (
-                            scrollOffset != 0 && deleteBtnIsOpened && scrollDirection == Direction.RIGHT
-                        ) {
-                            // get maxScrollX when user scroll to right in the first time
-                            // maxScrollX is based on the user device
-                            // use variable firstScrollToRight to get maxScrollX
-                            if (maxScrollX == null) {
-                                maxScrollX = scrollOffset
-                            }
-                            // maxScrollX - currentDXPosition is the gap user is swiped
-                            val currentDXPosition = (-dX).toInt()
-                            scrollOffset = limitedScrollX - ((maxScrollX ?: 0) - currentDXPosition)
                         }
                     } else {
                         // handle when the user releases their finger
-                        scrollOffset = if (
-                            scrollOffset < limitedScrollX ||
-                            (scrollDirection == Direction.RIGHT && maxScrollX != null)
-                        ) {
-                            deleteBtnIsOpened = false
+                        scrollOffset = if (scrollOffset < limitedScrollX) {
                             0
                         } else {
                             limitedScrollX
                         }
                     }
-                    previousScrollX = (-dX).toInt()
                     viewHolder.itemView.scrollTo(scrollOffset, 0)
                 }
             }
@@ -294,7 +268,8 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                         } else {
                             tvNoResult.visibility = View.GONE
                         }
-                        rcvMessageBoxes.adapter = MessageBoxAdapter(dbViewModel, resultSet)
+                        rcvMessageBoxes.adapter =
+                            MessageBoxAdapter(dbViewModel, resultSet)
                     }
                 }
             }
@@ -336,6 +311,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         // cache message boxes number
         dbViewModel.updateMessageBoxList(MessageBoxesList(messageBoxes))
         dbViewModel.cacheMessageBoxNumber(messageBoxes.size)
+        dbViewModel.removeCachedMessageBoxes()
         dbViewModel.cacheMessageBoxes(messageBoxes)
         msgBoxLoading.visibility = View.GONE
     }
@@ -362,6 +338,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     private fun observeMessageBoxesChanges() =
         dbViewModel.getCachedMessageBoxes().observe(this@MainActivity) {
+            println("Fucking: ${it.size}")
             lifecycleScope.launch {
                 // update the number of cached message boxes
                 dbViewModel.cacheMessageBoxNumber(it.size)

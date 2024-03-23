@@ -470,24 +470,29 @@ class ChatActivity : AppCompatActivity() {
         groupMessages.value?.let {
             lifecycleScope.launch {
                 val tmp = it.toMutableList()
-                if (tmp.isNotEmpty()) {
-                    val latestGroup = tmp.first()
-                    if (latestGroup.senderID == currentUserUID)
-                        tmp.apply {
-                            first().apply {
-                                messages = latestGroup.messages.toMutableList().apply {
-                                    add(message)
-                                }
+                if (tmp.isEmpty()) {
+                    tmp.add(
+                        GroupMessage(
+                            currentUserUID, listOf(),
+                            LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+                        )
+                    )
+                }
+                val latestGroup = tmp.first()
+                if (latestGroup.senderID == currentUserUID)
+                    tmp.apply {
+                        first().apply {
+                            messages = latestGroup.messages.toMutableList().apply {
+                                add(message)
                             }
                         }
-                    else {
-                        tmp.add(
-                            GroupMessage(currentUserUID, listOf(message), sendTime)
-                        )
                     }
-                    println("Send message")
-                    groupMessages.postValue(tmp)
+                else {
+                    tmp.add(
+                        GroupMessage(currentUserUID, listOf(message), sendTime)
+                    )
                 }
+                groupMessages.postValue(tmp)
             }
         }
     }
