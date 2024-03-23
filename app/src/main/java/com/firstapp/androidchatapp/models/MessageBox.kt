@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "MessageBoxes")
 class MessageBox(
-    var index: Int,
     @PrimaryKey
     var friendUID: String,
     var avatarURI: String,

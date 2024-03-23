@@ -15,7 +15,7 @@ import com.firstapp.androidchatapp.models.MessageBox
 
 @Database(
     entities = [UserInfo::class, MessageBox::class, FriendRequest::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class SQLiteDB : RoomDatabase() {
@@ -82,6 +82,26 @@ abstract class SQLiteDB : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS MessageBoxes")
+                db.execSQL(
+                    """
+                    CREATE TABLE MessageBoxes(
+                        friendUID TEXT NOT NULL PRIMARY KEY,
+                        avatarURI TEXT NOT NULL,
+                        name TEXT NOT NULL,
+                        conversationID TEXT NOT NULL,
+                        read INTEGER NOT NULL,
+                        previewMessage TEXT NOT NULL,
+                        time INTEGER NOT NULL,
+                        unreadMessages INTEGER NOT NULL DEFAULT 1
+                    )
+                """.trimIndent()
+                )
+            }
+        }
+
         fun getInstance(context: Context): SQLiteDB {
             if (INSTANCE != null)
                 return INSTANCE as SQLiteDB
@@ -94,6 +114,7 @@ abstract class SQLiteDB : RoomDatabase() {
                     .addMigrations(MIGRATION_1_2)
                     .addMigrations(MIGRATION_2_3)
                     .addMigrations(MIGRATION_3_4)
+                    .addMigrations(MIGRATION_4_5)
                     .build()
             }
             return INSTANCE as SQLiteDB

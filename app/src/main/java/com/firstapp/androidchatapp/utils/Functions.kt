@@ -140,7 +140,6 @@ class Functions(
                 val box = i as HashMap<*, *>
                 result.add(
                     MessageBox(
-                        index = (box[Constants.INDEX] as Long).toInt(),
                         friendUID = box[Constants.FRIEND_UID] as String,
                         avatarURI = box[Constants.AVATAR_URI] as String,
                         conversationID = box[Constants.CONVERSATION_ID] as String,
@@ -151,9 +150,6 @@ class Functions(
                         time = box[Constants.TIME] as Long
                     )
                 )
-            }
-            result.sortedBy {
-                it.index
             }
             return result
         }
@@ -241,7 +237,6 @@ class Functions(
 
     private suspend fun createMsgBoxForCurrentUser(req: FriendRequest, conID: String) {
         val newBox = MessageBox(
-            index = dbViewModel.getCachedMessageBoxNumber(),
             friendUID = req.uid,
             avatarURI = req.avatarURI,
             name = req.name,
@@ -267,7 +262,6 @@ class Functions(
                 dbViewModel.createMessageBoxOnTop(
                     msgBoxListId = dbViewModel.getMessageBoxListId(req.uid),
                     msgBox = MessageBox(
-                        index = msgBoxNumber.size,
                         friendUID = FirebaseAuth.getInstance().currentUser!!.uid,
                         avatarURI = it.avatarURI,
                         name = it.name,

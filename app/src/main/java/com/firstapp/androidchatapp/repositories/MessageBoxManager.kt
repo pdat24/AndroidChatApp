@@ -50,7 +50,6 @@ class MessageBoxManager() {
             val box = i as HashMap<*, *>
             list.add(
                 MessageBox(
-                    index = (box[INDEX] as Long).toInt() + 1,
                     friendUID = box[FRIEND_UID] as String,
                     avatarURI = box[AVATAR_URI] as String,
                     name = box[NAME] as String,
@@ -88,15 +87,15 @@ class MessageBoxManager() {
      * @param conversationID conversation id of tha message box want to put on top
      */
     suspend fun putMessageBoxOnTop(id: String, conversationID: String) {
-        val msgBoxes = Functions.getMessageBoxes(getMessageBoxList(id)).toMutableList()
+        val msgBoxes = Functions.getMessageBoxes(getMessageBoxList(id))
         // increase index of all front message boxes by 1
+        val result = mutableListOf<MessageBox>()
         for (i in msgBoxes) {
             if (i.conversationID == conversationID) {
-                i.index = 0
-                break
-            } else i.index++
+                result.add(0, i)
+            } else result.add(i)
         }
-        messageBoxDB.document(id).update(MESSAGE_BOXES, msgBoxes)
+        messageBoxDB.document(id).update(MESSAGE_BOXES, result)
     }
 
     suspend fun removeMessageBox(id: String, conversationID: String) {

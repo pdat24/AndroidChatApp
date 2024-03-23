@@ -485,6 +485,7 @@ class ChatActivity : AppCompatActivity() {
                             GroupMessage(currentUserUID, listOf(message), sendTime)
                         )
                     }
+                    println("Send message")
                     groupMessages.postValue(tmp)
                 }
             }
@@ -514,7 +515,6 @@ class ChatActivity : AppCompatActivity() {
                     createMessageBoxIfNotExists(
                         currentUserUID,
                         MessageBox(
-                            index = 0,
                             friendUID = messageBoxListUID!!,
                             avatarURI = messageBoxAvatarURI!!,
                             name = messageBoxName!!,
@@ -536,7 +536,6 @@ class ChatActivity : AppCompatActivity() {
                         createMessageBoxIfNotExists(
                             messageBoxListUID!!,
                             MessageBox(
-                                index = 0,
                                 friendUID = currentUserUID,
                                 avatarURI = it.avatarURI,
                                 name = it.name,

@@ -333,7 +333,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             it.time = con[TIME] as Long
             it
         }
-
         // cache message boxes number
         dbViewModel.updateMessageBoxList(MessageBoxesList(messageBoxes))
         dbViewModel.cacheMessageBoxNumber(messageBoxes.size)
